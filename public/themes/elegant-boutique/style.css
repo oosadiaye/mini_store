@@ -1,0 +1,360 @@
+/* Elegant Boutique Theme - Luxury & Sophistication */
+
+/* Sophisticated color palette */
+:root {
+    --color-primary: #1A1A1A !important;
+    --color-secondary: #C9A961 !important;
+    --color-accent: #8B7355 !important;
+    --color-success: #6B8E23;
+    --color-warning: #DAA520;
+    --color-error: #8B0000;
+    --color-background: #F8F6F3;
+    --color-text: #2C2C2C;
+    --color-border: #D4C5B9;
+    --color-card-bg: #FFFFFF;
+}
+
+/* Elegant header with subtle luxury */
+header {
+    background: linear-gradient(to bottom, #FFFFFF, #F8F6F3) !important;
+    border-bottom: 1px solid var(--color-secondary);
+    box-shadow: 0 2px 8px rgba(201, 169, 97, 0.1) !important;
+}
+
+/* Refined background */
+body {
+    background: var(--color-background) !important;
+    background-image: linear-gradient(to bottom, #F8F6F3, #FFFFFF) !important;
+}
+
+/* Announcement bar with gold accent */
+.bg-gradient-to-r {
+    background: linear-gradient(135deg, var(--color-primary), var(--color-accent)) !important;
+}
+
+/* Product Grid - Elegant spacing */
+.product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 2rem;
+    margin: 2.5rem 0;
+}
+
+@media (min-width: 768px) {
+    .product-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 2.5rem;
+    }
+}
+
+/* Mobile elegant list view */
+@media (max-width: 767px) {
+    .product-grid {
+        grid-template-columns: 1fr;
+        gap: 1.25rem;
+    }
+
+    .product-card {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center;
+        gap: 1.25rem;
+        padding: 1.25rem;
+        background: white;
+        border: 1px solid var(--color-border);
+        border-radius: 2px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .product-card img {
+        width: 110px !important;
+        height: 110px !important;
+        object-fit: cover;
+        border-radius: 2px;
+        flex-shrink: 0;
+        border: 1px solid var(--color-border);
+    }
+
+    .product-card-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .product-card h3 {
+        font-size: 1rem !important;
+        margin: 0;
+        line-height: 1.4;
+        font-family: 'Playfair Display', serif !important;
+        font-weight: 600;
+    }
+
+    .product-card .price {
+        font-size: 1.35rem !important;
+        font-weight: 400;
+        color: var(--color-secondary);
+        font-family: 'Cormorant Garamond', serif !important;
+        letter-spacing: 0.5px;
+    }
+}
+
+/* Desktop product cards - Luxury aesthetic */
+@media (min-width: 768px) {
+    .product-card {
+        background: white;
+        border: 1px solid var(--color-border);
+        border-radius: 2px;
+        overflow: hidden;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+    }
+
+    .product-card:hover {
+        border-color: var(--color-secondary);
+        box-shadow: 0 8px 24px rgba(201, 169, 97, 0.2);
+        transform: translateY(-4px);
+    }
+
+    .product-card img {
+        width: 100%;
+        aspect-ratio: 3/4;
+        object-fit: cover;
+        transition: transform 0.6s ease;
+    }
+
+    .product-card:hover img {
+        transform: scale(1.05);
+    }
+
+    .product-card-content {
+        padding: 1.5rem;
+        text-align: center;
+    }
+
+    .product-card h3 {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 0.75rem;
+        color: var(--color-text);
+        line-height: 1.5;
+        font-family: 'Playfair Display', serif !important;
+        letter-spacing: 0.3px;
+    }
+
+    .product-card .price {
+        font-size: 1.5rem;
+        font-weight: 400;
+        color: var(--color-secondary);
+        font-family: 'Cormorant Garamond', serif !important;
+        margin: 0.75rem 0;
+        letter-spacing: 0.5px;
+    }
+}
+
+/* Refined Stock Status Badges */
+.stock-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.35rem 0.85rem;
+    border-radius: 2px;
+    font-size: 0.7rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-family: 'Montserrat', sans-serif;
+}
+
+.stock-available {
+    background-color: #F0F4E8;
+    color: #6B8E23;
+    border: 1px solid #D4E0C1;
+}
+
+.stock-low {
+    background-color: #FFF8E1;
+    color: #DAA520;
+    border: 1px solid #F4E4B3;
+}
+
+.stock-out {
+    background-color: #FFF0F0;
+    color: #8B0000;
+    border: 1px solid #F4D4D4;
+}
+
+/* Elegant Add to Cart Button */
+.quick-add-btn {
+    background: var(--color-primary) !important;
+    color: white !important;
+    border: 2px solid var(--color-primary);
+    padding: 0.85rem 2rem;
+    border-radius: 2px;
+    font-weight: 500;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 100%;
+    margin-top: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-family: 'Montserrat', sans-serif;
+}
+
+.quick-add-btn:hover {
+    background: transparent !important;
+    color: var(--color-primary) !important;
+    border-color: var(--color-primary);
+}
+
+.quick-add-btn:active {
+    transform: scale(0.98);
+}
+
+/* Refined Quantity Controls */
+.quantity-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 0.75rem 0;
+    justify-content: center;
+}
+
+.qty-btn {
+    width: 36px;
+    height: 36px;
+    border: 1px solid var(--color-border);
+    background: white;
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-weight: 400;
+    color: var(--color-text);
+    transition: all 0.3s;
+    font-family: 'Montserrat', sans-serif;
+}
+
+.qty-btn:hover {
+    background: var(--color-secondary);
+    color: white;
+    border-color: var(--color-secondary);
+}
+
+.quantity-input {
+    width: 60px;
+    text-align: center;
+    border: 1px solid var(--color-border);
+    border-radius: 2px;
+    padding: 0.5rem;
+    font-weight: 500;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem;
+}
+
+/* Sophisticated Section Headers */
+.section-header {
+    margin: 3rem 0 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--color-secondary);
+    text-align: center;
+}
+
+.section-header h2 {
+    font-size: 2.25rem;
+    font-weight: 600;
+    color: var(--color-text);
+    margin: 0;
+    font-family: 'Playfair Display', serif !important;
+    letter-spacing: 1px;
+}
+
+/* Elegant Buttons */
+button,
+.btn {
+    border-radius: 2px !important;
+    font-weight: 500 !important;
+    transition: all 0.3s ease !important;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-family: 'Montserrat', sans-serif !important;
+}
+
+.btn-primary {
+    background: var(--color-primary) !important;
+    border: 2px solid var(--color-primary) !important;
+}
+
+.btn-primary:hover {
+    background: transparent !important;
+    color: var(--color-primary) !important;
+    border-color: var(--color-primary) !important;
+}
+
+/* Refined shadows */
+.card,
+.group.relative {
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06) !important;
+}
+
+/* Luxury price display */
+.price-display {
+    font-family: 'Cormorant Garamond', serif !important;
+    font-size: 1.75rem !important;
+    font-weight: 400 !important;
+    color: var(--color-secondary) !important;
+    letter-spacing: 0.5px;
+}
+
+/* Elegant typography */
+body {
+    font-family: 'Lora', serif !important;
+    color: var(--color-text);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-family: 'Playfair Display', serif !important;
+    font-weight: 600 !important;
+    color: var(--color-text) !important;
+    letter-spacing: 0.5px;
+}
+
+/* Smooth, refined animations */
+.animate-fade-in-up {
+    animation: elegantFadeIn 0.8s ease-out !important;
+}
+
+@keyframes elegantFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Gold accent dividers */
+hr {
+    border-color: var(--color-secondary);
+    opacity: 0.3;
+}
+
+/* Refined link styling */
+a {
+    color: var(--color-text);
+    transition: color 0.3s ease;
+}
+
+a:hover {
+    color: var(--color-secondary);
+}
