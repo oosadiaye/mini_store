@@ -14,14 +14,15 @@ return new class extends Migration {
             $table->text('custom_css')->nullable();
             $table->boolean('is_active')->default(false);
             $table->unsignedBigInteger('template_id')->nullable();
-            $table->foreign('template_id')->references('id')->on('storefront_templates')->onDelete('set null');
+            // Foreign key removed - storefront_templates table doesn't exist yet
+            // Can be added later when the table is created
         });
     }
 
     public function down()
     {
         Schema::table('theme_settings', function (Blueprint $table) {
-            $table->dropForeign(['template_id']);
+            // No foreign key to drop since it was removed
             $table->dropColumn(['colors', 'fonts', 'layout_settings', 'custom_css', 'is_active', 'template_id']);
         });
     }
