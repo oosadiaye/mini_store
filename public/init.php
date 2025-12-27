@@ -25,7 +25,7 @@ if ($action === 'install') {
     echo '<pre>';
     
     // Stream output
-    $cmd = "$composer install --no-dev --optimize-autoloader 2>&1";
+    $cmd = "$composer install --working-dir=.. --no-dev --optimize-autoloader 2>&1";
     $handle = popen($cmd, 'r');
     
     while (!feof($handle)) {
