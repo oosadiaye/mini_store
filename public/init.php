@@ -36,7 +36,7 @@ if ($action === 'install') {
     pclose($handle);
     
     echo '</pre>';
-    echo '<h3 style="color: white">Installation Complete. <a href="#" onclick="window.location.href = window.location.pathname; return false;" style="color:#60A5FA">Click here to continue &rarr;</a></h3>';
+    echo '<h3 style="color: white">Installation Complete. <a href="./" style="color:#60A5FA">Click here to continue &rarr;</a></h3>';
     echo '<script>window.scrollTo(0,document.body.scrollHeight);</script>';
     echo '</body>';
     exit;
