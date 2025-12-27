@@ -10,13 +10,13 @@ if (file_exists($maintenance = __DIR__.'/../storage/framework/maintenance.php'))
     require $maintenance;
 }
 
-// Register the Composer autoloader...
-if (!file_exists(__DIR__.'/../vendor/autoload.php')) {
+// Check for dependencies and environment
+if (!file_exists(__DIR__.'/../vendor/autoload.php') || !file_exists(__DIR__.'/../.env')) {
     if (file_exists(__DIR__.'/init.php')) {
         require __DIR__.'/init.php';
         exit;
     }
-    die("Vendor directory missing and init.php not found. Please run 'composer install'.");
+    die("System setup incomplete and init.php not found.");
 }
 
 require __DIR__.'/../vendor/autoload.php';
