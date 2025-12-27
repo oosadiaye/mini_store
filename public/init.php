@@ -1,3 +1,4 @@
+<?php
 $action = $_GET['action'] ?? null;
 $baseDir = dirname(__DIR__);
 
