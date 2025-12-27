@@ -114,7 +114,8 @@ class InstallerController extends Controller
                 'name' => $validated['name'],
                 'email' => $validated['email'],
                 'password' => Hash::make($validated['password']),
-                'role' => 'super_admin', // Assuming you have a 'role' column or similar
+                'role' => 'super_admin',
+                'is_superadmin' => true,
             ]);
 
             // Assign Super Admin Role if using Spatie or specific logic
