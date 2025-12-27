@@ -24,7 +24,7 @@ class CheckInstalled
         if ($request->is('install') || $request->is('install/*')) {
             // If already installed, redirect to home
             if ($isInstalled) {
-                return redirect('/');
+                return redirect()->to(url('/'));
             }
             // Otherwise, allow access to installer
             return $next($request);
@@ -32,7 +32,7 @@ class CheckInstalled
 
         // If not installed and trying to access other routes, redirect to installer
         if (!$isInstalled) {
-            return redirect('/install');
+            return redirect()->route('install.welcome');
         }
 
         return $next($request);
