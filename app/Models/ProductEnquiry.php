@@ -7,7 +7,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ProductEnquiry extends Model
 {
+    use \App\Traits\BelongsToTenant;
+    
     protected $fillable = [
+        'tenant_id',
         'product_id',
         'customer_name',
         'customer_email',

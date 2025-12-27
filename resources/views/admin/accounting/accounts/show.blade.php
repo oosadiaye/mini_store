@@ -23,7 +23,7 @@
             <h3 class="text-gray-500 text-sm font-medium uppercase tracking-wider">Current Balance</h3>
             <div class="mt-2 flex items-baseline gap-2">
                 <span class="text-3xl font-extrabold text-gray-900">
-                    {{ tenant('data')['currency_symbol'] ?? '₦' }}{{ number_format(abs($account->balance), 2) }}
+                    {{ $tenant->data['currency_symbol'] ?? '₦' }}{{ number_format(abs($account->balance), 2) }}
                 </span>
                 <span class="px-2.5 py-0.5 rounded-full text-xs font-medium {{ $account->balance >= 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
                     {{ $account->balance >= 0 ? 'Dr' : 'Cr' }}
@@ -91,14 +91,14 @@
                         </td>
                         <td class="px-6 py-4 text-right font-medium text-gray-900">
                             @if($line->debit > 0)
-                                {{ tenant('data')['currency_symbol'] ?? '₦' }}{{ number_format($line->debit, 2) }}
+                                {{ $tenant->data['currency_symbol'] ?? '₦' }}{{ number_format($line->debit, 2) }}
                             @else
                                 -
                             @endif
                         </td>
                          <td class="px-6 py-4 text-right font-medium text-gray-900">
                             @if($line->credit > 0)
-                                {{ tenant('data')['currency_symbol'] ?? '₦' }}{{ number_format($line->credit, 2) }}
+                                {{ $tenant->data['currency_symbol'] ?? '₦' }}{{ number_format($line->credit, 2) }}
                             @else
                                 -
                             @endif

@@ -16,7 +16,7 @@ class ConfigureTenantMail
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (function_exists('tenant') && $tenant = tenant()) {
+        if (app()->bound('tenant') && $tenant = app('tenant')) {
             $data = $tenant->data ?? [];
             
             if (!empty($data['mail_host'])) {

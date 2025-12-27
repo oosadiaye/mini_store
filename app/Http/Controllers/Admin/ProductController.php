@@ -83,6 +83,16 @@ class ProductController extends Controller
 
     public function store(Request $request)
     {
+        // Enforce Plan Limits
+        $limit = app('tenant')->getLimit('products_limit');
+        if ($limit !== -1 && $limit !== null) {
+            if (Product::count() >= $limit) {
+                return redirect()->back()
+                    ->with('error', "You have reached your plan's limit of {$limit} products. Please upgrade to add more.")
+                    ->withInput();
+            }
+        }
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'category_id' => 'nullable|exists:categories,id',

@@ -43,6 +43,16 @@ class OrderController extends Controller
 
     public function store(Request $request)
     {
+        // Enforce Plan Limits (Total Orders)
+        $limit = app('tenant')->getLimit('orders_limit');
+        if ($limit !== -1 && $limit !== null) {
+            if (Order::count() >= $limit) {
+                return redirect()->back()
+                    ->with('error', "You have reached your plan's limit of {$limit} orders. Please upgrade to continue processing sales.")
+                    ->withInput();
+            }
+        }
+
         $request->validate([
             'customer_id' => 'required|exists:customers,id',
             'items' => 'required|array|min:1',

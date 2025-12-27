@@ -10,7 +10,7 @@ class PaymentGatewayService
 {
     public function initializeTransaction(Order $order, string $provider)
     {
-        $settings = tenant()->data;
+        $settings = app('tenant')->data;
         $amount = $order->total;
         $email = $order->customer->email;
         $callbackUrl = route('storefront.checkout.callback');
@@ -28,7 +28,7 @@ class PaymentGatewayService
 
     public function verifyTransaction(string $reference, string $provider)
     {
-        $settings = tenant()->data;
+        $settings = app('tenant')->data;
 
         switch ($provider) {
             case 'paystack':

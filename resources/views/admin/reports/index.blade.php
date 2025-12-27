@@ -1,15 +1,16 @@
 @extends('admin.layout')
 
+@section('title', 'Reports')
+
 @section('content')
-<div class="max-w-7xl mx-auto">
-    <div class="mb-8">
-        <h2 class="text-3xl font-bold text-gray-800">Reports & Analytics</h2>
-        <p class="text-gray-600 mt-2">Comprehensive business insights and performance metrics</p>
-    </div>
+<div class="container mx-auto px-4 py-6">
+    <h1 class="text-2xl font-bold text-gray-900 mb-6">Reports</h1>
 
     <!-- Report Categories Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <!-- Sales Report -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        
+        {{-- Sales Report removed - route not implemented --}}
+        {{--
         <a href="{{ route('admin.reports.sales') }}" class="group">
             <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg p-6 text-white transform transition-all duration-200 hover:scale-105 hover:shadow-xl">
                 <div class="flex items-center justify-between mb-4">
@@ -26,6 +27,7 @@
                 <p class="text-blue-100 text-sm">Revenue trends, top products, and sales performance</p>
             </div>
         </a>
+        --}}
 
         <!-- Inventory Report -->
         <a href="{{ route('admin.reports.inventory') }}" class="group">
@@ -91,7 +93,7 @@
                 <div class="text-sm text-gray-600 mt-1">Total Orders</div>
             </div>
             <div class="text-center">
-                <div class="text-3xl font-bold text-green-600">{{ tenant('data')['currency_symbol'] ?? '₦' }}{{ number_format(\App\Models\Order::where('created_at', '>=', now()->subDays(30))->sum('total'), 2) }}</div>
+                <div class="text-3xl font-bold text-green-600">{{ $tenant->data['currency_symbol'] ?? '₦' }}{{ number_format(\App\Models\Order::where('created_at', '>=', now()->subDays(30))->sum('total'), 2) }}</div>
                 <div class="text-sm text-gray-600 mt-1">Revenue</div>
             </div>
             <div class="text-center">

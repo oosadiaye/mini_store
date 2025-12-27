@@ -47,7 +47,7 @@
                             </span>
                         </td>
                         <td class="px-6 py-4 text-right font-medium text-gray-900">
-                            {{ tenant('data')['currency_symbol'] ?? '$' }}{{ number_format($return->refund_amount, 2) }}
+                            {{ $tenant->data['currency_symbol'] ?? '$' }}{{ number_format($return->refund_amount, 2) }}
                         </td>
                         <td class="px-6 py-4 text-right">
                             <a href="{{ route('admin.returns.show', $return->id) }}" class="text-indigo-600 hover:text-indigo-900 font-medium bg-indigo-50 px-3 py-1 rounded-lg transition hover:bg-indigo-100">

@@ -53,7 +53,8 @@ class LogoHelper
     public static function generateSvg(string $initials, int $size = 64, ?array $colors = null): string
     {
         if (!$colors) {
-            $colors = self::getColorScheme(tenant('name') ?? 'Store');
+            $name = app()->bound('tenant') ? app('tenant')->name : 'Store';
+            $colors = self::getColorScheme($name);
         }
         
         $fontSize = round($size * 0.4);
@@ -85,11 +86,10 @@ SVG;
     public static function getLogo(int $size = 64): string
     {
         // Read fresh data from database instead of cached tenant()->data
-        $tenant = tenant();
-        if ($tenant) {
+        if (app()->bound('tenant')) {
+            $tenant = app('tenant');
             $freshData = json_decode(
-                \Illuminate\Support\Facades\DB::connection(config('tenancy.database.central_connection'))
-                    ->table('tenants')
+                \Illuminate\Support\Facades\DB::table('tenants')
                     ->where('id', $tenant->id)
                     ->value('data') ?? '{}',
                 true
@@ -105,11 +105,12 @@ SVG;
         
         // If custom logo exists, return its URL
         if (!empty($freshData['logo'])) {
-            return route('tenant.media', ['path' => $freshData['logo']]);
+            return \Illuminate\Support\Facades\Storage::disk('public')->url($freshData['logo']);
         }
         
         // Generate from initials
-        $initials = self::getInitials(tenant('name') ?? 'Store');
+        $name = app()->bound('tenant') ? app('tenant')->name : 'Store';
+        $initials = self::getInitials($name);
         return self::generateSvg($initials, $size);
     }
     
@@ -119,11 +120,10 @@ SVG;
     public static function getFavicon(): string
     {
         // Read fresh data from database instead of cached tenant()->data
-        $tenant = tenant();
-        if ($tenant) {
+        if (app()->bound('tenant')) {
+            $tenant = app('tenant');
             $freshData = json_decode(
-                \Illuminate\Support\Facades\DB::connection(config('tenancy.database.central_connection'))
-                    ->table('tenants')
+                \Illuminate\Support\Facades\DB::table('tenants')
                     ->where('id', $tenant->id)
                     ->value('data') ?? '{}',
                 true
@@ -134,13 +134,14 @@ SVG;
         
         // If custom favicon exists, return its URL with cache busting
         if (!empty($freshData['favicon'])) {
-            $url = route('tenant.media', ['path' => $freshData['favicon']]);
+            $url = \Illuminate\Support\Facades\Storage::disk('public')->url($freshData['favicon']);
             // Add cache busting parameter to force browser refresh
             return $url . '?v=' . time();
         }
         
         // Generate 32x32 favicon from initials
-        $initials = self::getInitials(tenant('name') ?? 'Store');
+        $name = app()->bound('tenant') ? app('tenant')->name : 'Store';
+        $initials = self::getInitials($name);
         return self::generateSvg($initials, 32);
     }
 }

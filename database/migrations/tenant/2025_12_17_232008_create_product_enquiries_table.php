@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('product_enquiries', function (Blueprint $table) {
             $table->id();
+            $table->string('tenant_id');
             $table->foreignId('product_id')->constrained()->cascadeOnDelete();
             $table->string('customer_name');
             $table->string('customer_email');
@@ -23,6 +24,9 @@ return new class extends Migration
             $table->timestamp('replied_at')->nullable();
             $table->foreignId('replied_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
+
+            $table->foreign('tenant_id')->references('id')->on('tenants')->cascadeOnDelete();
+            $table->index(['tenant_id']);
         });
     }
 

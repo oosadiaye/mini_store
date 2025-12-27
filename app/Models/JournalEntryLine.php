@@ -25,4 +25,9 @@ class JournalEntryLine extends Model
     {
         return $this->morphTo();
     }
+
+    public function renter()
+    {
+        return $this->belongsTo(Renter::class);
+    }
 }

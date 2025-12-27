@@ -13,11 +13,14 @@ return new class extends Migration
     {
         Schema::create('notifications', function (Blueprint $table) {
             $table->uuid('id')->primary();
+            $table->string('tenant_id')->nullable();
             $table->string('type');
             $table->morphs('notifiable');
             $table->text('data');
             $table->timestamp('read_at')->nullable();
             $table->timestamps();
+
+            $table->index(['tenant_id']);
         });
     }
 

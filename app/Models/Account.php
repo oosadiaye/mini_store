@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Account extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Traits\BelongsToTenant;
 
     protected $table = 'chart_of_accounts';
     protected $guarded = ['id']; // sub_ledger_type is handled here because it's not in guarded

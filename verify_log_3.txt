@@ -1,0 +1,25 @@
+--- STARTING VERIFICATION ---
+Cleaning up previous test data...
+Creating Tenant 1 (demo)...
+
+   TypeError 
+
+  Stancl\Tenancy\Jobs\CreateDatabase::__construct(): Argument #1 ($tenant) must be of type Stancl\Tenancy\Contracts\TenantWithDatabase, App\Models\Tenant given, called in C:\Users\Jac\Documents\Antigravity\mini_store\vendor\stancl\jobpipeline\src\JobPipeline.php on line 64
+
+  at vendor\stancl\tenancy\src\Jobs\CreateDatabase.php:25
+     21▕ 
+     22▕     /** @var TenantWithDatabase|Model */
+     23▕     protected $tenant;
+     24▕ 
+  ➜  25▕     public function __construct(TenantWithDatabase $tenant)
+     26▕     {
+     27▕         $this->tenant = $tenant;
+     28▕     }
+     29▕
+
+  1   vendor\stancl\jobpipeline\src\JobPipeline.php:64
+      Stancl\Tenancy\Jobs\CreateDatabase::__construct(Object(App\Models\Tenant))
+
+  2   vendor\laravel\framework\src\Illuminate\Container\BoundMethod.php:36
+      Stancl\JobPipeline\JobPipeline::handle()
+

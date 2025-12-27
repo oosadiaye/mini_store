@@ -89,13 +89,11 @@
                             @endif
                         </td>
                          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-mono">
-                            {{ tenant('data')['currency_symbol'] ?? '₦' }}{{ number_format($account->balance, 2) }}
+                            {{ $tenant->data['currency_symbol'] ?? '₦' }}{{ number_format($account->balance, 2) }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                             <a href="{{ route('admin.accounts.show', $account->id) }}" class="text-teal-600 hover:text-teal-900 mr-3 font-bold" title="View Ledger">Ledger</a>
                             <a href="{{ route('admin.accounts.edit', $account->id) }}" class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</a>
-                            
-                            <a href="{{ route('admin.accounts.copy', $account->id) }}" class="text-blue-600 hover:text-blue-900 mr-3" title="Copy Account">Copy</a>
 
                             <form action="{{ route('admin.accounts.destroy', $account->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Are you sure you want to delete this account?');">
                                 @csrf

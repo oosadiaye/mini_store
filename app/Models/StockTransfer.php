@@ -7,12 +7,14 @@ use Illuminate\Database\Eloquent\Model;
 use App\Models\Product;
 use App\Models\Warehouse;
 use App\Models\User;
+use App\Traits\BelongsToTenant;
 
 class StockTransfer extends Model
 {
-    use HasFactory;
+    use HasFactory, BelongsToTenant;
 
     protected $fillable = [
+        'tenant_id',
         'product_id',
         'from_warehouse_id',
         'to_warehouse_id',

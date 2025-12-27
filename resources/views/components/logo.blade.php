@@ -1,7 +1,7 @@
 @props(['size' => 'lg'])
 
 @php
-$settings = tenant()->data ?? [];
+$settings = $tenant->data ?? [];
 $hasCustomLogo = !empty($settings['logo']);
 
 $sizes = [
@@ -12,7 +12,7 @@ $sizes = [
 ];
 
 $dimension = $sizes[$size] ?? 64;
-$storeName = tenant('name') ?? 'Store';
+$storeName = $tenant->name ?? 'Store';
 @endphp
 
 @if($hasCustomLogo)

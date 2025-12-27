@@ -35,5 +35,5 @@ Route::post('/logout', function (Request $request) {
     Auth::logout();
     $request->session()->invalidate();
     $request->session()->regenerateToken();
-    return redirect('/');
+    return redirect()->route('tenant.login');
 })->middleware('auth')->name('logout');

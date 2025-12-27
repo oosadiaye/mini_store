@@ -34,19 +34,19 @@
     <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
         <div class="bg-white rounded-lg shadow p-6">
             <p class="text-sm font-medium text-gray-600 mb-2">Total Revenue</p>
-            <p class="text-3xl font-bold text-green-600">{{ tenant('data')['currency_symbol'] ?? '₦' }}{{ number_format($revenue, 2) }}</p>
+            <p class="text-3xl font-bold text-green-600">{{ $tenant->data['currency_symbol'] ?? '₦' }}{{ number_format($revenue, 2) }}</p>
             <p class="text-xs text-gray-500 mt-1">From paid orders</p>
         </div>
 
         <div class="bg-white rounded-lg shadow p-6">
             <p class="text-sm font-medium text-gray-600 mb-2">Cost of Goods Sold</p>
-            <p class="text-3xl font-bold text-red-600">{{ tenant('data')['currency_symbol'] ?? '₦' }}{{ number_format($cogs, 2) }}</p>
+            <p class="text-3xl font-bold text-red-600">{{ $tenant->data['currency_symbol'] ?? '₦' }}{{ number_format($cogs, 2) }}</p>
             <p class="text-xs text-gray-500 mt-1">Product costs</p>
         </div>
 
         <div class="bg-white rounded-lg shadow p-6">
             <p class="text-sm font-medium text-gray-600 mb-2">Gross Profit</p>
-            <p class="text-3xl font-bold text-blue-600">{{ tenant('data')['currency_symbol'] ?? '₦' }}{{ number_format($grossProfit, 2) }}</p>
+            <p class="text-3xl font-bold text-blue-600">{{ $tenant->data['currency_symbol'] ?? '₦' }}{{ number_format($grossProfit, 2) }}</p>
             <p class="text-xs text-gray-500 mt-1">Revenue - COGS</p>
         </div>
 
@@ -68,15 +68,15 @@
                 <div class="text-center">
                     <div class="mb-6">
                         <p class="text-sm text-gray-600 mb-2">Revenue</p>
-                        <p class="text-4xl font-bold text-green-600">{{ tenant('data')['currency_symbol'] ?? '₦' }}{{ number_format($revenue, 2) }}</p>
+                        <p class="text-4xl font-bold text-green-600">{{ $tenant->data['currency_symbol'] ?? '₦' }}{{ number_format($revenue, 2) }}</p>
                     </div>
                     <div class="mb-6">
                         <p class="text-sm text-gray-600 mb-2">COGS</p>
-                        <p class="text-4xl font-bold text-red-600">-{{ tenant('data')['currency_symbol'] ?? '₦' }}{{ number_format($cogs, 2) }}</p>
+                        <p class="text-4xl font-bold text-red-600">-{{ $tenant->data['currency_symbol'] ?? '₦' }}{{ number_format($cogs, 2) }}</p>
                     </div>
                     <div class="pt-6 border-t-2 border-gray-300">
                         <p class="text-sm text-gray-600 mb-2">Gross Profit</p>
-                        <p class="text-5xl font-bold text-blue-600">{{ tenant('data')['currency_symbol'] ?? '₦' }}{{ number_format($grossProfit, 2) }}</p>
+                        <p class="text-5xl font-bold text-blue-600">{{ $tenant->data['currency_symbol'] ?? '₦' }}{{ number_format($grossProfit, 2) }}</p>
                     </div>
                 </div>
             </div>
@@ -96,7 +96,7 @@
                     </span>
                 </div>
                 <p class="text-lg font-semibold {{ $status->payment_status === 'paid' ? 'text-green-700' : ($status->payment_status === 'pending' ? 'text-yellow-700' : 'text-red-700') }}">
-                    {{ tenant('data')['currency_symbol'] ?? '₦' }}{{ number_format($status->amount, 2) }}
+                    {{ $tenant->data['currency_symbol'] ?? '₦' }}{{ number_format($status->amount, 2) }}
                 </p>
             </div>
             @endforeach
@@ -131,13 +131,13 @@
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $product->sku }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">{{ number_format($product->units_sold) }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
-                            {{ tenant('data')['currency_symbol'] ?? '₦' }}{{ number_format($product->revenue, 2) }}
+                            {{ $tenant->data['currency_symbol'] ?? '₦' }}{{ number_format($product->revenue, 2) }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-red-600 text-right">
-                            {{ tenant('data')['currency_symbol'] ?? '₦' }}{{ number_format($product->cost, 2) }}
+                            {{ $tenant->data['currency_symbol'] ?? '₦' }}{{ number_format($product->cost, 2) }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-green-600 text-right">
-                            {{ tenant('data')['currency_symbol'] ?? '₦' }}{{ number_format($product->profit, 2) }}
+                            {{ $tenant->data['currency_symbol'] ?? '₦' }}{{ number_format($product->profit, 2) }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right">
                             <span class="px-2 py-1 text-xs font-semibold rounded-full {{ $margin >= 30 ? 'bg-green-100 text-green-800' : ($margin >= 15 ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800') }}">
@@ -188,7 +188,7 @@ new Chart(profitCtx, {
                         if (label) {
                             label += ': ';
                         }
-                        label += '{{ tenant("data")["currency_symbol"] ?? "₦" }}' + context.parsed.toLocaleString();
+                        label += '{{ $tenant->data["currency_symbol"] ?? "₦" }}' + context.parsed.toLocaleString();
                         return label;
                     }
                 }

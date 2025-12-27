@@ -7,9 +7,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class OrderItem extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Traits\BelongsToTenant;
 
     protected $fillable = [
+        'tenant_id',
         'order_id',
         'product_id',
         'product_variant_id',
@@ -17,6 +18,8 @@ class OrderItem extends Model
         'variant_name',
         'quantity',
         'price',
+        'tax_amount',
+        'tax_code_id',
         'total',
     ];
 
@@ -33,5 +36,10 @@ class OrderItem extends Model
     public function variant()
     {
         return $this->belongsTo(ProductVariant::class, 'product_variant_id');
+    }
+
+    public function taxCode()
+    {
+        return $this->belongsTo(TaxCode::class);
     }
 }

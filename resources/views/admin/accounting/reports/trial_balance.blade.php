@@ -38,7 +38,7 @@
         </div>
         <div class="mt-4 md:mt-0 text-right">
              <div class="text-sm text-gray-500">Total Volume</div>
-             <div class="text-2xl font-bold text-gray-900">{{ tenant('data')['currency_symbol'] ?? '₦' }}{{ number_format($totalDebit, 2) }}</div>
+             <div class="text-2xl font-bold text-gray-900">{{ $tenant->data['currency_symbol'] ?? '₦' }}{{ number_format($totalDebit, 2) }}</div>
         </div>
     </div>
 
@@ -80,8 +80,8 @@
                 <tfoot class="bg-gray-50 border-t-2 border-gray-200 font-bold text-gray-900">
                     <tr>
                         <td colspan="2" class="px-6 py-4 text-right uppercase tracking-wider text-xs">Totals</td>
-                        <td class="px-6 py-4 text-right font-mono text-indigo-700">{{ tenant('data')['currency_symbol'] ?? '₦' }}{{ number_format($totalDebit, 2) }}</td>
-                        <td class="px-6 py-4 text-right font-mono text-indigo-700">{{ tenant('data')['currency_symbol'] ?? '₦' }}{{ number_format($totalCredit, 2) }}</td>
+                        <td class="px-6 py-4 text-right font-mono text-indigo-700">{{ $tenant->data['currency_symbol'] ?? '₦' }}{{ number_format($totalDebit, 2) }}</td>
+                        <td class="px-6 py-4 text-right font-mono text-indigo-700">{{ $tenant->data['currency_symbol'] ?? '₦' }}{{ number_format($totalCredit, 2) }}</td>
                     </tr>
                 </tfoot>
             </table>

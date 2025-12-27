@@ -30,13 +30,13 @@
                 @foreach($assets as $account)
                 <div class="flex justify-between text-sm group">
                     <span class="text-gray-600 group-hover:text-gray-900">{{ $account->account_name }}</span>
-                    <span class="font-medium text-gray-900">${{ number_format($account->balance, 2) }}</span>
+                    <span class="font-medium text-gray-900">{{ app('tenant')->data['currency_symbol'] ?? '₦' }}{{ number_format($account->balance, 2) }}</span>
                 </div>
                 @endforeach
             </div>
             <div class="mt-8 pt-4 border-t border-gray-100 flex justify-between text-base font-bold text-indigo-900 bg-indigo-50 p-3 rounded">
                 <span>Total Assets</span>
-                <span>${{ number_format($totalAssets, 2) }}</span>
+                <span>{{ app('tenant')->data['currency_symbol'] ?? '₦' }}{{ number_format($totalAssets, 2) }}</span>
             </div>
         </div>
 
@@ -48,12 +48,12 @@
                     @foreach($liabilities as $account)
                     <div class="flex justify-between text-sm">
                         <span class="text-gray-600">{{ $account->account_name }}</span>
-                        <span class="font-medium text-gray-900">${{ number_format($account->balance, 2) }}</span>
+                        <span class="font-medium text-gray-900">{{ app('tenant')->data['currency_symbol'] ?? '₦' }}{{ number_format($account->balance, 2) }}</span>
                     </div>
                     @endforeach
                     <div class="flex justify-between font-bold text-gray-900 pt-2 border-t border-gray-100 mt-2">
                         <span>Total Liabilities</span>
-                        <span>${{ number_format($totalLiabilities, 2) }}</span>
+                        <span>{{ app('tenant')->data['currency_symbol'] ?? '₦' }}{{ number_format($totalLiabilities, 2) }}</span>
                     </div>
                 </div>
             </div>
@@ -64,7 +64,7 @@
                     @foreach($equity as $account)
                     <div class="flex justify-between text-sm">
                         <span class="text-gray-600">{{ $account->account_name }}</span>
-                        <span class="font-medium text-gray-900">${{ number_format($account->balance, 2) }}</span>
+                        <span class="font-medium text-gray-900">{{ app('tenant')->data['currency_symbol'] ?? '₦' }}{{ number_format($account->balance, 2) }}</span>
                     </div>
                     @endforeach
                     
@@ -72,20 +72,20 @@
                     <div class="flex justify-between text-sm">
                         <span class="text-gray-600">Net Income (Current Period)</span>
                         <span class="font-medium {{ $netIncome >= 0 ? 'text-green-600' : 'text-red-600' }}">
-                            ${{ number_format($netIncome, 2) }}
+                            {{ app('tenant')->data['currency_symbol'] ?? '₦' }}{{ number_format($netIncome, 2) }}
                         </span>
                     </div>
 
                     <div class="flex justify-between font-bold text-gray-900 pt-2 border-t border-gray-100 mt-2">
                         <span>Total Equity</span>
-                        <span>${{ number_format($totalEquity, 2) }}</span>
+                        <span>{{ app('tenant')->data['currency_symbol'] ?? '₦' }}{{ number_format($totalEquity, 2) }}</span>
                     </div>
                 </div>
             </div>
 
             <div class="bg-gray-800 text-white rounded-lg p-4 flex justify-between font-bold shadow-md">
                 <span>Total Liabilities & Equity</span>
-                <span>${{ number_format($totalLiabilities + $totalEquity, 2) }}</span>
+                <span>{{ app('tenant')->data['currency_symbol'] ?? '₦' }}{{ number_format($totalLiabilities + $totalEquity, 2) }}</span>
             </div>
         </div>
     </div>

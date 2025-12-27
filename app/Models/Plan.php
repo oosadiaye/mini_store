@@ -2,27 +2,31 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Plan extends Model
 {
-    use HasFactory;
-
     protected $fillable = [
         'name',
-        'slug',
         'price',
-        'currency',
-        'duration_months',
+        'duration_days',
+        'trial_days',
         'features',
-        'sort_order',
+        'caps',
         'is_active',
     ];
 
     protected $casts = [
         'features' => 'array',
-        'is_active' => 'boolean',
+        'caps' => 'array',
         'price' => 'decimal:2',
+        'is_active' => 'boolean',
+        'trial_days' => 'integer',
     ];
+
+    public function tenants(): HasMany
+    {
+        return $this->hasMany(Tenant::class);
+    }
 }

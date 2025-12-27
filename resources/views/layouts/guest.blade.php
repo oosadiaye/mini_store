@@ -16,9 +16,18 @@
     </head>
     <body class="font-sans text-gray-900 antialiased">
         <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-100 dark:bg-gray-900">
+            @php
+                $branding = \App\Models\GlobalSetting::where('group', 'branding')->pluck('value', 'key');
+                $brandLogo = $branding['brand_logo'] ?? null;
+                $brandName = $branding['brand_name'] ?? config('app.name', 'Laravel');
+            @endphp
             <div>
                 <a href="/">
-                    <x-application-logo class="w-20 h-20 fill-current text-gray-500" />
+                    @if($brandLogo)
+                        <img src="{{ Storage::disk('public')->url($brandLogo) }}?v={{ time() }}" alt="{{ $brandName }}" class="h-20 w-auto mx-auto">
+                    @else
+                        <div class="text-3xl font-bold text-gray-700">{{ $brandName }}</div>
+                    @endif
                 </a>
             </div>
 

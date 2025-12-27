@@ -32,12 +32,12 @@
                     @foreach($revenues as $account)
                     <div class="flex justify-between text-sm">
                         <span class="text-gray-600">{{ $account->account_name }}</span>
-                        <span class="font-medium text-gray-900">${{ number_format($account->balance, 2) }}</span>
+                        <span class="font-medium text-gray-900">{{ app('tenant')->data['currency_symbol'] ?? '₦' }}{{ number_format($account->balance, 2) }}</span>
                     </div>
                     @endforeach
                     <div class="flex justify-between text-base font-bold text-gray-900 pt-2 border-t border-gray-100 mt-2">
                         <span>Total Revenue</span>
-                        <span>${{ number_format($totalRevenue, 2) }}</span>
+                        <span>{{ app('tenant')->data['currency_symbol'] ?? '₦' }}{{ number_format($totalRevenue, 2) }}</span>
                     </div>
                 </div>
             </div>
@@ -49,12 +49,12 @@
                     @foreach($expenses as $account)
                     <div class="flex justify-between text-sm">
                         <span class="text-gray-600">{{ $account->account_name }}</span>
-                        <span class="font-medium text-gray-900">${{ number_format($account->balance, 2) }}</span>
+                        <span class="font-medium text-gray-900">{{ app('tenant')->data['currency_symbol'] ?? '₦' }}{{ number_format($account->balance, 2) }}</span>
                     </div>
                     @endforeach
                     <div class="flex justify-between text-base font-bold text-gray-900 pt-2 border-t border-gray-100 mt-2">
                         <span>Total Expenses</span>
-                        <span>${{ number_format($totalExpenses, 2) }}</span>
+                        <span>{{ app('tenant')->data['currency_symbol'] ?? '₦' }}{{ number_format($totalExpenses, 2) }}</span>
                     </div>
                 </div>
             </div>
@@ -63,7 +63,7 @@
             <div class="bg-gray-50 rounded-lg p-4 flex justify-between items-center border border-gray-200">
                 <span class="text-lg font-bold text-gray-800">Net Income</span>
                 <span class="text-xl font-bold {{ $netIncome >= 0 ? 'text-green-600' : 'text-red-600' }}">
-                    ${{ number_format($netIncome, 2) }}
+                    {{ app('tenant')->data['currency_symbol'] ?? '₦' }}{{ number_format($netIncome, 2) }}
                 </span>
             </div>
         </div>

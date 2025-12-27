@@ -4,7 +4,9 @@
 <!-- Header -->
 <div class="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between">
     <div>
-        <h2 class="text-3xl font-bold text-gray-900 tracking-tight">Overview</h2>
+        <div class="flex items-center space-x-3">
+            <h2 class="text-3xl font-bold text-gray-900 tracking-tight">Overview</h2>
+        </div>
         <p class="text-gray-500 mt-1">Welcome back, {{ auth()->user()->name ?? 'Admin' }}! Here's what's happening today.</p>
     </div>
     <div class="mt-4 sm:mt-0">
@@ -15,8 +17,113 @@
     </div>
 </div>
 
+{{-- Subscription Banner --}}
+@php
+    $plan = $tenant->currentPlan;
+    $isOnTrial = $tenant->trial_ends_at && now()->lt($tenant->trial_ends_at);
+    $subscriptionEnds = $tenant->subscription_ends_at;
+    $daysRemaining = $subscriptionEnds ? now()->diffInDays($subscriptionEnds, false) : null;
+    $isExpired = $daysRemaining !== null && $daysRemaining < 0;
+    $isExpiringSoon = $daysRemaining !== null && $daysRemaining >= 0 && $daysRemaining <= 7;
+@endphp
+
+<div class="mb-8">
+    @if($isExpired)
+        {{-- Expired Subscription --}}
+        <div class="bg-gradient-to-r from-red-50 to-red-100 border-l-4 border-red-500 rounded-lg p-6 shadow-sm">
+            <div class="flex items-start">
+                <div class="flex-shrink-0">
+                    <svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                    </svg>
+                </div>
+                <div class="ml-4 flex-1">
+                    <h3 class="text-lg font-bold text-red-900">Subscription Expired</h3>
+                    <div class="mt-2 text-sm text-red-800">
+                        <p>Your <strong>{{ $plan->name ?? 'subscription' }}</strong> expired {{ abs($daysRemaining) }} day(s) ago on <strong>{{ $subscriptionEnds->format('M d, Y') }}</strong>.</p>
+                        <p class="mt-1">Please renew to continue using all features.</p>
+                    </div>
+                    <div class="mt-4">
+                        <a href="{{ route('tenant.subscription.index', ['tenant' => $tenant->slug]) }}" class="inline-flex items-center px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition shadow-sm">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                            </svg>
+                            Renew Subscription
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @elseif($isExpiringSoon)
+        {{-- Expiring Soon --}}
+        <div class="bg-gradient-to-r from-yellow-50 to-amber-100 border-l-4 border-yellow-500 rounded-lg p-6 shadow-sm">
+            <div class="flex items-start">
+                <div class="flex-shrink-0">
+                    <svg class="h-6 w-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+                <div class="ml-4 flex-1">
+                    <h3 class="text-lg font-bold text-yellow-900">Subscription Expiring Soon</h3>
+                    <div class="mt-2 text-sm text-yellow-800">
+                        <p>Your <strong>{{ $plan->name ?? 'subscription' }}</strong> will expire in <strong>{{ $daysRemaining }} day(s)</strong> on <strong>{{ $subscriptionEnds->format('M d, Y') }}</strong>.</p>
+                        @if($isOnTrial)
+                            <p class="mt-1">🎉 You're currently on a <strong>trial period</strong> (ends {{ $tenant->trial_ends_at->format('M d, Y') }}).</p>
+                        @endif
+                    </div>
+                    <div class="mt-4">
+                        <a href="{{ route('tenant.subscription.index', ['tenant' => $tenant->slug]) }}" class="inline-flex items-center px-4 py-2 bg-yellow-600 text-white text-sm font-medium rounded-lg hover:bg-yellow-700 transition shadow-sm">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                            </svg>
+                            Renew Now
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @else
+        {{-- Active Subscription --}}
+        <div class="bg-gradient-to-r from-indigo-50 to-blue-100 border-l-4 border-indigo-500 rounded-lg p-6 shadow-sm">
+            <div class="flex items-start justify-between">
+                <div class="flex items-start flex-1">
+                    <div class="flex-shrink-0">
+                        <svg class="h-6 w-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="text-lg font-bold text-indigo-900">Active Subscription</h3>
+                        <div class="mt-2 text-sm text-indigo-800 space-y-1">
+                            <p><strong>Plan:</strong> {{ $plan->name ?? 'N/A' }}</p>
+                            @if($subscriptionEnds)
+                                <p><strong>Started:</strong> {{ $subscriptionEnds->copy()->subDays($plan->duration_days ?? 30)->format('M d, Y') }}</p>
+                                <p><strong>Expires:</strong> {{ $subscriptionEnds->format('M d, Y') }} ({{ $daysRemaining }} days remaining)</p>
+                            @endif
+                            @if($isOnTrial)
+                                <p class="mt-2 inline-flex items-center px-3 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded-full">
+                                    🎉 Trial Period (ends {{ $tenant->trial_ends_at->format('M d, Y') }})
+                                </p>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+                <div class="ml-4">
+                    <a href="{{ route('tenant.subscription.index', ['tenant' => $tenant->slug]) }}" class="inline-flex items-center px-4 py-2 bg-white border border-indigo-300 text-indigo-700 text-sm font-medium rounded-lg hover:bg-indigo-50 transition shadow-sm">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>
+                        Manage Plan
+                    </a>
+                </div>
+            </div>
+        </div>
+    @endif
+</div>
+
 <!-- Stats Grid -->
-<form method="GET" action="{{ route('admin.dashboard') }}" id="filterForm" class="mb-8">
+<form method="GET" action="{{ route('admin.dashboard', ['tenant' => request()->route('tenant')]) }}" id="filterForm" class="mb-8">
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
         <h2 class="text-3xl font-bold text-gray-900 tracking-tight">Analytics</h2>
          <div>
@@ -40,7 +147,7 @@
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 </span>
             </div>
-            <div class="text-2xl font-bold text-gray-900">{{ tenant('data')['currency_symbol'] ?? '₦' }}{{ number_format($stats['total_sales'], 2) }}</div>
+            <div class="text-2xl font-bold text-gray-900">{{ $tenant->currency_symbol }}{{ number_format($stats['total_sales'], 2) }}</div>
              <div class="text-xs text-gray-500 mt-2">{{ ucfirst($filter ?? 'daily') }} Sales</div>
         </div>
     </div>
@@ -160,7 +267,7 @@
     <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         <div class="px-4 md:px-6 py-4 md:py-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
             <h3 class="text-base md:text-lg font-bold text-gray-900">Recent Orders</h3>
-            <a href="{{ route('admin.orders.index') }}" class="text-xs md:text-sm font-medium text-indigo-600 hover:text-indigo-800 transition">View All</a>
+            <a href="{{ route('admin.orders.index', ['tenant' => $tenant->slug]) }}" class="text-xs md:text-sm font-medium text-indigo-600 hover:text-indigo-800 transition">View All</a>
         </div>
         
         <!-- Desktop Table View -->
@@ -190,7 +297,7 @@
                             </span>
                         </td>
                         <td class="px-6 py-4 text-right text-sm font-bold text-gray-900">
-                            {{ tenant('data')['currency_symbol'] ?? '₦' }}{{ number_format($order->total, 2) }}
+                            {{ $tenant->currency_symbol }}{{ number_format($order->total, 2) }}
                         </td>
                     </tr>
                     @endforeach
@@ -225,7 +332,7 @@
                         </span>
                     </div>
                     <div class="text-sm font-bold text-gray-900">
-                        {{ tenant('data')['currency_symbol'] ?? '₦' }}{{ number_format($order->total, 2) }}
+                        {{ $tenant->currency_symbol }}{{ number_format($order->total, 2) }}
                     </div>
                 </div>
                 @endforeach
@@ -271,7 +378,7 @@
                 <div class="text-right">
                     <div class="text-sm font-bold text-red-600 bg-red-50 px-2 py-1 rounded inline-block">{{ $product->stock_quantity }} left</div>
                     <div class="mt-1">
-                        <a href="{{ route('admin.products.edit', $product->id) }}" class="text-xs text-indigo-600 hover:text-indigo-800 font-medium">Restock &rarr;</a>
+                        <a href="{{ route('admin.products.edit', ['tenant' => $tenant->slug, 'product' => $product->id]) }}" class="text-xs text-indigo-600 hover:text-indigo-800 font-medium">Restock &rarr;</a>
                     </div>
                 </div>
             </div>
@@ -393,7 +500,7 @@
                                 }
                                 if (context.parsed.y !== null) {
                                     // Use '₦' as fallback if currency symbol is issue in JS string
-                                    const symbol = '{{ tenant('data')['currency_symbol'] ?? '₦' }}'; 
+                                    const symbol = '{{ $tenant->currency_symbol }}'; 
                                     label += symbol + new Intl.NumberFormat('en-US').format(context.parsed.y);
                                 }
                                 return label;
@@ -412,7 +519,7 @@
                             font: { size: 11 },
                             color: '#64748B',
                             callback: function(value) {
-                                const symbol = '{{ tenant('data')['currency_symbol'] ?? '₦' }}';
+                                const symbol = '{{ $tenant->currency_symbol }}';
                                 return symbol + (value >= 1000 ? (value/1000) + 'k' : value);
                             }
                         }

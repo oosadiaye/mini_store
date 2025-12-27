@@ -53,9 +53,6 @@
             <button @click="activeTab = 'tax'" :class="activeTab === 'tax' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
                 Tax
             </button>
-            <button @click="activeTab = 'pwa'" :class="activeTab === 'pwa' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
-                PWA
-            </button>
         </nav>
     </div>
 
@@ -211,123 +208,10 @@
                     </div>
                 </div>
 
-                <!-- Hero Banner -->
-                <div x-data="{ bannerPreview: '{{ isset($settings['hero_banner']) ? route('tenant.media', ['path' => $settings['hero_banner']]) . '?v=' . time() : '' }}' }">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">
-                        Hero Banner 
-                        <span class="text-gray-500 font-normal ml-2">(Recommended: 1200x600px)</span>
-                    </label>
-                    <div class="space-y-4">
-                        <div class="w-full aspect-[2/1] border border-gray-200 rounded-lg bg-gray-50 flex items-center justify-center overflow-hidden relative">
-                            <template x-if="bannerPreview">
-                                <img :src="bannerPreview" alt="Hero Banner" class="absolute inset-0 w-full h-full object-cover">
-                            </template>
-                            <template x-if="!bannerPreview">
-                                <div class="text-center">
-                                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                    </svg>
-                                    <p class="mt-1 text-sm text-gray-500">No banner uploaded</p>
-                                </div>
-                            </template>
-                        </div>
-                        <input type="file" name="hero_banner" @change="const file = $event.target.files[0]; const reader = new FileReader(); reader.onload = (e) => { bannerPreview = e.target.result; }; reader.readAsDataURL(file);" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:bg-indigo-50 file:text-indigo-700">
-                    </div>
-                </div>
 
-                <!-- Hero Banner Text Content -->
-                <div class="mt-6 space-y-4 border-t pt-6">
-                    <h3 class="text-sm font-semibold text-gray-900">Hero Banner Text</h3>
-                    
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Badge Text</label>
-                        <input type="text" name="hero_badge" value="{{ old('hero_badge', $settings['hero_badge'] ?? 'New Arrival') }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" placeholder="e.g., New Arrival, Hot Deal">
-                        <p class="mt-1 text-xs text-gray-500">Small badge text above the main heading</p>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Main Heading</label>
-                        <input type="text" name="hero_heading" value="{{ old('hero_heading', $settings['hero_heading'] ?? 'Next Gen Gaming Rigs') }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" placeholder="e.g., Premium Electronics">
-                        <p class="mt-1 text-xs text-gray-500">Main heading text (use | for line break, e.g., "Next Gen|Gaming Rigs")</p>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                        <textarea name="hero_description" rows="2" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" placeholder="e.g., Experience ray tracing and ultra-performance with our latest custom builds.">{{ old('hero_description', $settings['hero_description'] ?? 'Experience ray tracing and ultra-performance with our latest custom builds.') }}</textarea>
-                        <p class="mt-1 text-xs text-gray-500">Short description below the heading</p>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Button Text</label>
-                        <input type="text" name="hero_button_text" value="{{ old('hero_button_text', $settings['hero_button_text'] ?? 'Shop Now') }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" placeholder="e.g., Shop Now, View Products">
-                        <p class="mt-1 text-xs text-gray-500">Call-to-action button text</p>
-                    </div>
-                </div>
             </div>
             
-            <!-- Side Banners -->
-            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 space-y-6">
-                <div>
-                    <h3 class="text-sm font-semibold text-gray-900">Side Banners (Electro Retail Theme)</h3>
-                    <p class="text-xs text-gray-500 mt-1">These appear on the right side of the hero section</p>
-                </div>
-                
-                <!-- Side Banner 1 -->
-                <div class="border border-gray-200 rounded-lg p-4 space-y-4">
-                    <h4 class="text-sm font-medium text-gray-700">Side Banner 1 (Top)</h4>
-                    
-                    <div x-data="{ sideBanner1Preview: '{{ isset($settings['side_banner_1']) ? route('tenant.media', ['path' => $settings['side_banner_1']]) . '?v=' . time() : '' }}' }">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Image</label>
-                        <div class="w-full h-40 border border-gray-200 rounded-lg bg-gray-50 flex items-center justify-center overflow-hidden relative mb-2">
-                            <template x-if="sideBanner1Preview">
-                                <img :src="sideBanner1Preview" alt="Side Banner 1" class="absolute inset-0 w-full h-full object-cover">
-                            </template>
-                            <template x-if="!sideBanner1Preview">
-                                <span class="text-gray-400 text-xs">No image</span>
-                            </template>
-                        </div>
-                        <input type="file" name="side_banner_1" @change="const file = $event.target.files[0]; const reader = new FileReader(); reader.onload = (e) => { sideBanner1Preview = e.target.result; }; reader.readAsDataURL(file);" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:bg-indigo-50 file:text-indigo-700">
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Title</label>
-                        <input type="text" name="side_banner_1_title" value="{{ old('side_banner_1_title', $settings['side_banner_1_title'] ?? 'Headphones') }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Link Text</label>
-                        <input type="text" name="side_banner_1_link_text" value="{{ old('side_banner_1_link_text', $settings['side_banner_1_link_text'] ?? 'View Deals') }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                    </div>
-                </div>
-                
-                <!-- Side Banner 2 -->
-                <div class="border border-gray-200 rounded-lg p-4 space-y-4">
-                    <h4 class="text-sm font-medium text-gray-700">Side Banner 2 (Bottom)</h4>
-                    
-                    <div x-data="{ sideBanner2Preview: '{{ isset($settings['side_banner_2']) ? route('tenant.media', ['path' => $settings['side_banner_2']]) . '?v=' . time() : '' }}' }">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Image</label>
-                        <div class="w-full h-40 border border-gray-200 rounded-lg bg-gray-50 flex items-center justify-center overflow-hidden relative mb-2">
-                            <template x-if="sideBanner2Preview">
-                                <img :src="sideBanner2Preview" alt="Side Banner 2" class="absolute inset-0 w-full h-full object-cover">
-                            </template>
-                            <template x-if="!sideBanner2Preview">
-                                <span class="text-gray-400 text-xs">No image</span>
-                            </template>
-                        </div>
-                        <input type="file" name="side_banner_2" @change="const file = $event.target.files[0]; const reader = new FileReader(); reader.onload = (e) => { sideBanner2Preview = e.target.result; }; reader.readAsDataURL(file);" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:bg-indigo-50 file:text-indigo-700">
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Title</label>
-                        <input type="text" name="side_banner_2_title" value="{{ old('side_banner_2_title', $settings['side_banner_2_title'] ?? 'Cameras') }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Link Text</label>
-                        <input type="text" name="side_banner_2_link_text" value="{{ old('side_banner_2_link_text', $settings['side_banner_2_link_text'] ?? 'View Deals') }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                    </div>
-                </div>
-            </div>
+
             
             <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                 <label class="block text-sm font-medium text-gray-700 mb-1">Primary Color</label>
@@ -442,56 +326,67 @@
                         <input type="email" name="mail_from_address" value="{{ old('mail_from_address', $settings['mail_from_address'] ?? '') }}" class="block w-full rounded-md border-gray-300">
                     </div>
                 </div>
-            </div>
-             <!-- Tracking Pixels -->
-            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h3 class="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">Tracking Pixels</h3>
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Facebook Pixel ID</label>
-                        <input type="text" name="facebook_pixel_id" value="{{ old('facebook_pixel_id', $settings['facebook_pixel_id'] ?? '') }}" class="block w-full rounded-md border-gray-300">
+
+                <div class="mt-6 pt-6 border-t border-gray-200">
+                    <h4 class="text-md font-medium text-gray-900 mb-2">Test Configuration</h4>
+                    <div class="flex items-end gap-4">
+                        <div class="flex-1">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Send Test Email To</label>
+                            <input type="email" name="test_email" value="{{ auth()->user()->email }}" class="block w-full rounded-md border-gray-300" form="test-email-form">
+                        </div>
+                        <button type="submit" form="test-email-form" class="bg-gray-800 hover:bg-gray-900 text-white font-medium py-2 px-4 rounded-md transition self-end">
+                            Send Test Email
+                        </button>
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Google Analytics ID</label>
-                        <input type="text" name="google_analytics_id" value="{{ old('google_analytics_id', $settings['google_analytics_id'] ?? '') }}" class="block w-full rounded-md border-gray-300">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">TikTok Pixel ID</label>
-                        <input type="text" name="tiktok_pixel_id" value="{{ old('tiktok_pixel_id', $settings['tiktok_pixel_id'] ?? '') }}" class="block w-full rounded-md border-gray-300">
-                    </div>
+                    <p class="text-xs text-gray-500 mt-2">Note: This tests your <strong>SAVED</strong> settings. Please save any changes before testing.</p>
                 </div>
             </div>
+
+            <!-- Hidden Form for Test Email -->
+            <form id="test-email-form" action="{{ route('admin.settings.test-email') }}" method="POST" style="display: none;">
+                @csrf
+            </form>
+
         </div>
 
         <!-- Tax Tab -->
         <div x-show="activeTab === 'tax'" class="space-y-6" style="display: none;">
             <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h3 class="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">Tax Configuration</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="flex justify-between items-center mb-6">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Global Tax Rate (%)</label>
-                        <input type="number" name="tax_rate" step="0.01" value="{{ old('tax_rate', $settings['tax_rate'] ?? '7.5') }}" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                        <p class="text-xs text-gray-500 mt-1">Default tax rate applied when enabled.</p>
+                        <h3 class="text-lg font-semibold text-gray-800">Tax Code Management</h3>
+                        <p class="text-sm text-gray-500 mt-1">Manage tax codes with auto-generated GL accounts</p>
+                    </div>
+                    <a href="{{ route('admin.tax-codes.create') }}" class="bg-indigo-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-indigo-700 transition">
+                        + Add Tax Code
+                    </a>
+                </div>
+
+                <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6 rounded">
+                    <p class="text-sm text-blue-800">
+                        <strong>Note:</strong> Tax codes are now managed separately with automatic GL account generation.<br>
+                        • Sales Tax → 2100 series (Sales Tax Payable - Liability)<br>
+                        • Purchase Tax → 1300 series (Input Tax Receivable - Asset)
+                    </p>
+                </div>
+
+                <div class="text-center py-8">
+                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                    <h3 class="mt-2 text-sm font-medium text-gray-900">Tax Code Management</h3>
+                    <p class="mt-1 text-sm text-gray-500">Click the button below to manage your tax codes</p>
+                    <div class="mt-6">
+                        <a href="{{ route('admin.tax-codes.index') }}" class="inline-flex items-center px-6 py-3 border border-transparent shadow-sm text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700">
+                            <svg class="mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            </svg>
+                            Manage Tax Codes
+                        </a>
                     </div>
                 </div>
-                
-                <div class="mt-6 space-y-4">
-                    <div class="flex items-start">
-                        <div class="flex items-center h-5">
-                            <input id="enable_pos_tax" name="enable_pos_tax" type="checkbox" value="1" {{ ($settings['enable_pos_tax'] ?? false) ? 'checked' : '' }} class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded">
-                        </div>
-                        <div class="ml-3 text-sm">
-                            <label for="enable_pos_tax" class="font-medium text-gray-700">Enable Tax on POS/Sales</label>
-                            <p class="text-gray-500">Automatically calculate and post Sales Tax Payable (2100) for POS transactions.</p>
-                        </div>
-                    </div>
-
-                    <div class="flex items-start">
-                        <div class="flex items-center h-5">
-                            <input id="enable_purchase_tax" name="enable_purchase_tax" type="checkbox" value="1" {{ ($settings['enable_purchase_tax'] ?? false) ? 'checked' : '' }} class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded">
-                        </div>
-                        <div class="ml-3 text-sm">
-                            <label for="enable_purchase_tax" class="font-medium text-gray-700">Enable Tax on Purchases</label>
+            </div>
                             <p class="text-gray-500">Calculate Input Tax on Purchase Orders and post to Input Tax Receivable (1300).</p>
                         </div>
                     </div>
@@ -499,36 +394,7 @@
             </div>
         </div>
 
-        <!-- PWA Tab -->
-        <div x-show="activeTab === 'pwa'" class="space-y-6" style="display: none;">
-             <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">App Name</label>
-                        <input type="text" name="pwa_name" value="{{ old('pwa_name', $settings['pwa_name'] ?? $tenant->name) }}" class="block w-full rounded-md border-gray-300">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Short Name</label>
-                        <input type="text" name="pwa_short_name" value="{{ old('pwa_short_name', $settings['pwa_short_name'] ?? Str::slug($tenant->name)) }}" class="block w-full rounded-md border-gray-300">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Theme Color</label>
-                        <input type="color" name="pwa_theme_color" value="{{ old('pwa_theme_color', $settings['pwa_theme_color'] ?? '#4f46e5') }}" class="h-10 w-full rounded-md border-gray-300 p-1">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Background Color</label>
-                        <input type="color" name="pwa_background_color" value="{{ old('pwa_background_color', $settings['pwa_background_color'] ?? '#ffffff') }}" class="h-10 w-full rounded-md border-gray-300 p-1">
-                    </div>
-                    <div class="md:col-span-2" x-data="{ pwaIconPreview: '{{ isset($settings['pwa_icon']) ? Storage::url($settings['pwa_icon']) . '?v=' . time() : '' }}' }">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">App Icon (512x512)</label>
-                        <template x-if="pwaIconPreview">
-                             <img :src="pwaIconPreview" class="h-12 w-12 rounded mb-2">
-                        </template>
-                        <input type="file" name="pwa_icon" @change="const file = $event.target.files[0]; const reader = new FileReader(); reader.onload = (e) => { pwaIconPreview = e.target.result; }; reader.readAsDataURL(file);" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:bg-indigo-50 file:text-indigo-700">
-                    </div>
-                </div>
-            </div>
-        </div>
+
 
     </form>
 

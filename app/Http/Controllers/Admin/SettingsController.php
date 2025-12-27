@@ -10,7 +10,7 @@ class SettingsController extends Controller
 {
     public function index()
     {
-        $tenant = tenant();
+        $tenant = app('tenant');
         // Access JSON data column safely
         $settings = $tenant->data ?? [];
         $paymentTypes = \App\Models\PaymentType::with('account')->get();
@@ -80,7 +80,7 @@ class SettingsController extends Controller
             throw $e;
         }
 
-        $tenant = tenant();
+        $tenant = app('tenant');
         $data = $tenant->data ?? [];
         
         // Settings to update mapped from request
@@ -161,8 +161,8 @@ class SettingsController extends Controller
              \Log::info("PWA icon uploaded. Stored path: " . $settingsToUpdate['pwa_icon']);
         }
 
-        // Fetch current data via Raw SQL to prevent stale data or Stancl interference
-        $currentData = json_decode(\Illuminate\Support\Facades\DB::connection(config('tenancy.database.central_connection'))->table('tenants')->where('id', $tenant->id)->value('data') ?? '{}', true);
+        // Fetch current data via Raw SQL to prevent stale data
+        $currentData = json_decode(\Illuminate\Support\Facades\DB::table('tenants')->where('id', $tenant->id)->value('data') ?? '{}', true);
         
         // Merge with existing data
         $finalData = array_merge($currentData, $settingsToUpdate);
@@ -182,5 +182,97 @@ class SettingsController extends Controller
             ]);
 
         return redirect()->route('admin.settings.index')->with('success', 'Settings updated successfully.');
+    }
+
+    public function domain()
+    {
+        $tenant = app('tenant');
+        $currentRequest = $tenant->customDomainRequests()->whereIn('status', ['pending', 'approved'])->latest()->first();
+        
+        return view('admin.settings.domain', compact('tenant', 'currentRequest'));
+    }
+
+    public function requestDomain(Request $request)
+    {
+        $request->validate([
+            'domain' => ['required', 'string', 'regex:/^(?!:\/\/)(?=.{1,255}$)((.{1,63}\.){1,127}(?![0-9]*$)[a-z0-9-]+\.?)$/i', 'unique:custom_domain_requests,domain'],
+        ], [
+            'domain.regex' => 'Please enter a valid domain name (e.g., myshop.com) without http/https.',
+            'domain.unique' => 'This domain has already been requested or taken.',
+        ]);
+
+        // Check for existing pending requests (approved requests mean they already have one, maybe they want to switch? For now prevent multiple)
+        $tenant = app('tenant');
+        
+        // If they already have an APPROVED domain, they might want to change it. 
+        // If they have PENDING, they should wait or cancel.
+        if ($tenant->customDomainRequests()->where('status', 'pending')->exists()) {
+            return back()->with('error', 'You already have a pending domain request. Please wait for approval or cancel it to submit a new one.');
+        }
+
+        // If they have approved, we might allow requesting a replacement (which would deactivate the old one upon approval).
+        // For simplicity now: Allow request, but warn. 
+        // Logic: just create pending.
+
+        $tenant->customDomainRequests()->create([
+            'domain' => $request->domain,
+            'status' => 'pending',
+        ]);
+
+        return back()->with('success', 'Domain request submitted successfully. Waiting for system admin verification.');
+    }
+
+    public function cancelDomainRequest(Request $request, $id)
+    {
+        $tenant = app('tenant');
+        $domainRequest = $tenant->customDomainRequests()->where('id', $id)->where('status', 'pending')->firstOrFail();
+        
+        $domainRequest->delete();
+
+        return back()->with('success', 'Domain request cancelled.');
+    }
+
+    public function sendTestEmail(Request $request)
+    {
+        $request->validate([
+            'test_email' => 'required|email',
+        ]);
+
+        $tenant = app('tenant');
+        $settings = $tenant->data ?? [];
+
+        // Check if SMTP settings are present
+        if (empty($settings['mail_host'])) {
+            return back()->with('error', 'Please configure and save your SMTP settings first.');
+        }
+
+        try {
+            // Dynamic Mailer Configuration
+            $config = [
+                'transport' => 'smtp',
+                'host' => $settings['mail_host'],
+                'port' => $settings['mail_port'] ?? 587,
+                'encryption' => $settings['mail_encryption'] ?? 'tls',
+                'username' => $settings['mail_username'],
+                'password' => $settings['mail_password'],
+                'timeout' => null,
+                'auth_mode' => null,
+            ];
+
+            // Set configuration dynamically
+            config(['mail.mailers.tenant_smtp' => $config]);
+            config(['mail.from.address' => $settings['mail_from_address'] ?? config('mail.from.address')]);
+            config(['mail.from.name' => $settings['mail_from_name'] ?? config('mail.from.name')]);
+
+            // Send Email using the dynamic mailer
+            \Illuminate\Support\Facades\Mail::mailer('tenant_smtp')
+                ->to($request->test_email)
+                ->send(new \App\Mail\TestEmail());
+
+            return back()->with('success', 'Test email sent successfully to ' . $request->test_email);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Tenant Test Email Failed', ['error' => $e->getMessage()]);
+            return back()->with('error', 'Failed to send email: ' . $e->getMessage());
+        }
     }
 }

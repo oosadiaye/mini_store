@@ -39,7 +39,15 @@ class BrandController extends Controller
             $validated['is_active'] = false;
         }
 
-        Brand::create($validated);
+        $brand = Brand::create($validated);
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'brand' => $brand,
+                'message' => 'Brand created successfully.'
+            ]);
+        }
 
         return redirect()->route('admin.brands.index')->with('success', 'Brand created successfully.');
     }

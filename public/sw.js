@@ -3,27 +3,111 @@ importScripts('https://storage.googleapis.com/workbox-cdn/releases/6.4.1/workbox
 if (workbox) {
     console.log(`Workbox is loaded`);
 
+    // ---------------------------------------------------------
+    // CACHE VERSIONING & AUTO-CLEANUP
+    // ---------------------------------------------------------
+    const CACHE_VERSION = 'v2'; // Increment when making breaking changes
+    const CACHE_NAMES = {
+        admin: `admin-pages-${CACHE_VERSION}`,
+        static: `static-resources-${CACHE_VERSION}`,
+    };
+
+    // Auto-delete old caches on activation
+    self.addEventListener('activate', (event) => {
+        event.waitUntil(
+            caches.keys().then((cacheNames) => {
+                return Promise.all(
+                    cacheNames.map((cacheName) => {
+                        // Delete any cache not in our current version
+                        if (!Object.values(CACHE_NAMES).includes(cacheName) &&
+                            !cacheName.includes('workbox-precache')) {
+                            console.log('🗑️ Deleting old cache:', cacheName);
+                            return caches.delete(cacheName);
+                        }
+                    })
+                );
+            }).then(() => {
+                console.log('✅ Cache cleanup complete');
+                return self.clients.claim(); // Take control immediately
+            })
+        );
+    });
+
     // Precache Manifest (if any)
     workbox.precaching.precacheAndRoute(self.__WB_MANIFEST || []);
 
     // ---------------------------------------------------------
-    // STRATEGY 1: STOREFRONT (Network Only - Strict Online)
+    // ROUTE PRIORITY (Most specific first)
     // ---------------------------------------------------------
-    // Match any URL that does NOT start with /admin and is not a static asset
-    // We want to force fresh content for customers (Orders, Stock, etc.)
+
+    // ---------------------------------------------------------
+    // 1. PAGE BUILDER & THEME CUSTOMIZER - NEVER CACHE
+    // ---------------------------------------------------------
+    // These routes must ALWAYS hit the network to prevent cache conflicts
+    // Works across all tenants and themes due to path matching
     workbox.routing.registerRoute(
-        ({ url, request }) => !url.pathname.startsWith('/admin') && request.destination === 'document',
+        ({ url }) => {
+            const path = url.pathname;
+            return path.includes('/admin/page-builder/') ||
+                path.includes('/admin/theme/customizer') ||
+                path.includes('/admin/theme/save');
+        },
+        new workbox.strategies.NetworkOnly(),
+        'GET'
+    );
+
+    // ---------------------------------------------------------
+    // 2. API ROUTES - NEVER CACHE
+    // ---------------------------------------------------------
+    // All API endpoints should always fetch fresh data
+    workbox.routing.registerRoute(
+        ({ url }) => url.pathname.startsWith('/api/'),
         new workbox.strategies.NetworkOnly()
     );
 
     // ---------------------------------------------------------
-    // STRATEGY 2: ADMIN (Network First - Offline Capable)
+    // 3. POST/PUT/PATCH/DELETE - NEVER CACHE (All Admin Actions)
     // ---------------------------------------------------------
-    // Admin pages should try network, but fall back to cache if offline
+    // Dynamic requests must never be cached, regardless of tenant
+    // Removed background sync to provide immediate feedback
+    const dynamicMethods = ['POST', 'PUT', 'PATCH', 'DELETE'];
+
+    dynamicMethods.forEach(method => {
+        workbox.routing.registerRoute(
+            ({ url, request }) => {
+                const path = url.pathname;
+                return request.method === method &&
+                    (path.startsWith('/admin') || path.startsWith('/api/'));
+            },
+            new workbox.strategies.NetworkOnly({
+                plugins: [{
+                    // Log errors without caching
+                    fetchDidFail: async ({ request, error }) => {
+                        console.error(`❌ ${method} request failed:`, request.url, error);
+                    }
+                }]
+            }),
+            method
+        );
+    });
+
+    // ---------------------------------------------------------
+    // 4. ADMIN PAGES - NETWORK FIRST (Exclude dynamic routes)
+    // ---------------------------------------------------------
+    // Cache admin pages for offline access, but exclude page builder
+    // This works across tenants because we're matching path patterns
     workbox.routing.registerRoute(
-        ({ url }) => url.pathname.startsWith('/admin'),
+        ({ url, request }) => {
+            const path = url.pathname;
+            return request.destination === 'document' &&
+                path.startsWith('/admin') &&
+                !path.includes('/admin/page-builder/') &&
+                !path.includes('/admin/theme/customizer') &&
+                !path.includes('/admin/theme/save') &&
+                !path.startsWith('/api/');
+        },
         new workbox.strategies.NetworkFirst({
-            cacheName: 'admin-pages-cache',
+            cacheName: CACHE_NAMES.admin,
             plugins: [
                 new workbox.expiration.ExpirationPlugin({
                     maxEntries: 50,
@@ -33,58 +117,69 @@ if (workbox) {
         })
     );
 
-    // Admin Static Assets (CSS, JS, Images) - Cache First
-    // (Common for both, but critical for Admin offline shell)
+    // ---------------------------------------------------------
+    // 5. STATIC ASSETS - STALE WHILE REVALIDATE
+    // ---------------------------------------------------------
+    // Cache CSS, JS, images for performance (tenant-agnostic)
     workbox.routing.registerRoute(
-        ({ request }) => request.destination === 'style' || request.destination === 'script' || request.destination === 'image',
+        ({ request }) => {
+            return request.destination === 'style' ||
+                request.destination === 'script' ||
+                request.destination === 'image' ||
+                request.destination === 'font';
+        },
         new workbox.strategies.StaleWhileRevalidate({
-            cacheName: 'static-resources',
+            cacheName: CACHE_NAMES.static,
+            plugins: [
+                new workbox.expiration.ExpirationPlugin({
+                    maxEntries: 100,
+                    maxAgeSeconds: 30 * 24 * 60 * 60, // 30 Days
+                }),
+            ],
         })
     );
 
     // ---------------------------------------------------------
-    // STRATEGY 3: BACKGROUND SYNC (Admin Actions)
+    // 6. STOREFRONT - NETWORK ONLY (Fresh content for customers)
     // ---------------------------------------------------------
-    // Queue failed POST/PUT requests for Admin (e.g. Save Product)
-    const bgSyncPlugin = new workbox.backgroundSync.BackgroundSyncPlugin('admin-actions-queue', {
-        maxRetentionTime: 24 * 60 // Retry for up to 24 hours (in minutes)
-    });
-
+    // Storefront must always show fresh data (orders, stock, etc.)
+    // Works across all tenants
     workbox.routing.registerRoute(
-        ({ url, request }) => url.pathname.startsWith('/admin') && (request.method === 'POST' || request.method === 'PUT' || request.method === 'PATCH'),
-        new workbox.strategies.NetworkOnly({
-            plugins: [bgSyncPlugin]
-        }),
-        'POST'
-    );
-    workbox.routing.registerRoute(
-        ({ url, request }) => url.pathname.startsWith('/admin') && (request.method === 'POST' || request.method === 'PUT' || request.method === 'PATCH'),
-        new workbox.strategies.NetworkOnly({
-            plugins: [bgSyncPlugin]
-        }),
-        'PUT'
-    );
-    workbox.routing.registerRoute(
-        ({ url, request }) => url.pathname.startsWith('/admin') && (request.method === 'POST' || request.method === 'PUT' || request.method === 'PATCH'),
-        new workbox.strategies.NetworkOnly({
-            plugins: [bgSyncPlugin]
-        }),
-        'PATCH'
+        ({ url, request }) => {
+            return !url.pathname.startsWith('/admin') &&
+                request.destination === 'document';
+        },
+        new workbox.strategies.NetworkOnly()
     );
 
-    // Offline Fallback for Storefront
-    // If Storefront (NetworkOnly) fails, show offline page
+    // ---------------------------------------------------------
+    // OFFLINE FALLBACK
+    // ---------------------------------------------------------
     workbox.routing.setCatchHandler(({ event }) => {
         if (event.request.destination === 'document') {
-            // For Admin, it might have fallen back to cache (NetworkFirst), but if that failed too:
+            // For Admin, try to show cached version or offline page
             if (event.request.url.includes('/admin')) {
-                return caches.match('/offline.html'); // Or specific admin offline page
+                return caches.match('/offline.html');
             }
-            // For Storefront, always show offline page
+            // For Storefront, show offline page
             return caches.match('/offline.html');
         }
         return Response.error();
     });
+
+    // ---------------------------------------------------------
+    // DEV MODE BYPASS (Optional)
+    // ---------------------------------------------------------
+    // Skip service worker when ?no-cache=1 is in URL
+    self.addEventListener('fetch', (event) => {
+        if (event.request.url.includes('no-cache=1')) {
+            event.respondWith(fetch(event.request));
+        }
+    });
+
+    console.log('✅ Service Worker configured with cache version:', CACHE_VERSION);
+    console.log('📋 Cache names:', CACHE_NAMES);
+    console.log('🚫 Excluded from cache: /admin/page-builder/, /admin/theme/customizer, /api/');
 
 } else {
     console.log(`Workbox didn't load`);

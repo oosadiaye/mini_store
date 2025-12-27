@@ -23,7 +23,7 @@ class EnquiryReplied extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Response to your enquiry - ' . tenant('name'),
+            subject: 'Response to your enquiry - ' . app('tenant')->name,
         );
     }
 

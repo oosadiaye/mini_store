@@ -5,90 +5,97 @@ namespace App\Http\Controllers\SuperAdmin;
 use App\Http\Controllers\Controller;
 use App\Models\Plan;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 
 class PlanController extends Controller
 {
+    /**
+     * Display a listing of the resource.
+     */
     public function index()
     {
-        $plans = Plan::orderBy('sort_order')->orderBy('price')->get();
+        $plans = Plan::latest()->get();
         return view('superadmin.plans.index', compact('plans'));
     }
 
+    /**
+     * Show the form for creating a new resource.
+     */
     public function create()
     {
         return view('superadmin.plans.create');
     }
 
+    /**
+     * Store a newly created resource in storage.
+     */
     public function store(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'name' => 'required|string|max:255',
             'price' => 'required|numeric|min:0',
-            'currency' => 'required|string|size:3',
-            'duration_months' => 'required|integer|min:1',
-            'features' => 'nullable|string', // We'll accept newline-separated string and convert to array
+            'duration_days' => 'required|integer|min:1',
+            'trial_days' => 'nullable|integer|min:0',
+            'features' => 'array',
+            'features.*' => 'string',
+            'caps' => 'array',
+            'caps.max_products' => 'nullable|integer|min:0',
+            'caps.max_transactions' => 'nullable|integer|min:0',
+            'is_active' => 'boolean',
         ]);
 
-        $features = $request->features 
-            ? array_filter(array_map('trim', explode("\n", $request->features)))
-            : [];
+        $validated['is_active'] = $request->has('is_active');
+ 
+        Plan::create($validated);
 
-        $plan = Plan::create([
-            'name' => $request->name,
-            'slug' => Str::slug($request->name) . '-' . Str::random(4),
-            'price' => $request->price,
-            'currency' => strtoupper($request->currency),
-            'duration_months' => $request->duration_months,
-            'features' => $features,
-            'is_active' => $request->has('is_active'),
-            'sort_order' => $request->sort_order ?? 0,
-        ]);
-
-        \App\Helpers\AuditHelper::log('create_plan', "Created plan: {$plan->name}", ['plan_id' => $plan->id]);
-
-        return redirect()->route('superadmin.plans.index')->with('success', 'Plan created successfully.');
+        return redirect()->route('superadmin.plans.index')
+            ->with('success', 'Plan created successfully.');
     }
 
+    /**
+     * Show the form for editing the specified resource.
+     */
     public function edit(Plan $plan)
     {
         return view('superadmin.plans.edit', compact('plan'));
     }
 
+    /**
+     * Update the specified resource in storage.
+     */
     public function update(Request $request, Plan $plan)
     {
-         $request->validate([
+        $validated = $request->validate([
             'name' => 'required|string|max:255',
             'price' => 'required|numeric|min:0',
-            'currency' => 'required|string|size:3',
-            'duration_months' => 'required|integer|min:1',
-            'features' => 'nullable|string',
+            'duration_days' => 'required|integer|min:1',
+            'features' => 'array',
+            'features.*' => 'string',
+            'caps' => 'array',
+            'caps.max_products' => 'nullable|integer|min:0',
+            'caps.max_transactions' => 'nullable|integer|min:0',
         ]);
 
-        $features = $request->features 
-            ? array_filter(array_map('trim', explode("\n", $request->features)))
-            : [];
+        $validated['is_active'] = $request->has('is_active');
 
-        $plan->update([
-            'name' => $request->name,
-            // Don't auto-update slug to preserve URLs, or optional
-            'price' => $request->price,
-            'currency' => strtoupper($request->currency),
-            'duration_months' => $request->duration_months,
-            'features' => $features,
-            'is_active' => $request->has('is_active'),
-            'sort_order' => $request->sort_order ?? 0,
-        ]);
+        $plan->update($validated);
 
-        \App\Helpers\AuditHelper::log('update_plan', "Updated plan: {$plan->name}", ['plan_id' => $plan->id]);
-
-        return redirect()->route('superadmin.plans.index')->with('success', 'Plan updated successfully.');
+        return redirect()->route('superadmin.plans.index')
+            ->with('success', 'Plan updated successfully.');
     }
 
+    /**
+     * Remove the specified resource from storage.
+     */
     public function destroy(Plan $plan)
     {
+        // Check if plan has tenants
+        if ($plan->tenants()->exists()) {
+            return back()->with('error', 'Cannot delete plan as it has assigned tenants. Please reassign them first.');
+        }
+
         $plan->delete();
-        \App\Helpers\AuditHelper::log('delete_plan', "Deleted plan: {$plan->name}", ['plan_id' => $plan->id]);
-        return redirect()->route('superadmin.plans.index')->with('success', 'Plan deleted successfully.');
+
+        return redirect()->route('superadmin.plans.index')
+            ->with('success', 'Plan deleted successfully.');
     }
 }

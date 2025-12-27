@@ -51,28 +51,28 @@
                             @endif
                             <div class="text-xs text-gray-400">SKU: {{ $item->product->sku ?? 'N/A' }}</div>
                         </td>
-                        <td class="px-6 py-4 text-right text-gray-600">${{ number_format($item->price, 2) }}</td>
+                        <td class="px-6 py-4 text-right text-gray-600">{{ $tenant->data['currency_symbol'] ?? 'u20a6' }}{{ number_format($item->price, 2) }}</td>
                         <td class="px-6 py-4 text-center text-gray-600">{{ $item->quantity }}</td>
-                        <td class="px-6 py-4 text-right font-medium text-gray-900">${{ number_format($item->total, 2) }}</td>
+                        <td class="px-6 py-4 text-right font-medium text-gray-900">{{ $tenant->data['currency_symbol'] ?? 'u20a6' }}{{ number_format($item->total, 2) }}</td>
                     </tr>
                     @endforeach
                 </tbody>
                 <tfoot class="bg-gray-50 text-sm">
                     <tr>
                         <td colspan="3" class="px-6 py-3 text-right text-gray-600">Subtotal</td>
-                        <td class="px-6 py-3 text-right font-medium">${{ number_format($order->subtotal, 2) }}</td>
+                        <td class="px-6 py-3 text-right font-medium">{{ $tenant->data['currency_symbol'] ?? 'u20a6' }}{{ number_format($order->subtotal, 2) }}</td>
                     </tr>
                     <tr>
                         <td colspan="3" class="px-6 py-3 text-right text-gray-600">Shipping</td>
-                        <td class="px-6 py-3 text-right font-medium">${{ number_format($order->shipping, 2) }}</td>
+                        <td class="px-6 py-3 text-right font-medium">{{ $tenant->data['currency_symbol'] ?? 'u20a6' }}{{ number_format($order->shipping, 2) }}</td>
                     </tr>
                     <tr>
                         <td colspan="3" class="px-6 py-3 text-right text-gray-600">Tax</td>
-                        <td class="px-6 py-3 text-right font-medium">${{ number_format($order->tax, 2) }}</td>
+                        <td class="px-6 py-3 text-right font-medium">{{ $tenant->data['currency_symbol'] ?? 'u20a6' }}{{ number_format($order->tax, 2) }}</td>
                     </tr>
                     <tr class="border-t border-gray-200">
                         <td colspan="3" class="px-6 py-4 text-right font-bold text-gray-900 text-base">Total</td>
-                        <td class="px-6 py-4 text-right font-bold text-gray-900 text-base">${{ number_format($order->total, 2) }}</td>
+                        <td class="px-6 py-4 text-right font-bold text-gray-900 text-base">{{ $tenant->data['currency_symbol'] ?? 'u20a6' }}{{ number_format($order->total, 2) }}</td>
                     </tr>
                 </tfoot>
             </table>
@@ -101,7 +101,7 @@
                                 {{ ucfirst($return->status) }}
                             </span>
                         </td>
-                        <td class="px-6 py-3 text-right">${{ number_format($return->refund_amount, 2) }}</td>
+                        <td class="px-6 py-3 text-right">{{ $tenant->data['currency_symbol'] ?? 'u20a6' }}{{ number_format($return->refund_amount, 2) }}</td>
                         <td class="px-6 py-3 text-gray-500 truncate max-w-xs">{{ $return->return_reason ?? $return->admin_notes }}</td>
                     </tr>
                     @endforeach

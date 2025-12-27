@@ -62,7 +62,7 @@
                         <label class="block text-base font-semibold text-gray-700 mb-2">Amount</label>
                         <div class="relative rounded-xl shadow-sm">
                             <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                <span class="text-gray-500 sm:text-lg">{{ tenant('data')['currency_symbol'] ?? '₦' }}</span>
+                                <span class="text-gray-500 sm:text-lg">{{ $tenant->data['currency_symbol'] ?? '₦' }}</span>
                             </div>
                             <input type="number" name="amount" step="0.01" required class="w-full rounded-xl border-2 border-gray-300 focus:border-red-500 focus:ring-red-500 py-3 pl-10 pr-4 text-lg font-bold text-gray-900 placeholder-gray-300" placeholder="0.00">
                         </div>

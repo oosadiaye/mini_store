@@ -67,6 +67,7 @@
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">Quantity</th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-40">Unit Cost</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-40">Tax Code</th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-40">Total</th>
                                 <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-20">Action</th>
                             </tr>
@@ -89,7 +90,16 @@
                                     <input type="number" name="items[{{ $index }}][unit_cost]" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm cost-input" step="0.01" min="0" value="{{ $item->unit_cost }}" oninput="calculateRowTotal(this)">
                                 </td>
                                 <td class="px-4 py-2">
-                                    <input type="text" class="w-full bg-gray-50 rounded-md border-gray-300 shadow-sm sm:text-sm text-gray-500 row-total" readonly value="{{ number_format($item->total, 2, '.', '') }}">
+                                     <select name="items[{{ $index }}][tax_code_id]" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm tax-select" onchange="calculateRowTotal(this)">
+                                        <option value="" data-rate="0">No Tax</option>
+                                        @php $taxCodes = \App\Models\TaxCode::active()->get(); @endphp
+                                        @foreach($taxCodes as $taxCode)
+                                            <option value="{{ $taxCode->id }}" data-rate="{{ $taxCode->rate }}" {{ $item->tax_code_id == $taxCode->id ? 'selected' : '' }}>{{ $taxCode->name }} ({{ $taxCode->rate }}%)</option>
+                                        @endforeach
+                                    </select>
+                                </td>
+                                <td class="px-4 py-2">
+                                    <input type="text" class="w-full bg-gray-50 rounded-md border-gray-300 shadow-sm sm:text-sm text-gray-500 row-total" readonly value="{{ number_format($item->total + ($item->tax_amount ?? 0), 2, '.', '') }}">
                                 </td>
                                 <td class="px-4 py-2 text-right">
                                     <button type="button" class="text-red-600 hover:text-red-900" onclick="removeRow(this)">
@@ -101,7 +111,7 @@
                         </tbody>
                         <tfoot>
                             <tr>
-                                <td colspan="5" class="px-4 py-3">
+                                <td colspan="6" class="px-4 py-3">
                                     <button type="button" onclick="addItemRow()" class="text-sm text-indigo-600 hover:text-indigo-900 font-medium flex items-center">
                                         + Add Another Item
                                     </button>
@@ -136,7 +146,17 @@ function calculateRowTotal(element) {
     const row = element.closest('tr');
     const qty = parseFloat(row.querySelector('.quantity-input').value) || 0;
     const cost = parseFloat(row.querySelector('.cost-input').value) || 0;
-    const total = qty * cost;
+    
+    // Calculate Tax
+    const taxSelect = row.querySelector('.tax-select');
+    const taxRate = taxSelect && taxSelect.selectedIndex > 0 
+        ? parseFloat(taxSelect.options[taxSelect.selectedIndex].dataset.rate) 
+        : 0;
+    
+    const subtotal = qty * cost;
+    const taxAmount = subtotal * (taxRate / 100);
+    const total = subtotal + taxAmount;
+    
     row.querySelector('.row-total').value = total.toFixed(2);
 }
 

@@ -279,11 +279,14 @@ function advancedPageBuilder() {
                 // Generate CSS from current settings
                 const css = this.generateCSS();
 
+                // Deep clone sections to avoid DataCloneError with Alpine.js Proxy
+                const sectionsClone = JSON.parse(JSON.stringify(this.sections));
+
                 // Send to iframe via PostMessage
                 iframe.contentWindow.postMessage({
                     type: 'updateStyles',
                     css: css,
-                    sections: this.sections,
+                    sections: sectionsClone,
                     device: this.device
                 }, '*');
 

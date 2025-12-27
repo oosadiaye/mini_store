@@ -25,7 +25,7 @@
             </div>
             <div>
                 <p class="text-gray-500 text-sm font-medium">Monthly Revenue</p>
-                <p class="text-2xl font-bold text-gray-800">$0.00</p>
+                <p class="text-2xl font-bold text-gray-800">₦0.00</p>
             </div>
         </div>
     </div>

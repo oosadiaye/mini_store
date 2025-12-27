@@ -35,7 +35,7 @@
         @if($logoUrl)
             <img src="{{ $logoUrl }}" style="max-width: 50%; max-height: 50px; filter: grayscale(100%);">
         @else
-            <h2 style="margin:0">{{ tenant('name') }}</h2>
+            <h2 style="margin:0">{{ $tenant->name }}</h2>
         @endif
         <div>{{ $tenantData['address'] ?? '' }}</div>
         <div>{{ $tenantData['phone'] ?? '' }}</div>

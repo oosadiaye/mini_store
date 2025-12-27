@@ -11,8 +11,9 @@ return new class extends Migration
         // Warehouses/Branches
         Schema::create('warehouses', function (Blueprint $table) {
             $table->id();
+            $table->string('tenant_id')->index();
             $table->string('name');
-            $table->string('code')->unique();
+            $table->string('code'); // Unique per tenant
             $table->text('address')->nullable();
             $table->string('city')->nullable();
             $table->string('phone')->nullable();
@@ -20,11 +21,14 @@ return new class extends Migration
             $table->foreignId('manager_id')->nullable()->constrained('users')->onDelete('set null');
             $table->boolean('is_active')->default(true);
             $table->timestamps();
+            
+            $table->unique(['tenant_id', 'code']);
         });
 
         // Suppliers
         Schema::create('suppliers', function (Blueprint $table) {
             $table->id();
+            $table->string('tenant_id')->index();
             $table->string('name');
             $table->string('company_name')->nullable();
             $table->string('email')->nullable();
@@ -41,7 +45,8 @@ return new class extends Migration
         // Purchase Orders
         Schema::create('purchase_orders', function (Blueprint $table) {
             $table->id();
-            $table->string('po_number')->unique();
+            $table->string('tenant_id')->index();
+            $table->string('po_number'); // Unique per tenant
             $table->foreignId('supplier_id')->constrained();
             $table->foreignId('warehouse_id')->constrained();
             $table->date('order_date');
@@ -56,6 +61,8 @@ return new class extends Migration
             $table->foreignId('created_by')->constrained('users');
             $table->foreignId('approved_by')->nullable()->constrained('users');
             $table->timestamps();
+            
+            $table->unique(['tenant_id', 'po_number']);
         });
 
         Schema::create('purchase_order_items', function (Blueprint $table) {
@@ -73,6 +80,7 @@ return new class extends Migration
         // Stock Movements
         Schema::create('stock_movements', function (Blueprint $table) {
             $table->id();
+            $table->string('tenant_id')->index();
             $table->foreignId('product_id')->constrained();
             $table->foreignId('product_variant_id')->nullable()->constrained();
             $table->foreignId('warehouse_id')->constrained();
@@ -89,6 +97,8 @@ return new class extends Migration
         // Warehouse Stock Levels
         Schema::create('warehouse_stock', function (Blueprint $table) {
             $table->id();
+            // warehouse_id implies tenant, but linking explicitly can be redundant.
+            // However, linking warehouse_id is enough if warehouse has tenant_id.
             $table->foreignId('warehouse_id')->constrained();
             $table->foreignId('product_id')->constrained();
             $table->foreignId('product_variant_id')->nullable()->constrained();

@@ -7,11 +7,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class Order extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Traits\BelongsToTenant;
 
     protected $fillable = [
-        'order_number',
+        'tenant_id',
         'customer_id',
+        'order_number',
         'status',
         'subtotal',
         'tax',

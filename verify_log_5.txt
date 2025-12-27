@@ -1,0 +1,38 @@
+--- STARTING VERIFICATION ---
+Cleaning up previous test data...
+Creating Tenant 1 (demo)...
+Creating Admin for Tenant 1...
+Setting Context to Tenant 1...
+Creating Product for Tenant 1...
+Creating Tenant 2 (demo2)...
+Setting Context to Tenant 2...
+Creating Product for Tenant 2...
+Verifying Scope (Context: Tenant 2)...
+ERROR: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'products.deleted_at' in 'where clause' (Connection: mysql, SQL: select * from `products` where `products`.`deleted_at` is null and `products`.`tenant_id` = demo2)
+#0 C:\Users\Jac\Documents\Antigravity\mini_store\vendor\laravel\framework\src\Illuminate\Database\Connection.php(780): Illuminate\Database\Connection->runQueryCallback('select * from `...', Array, Object(Closure))
+#1 C:\Users\Jac\Documents\Antigravity\mini_store\vendor\laravel\framework\src\Illuminate\Database\Connection.php(397): Illuminate\Database\Connection->run('select * from `...', Array, Object(Closure))
+#2 C:\Users\Jac\Documents\Antigravity\mini_store\vendor\laravel\framework\src\Illuminate\Database\Query\Builder.php(3188): Illuminate\Database\Connection->select('select * from `...', Array, true)
+#3 C:\Users\Jac\Documents\Antigravity\mini_store\vendor\laravel\framework\src\Illuminate\Database\Query\Builder.php(3173): Illuminate\Database\Query\Builder->runSelect()
+#4 C:\Users\Jac\Documents\Antigravity\mini_store\vendor\laravel\framework\src\Illuminate\Database\Query\Builder.php(3763): Illuminate\Database\Query\Builder->Illuminate\Database\Query\{closure}()
+#5 C:\Users\Jac\Documents\Antigravity\mini_store\vendor\laravel\framework\src\Illuminate\Database\Query\Builder.php(3172): Illuminate\Database\Query\Builder->onceWithColumns(Array, Object(Closure))
+#6 C:\Users\Jac\Documents\Antigravity\mini_store\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Builder.php(902): Illuminate\Database\Query\Builder->get(Array)
+#7 C:\Users\Jac\Documents\Antigravity\mini_store\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Builder.php(884): Illuminate\Database\Eloquent\Builder->getModels(Array)
+#8 C:\Users\Jac\Documents\Antigravity\mini_store\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Model.php(770): Illuminate\Database\Eloquent\Builder->get(Array)
+#9 C:\Users\Jac\Documents\Antigravity\mini_store\app\Console\Commands\VerifyMultiTenancy.php(93): Illuminate\Database\Eloquent\Model::all()
+#10 C:\Users\Jac\Documents\Antigravity\mini_store\vendor\laravel\framework\src\Illuminate\Container\BoundMethod.php(36): App\Console\Commands\VerifyMultiTenancy->handle()
+#11 C:\Users\Jac\Documents\Antigravity\mini_store\vendor\laravel\framework\src\Illuminate\Container\Util.php(43): Illuminate\Container\BoundMethod::Illuminate\Container\{closure}()
+#12 C:\Users\Jac\Documents\Antigravity\mini_store\vendor\laravel\framework\src\Illuminate\Container\BoundMethod.php(96): Illuminate\Container\Util::unwrapIfClosure(Object(Closure))
+#13 C:\Users\Jac\Documents\Antigravity\mini_store\vendor\laravel\framework\src\Illuminate\Container\BoundMethod.php(35): Illuminate\Container\BoundMethod::callBoundMethod(Object(Illuminate\Foundation\Application), Array, Object(Closure))
+#14 C:\Users\Jac\Documents\Antigravity\mini_store\vendor\laravel\framework\src\Illuminate\Container\Container.php(799): Illuminate\Container\BoundMethod::call(Object(Illuminate\Foundation\Application), Array, Array, NULL)
+#15 C:\Users\Jac\Documents\Antigravity\mini_store\vendor\laravel\framework\src\Illuminate\Console\Command.php(211): Illuminate\Container\Container->call(Array)
+#16 C:\Users\Jac\Documents\Antigravity\mini_store\vendor\symfony\console\Command\Command.php(341): Illuminate\Console\Command->execute(Object(Symfony\Component\Console\Input\ArgvInput), Object(Illuminate\Console\OutputStyle))
+#17 C:\Users\Jac\Documents\Antigravity\mini_store\vendor\laravel\framework\src\Illuminate\Console\Command.php(180): Symfony\Component\Console\Command\Command->run(Object(Symfony\Component\Console\Input\ArgvInput), Object(Illuminate\Console\OutputStyle))
+#18 C:\Users\Jac\Documents\Antigravity\mini_store\vendor\symfony\console\Application.php(1102): Illuminate\Console\Command->run(Object(Symfony\Component\Console\Input\ArgvInput), Object(Symfony\Component\Console\Output\ConsoleOutput))
+#19 C:\Users\Jac\Documents\Antigravity\mini_store\vendor\symfony\console\Application.php(356): Symfony\Component\Console\Application->doRunCommand(Object(App\Console\Commands\VerifyMultiTenancy), Object(Symfony\Component\Console\Input\ArgvInput), Object(Symfony\Component\Console\Output\ConsoleOutput))
+#20 C:\Users\Jac\Documents\Antigravity\mini_store\vendor\symfony\console\Application.php(195): Symfony\Component\Console\Application->doRun(Object(Symfony\Component\Console\Input\ArgvInput), Object(Symfony\Component\Console\Output\ConsoleOutput))
+#21 C:\Users\Jac\Documents\Antigravity\mini_store\vendor\laravel\framework\src\Illuminate\Foundation\Console\Kernel.php(197): Symfony\Component\Console\Application->run(Object(Symfony\Component\Console\Input\ArgvInput), Object(Symfony\Component\Console\Output\ConsoleOutput))
+#22 C:\Users\Jac\Documents\Antigravity\mini_store\vendor\laravel\framework\src\Illuminate\Foundation\Application.php(1235): Illuminate\Foundation\Console\Kernel->handle(Object(Symfony\Component\Console\Input\ArgvInput), Object(Symfony\Component\Console\Output\ConsoleOutput))
+#23 C:\Users\Jac\Documents\Antigravity\mini_store\artisan(16): Illuminate\Foundation\Application->handleCommand(Object(Symfony\Component\Console\Input\ArgvInput))
+#24 {main}
+
+--- VERIFICATION FINISHED ---

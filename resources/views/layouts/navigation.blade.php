@@ -13,6 +13,70 @@
                 <!-- Navigation Links -->
             </div>
 
+            <!-- Notification Bell -->
+            <div class="flex items-center sm:ms-6">
+                <x-dropdown align="right" width="80">
+                    <x-slot name="trigger">
+                        <button class="relative p-1 rounded-full text-gray-400 hover:text-gray-500 focus:outline-none transition duration-150 ease-in-out">
+                            <span class="sr-only">View notifications</span>
+                            <svg class="h-6 w-6 {{ ($sharedUnreadAnnouncementsCount ?? 0) > 0 ? 'animate-pulse text-red-500' : '' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                            </svg>
+                            @if(($sharedUnreadAnnouncementsCount ?? 0) > 0)
+                                <span class="absolute top-0 right-0 block h-2.5 w-2.5 rounded-full ring-2 ring-white bg-red-600"></span>
+                            @endif
+                        </button>
+                    </x-slot>
+
+                    <x-slot name="content">
+                        <div class="px-4 py-2 border-b border-gray-100 font-semibold text-xs text-gray-400 uppercase tracking-wider">
+                            Announcements
+                        </div>
+                        
+                        <div class="max-h-64 overflow-y-auto">
+                            @forelse($sharedAnnouncements ?? [] as $announcement)
+                                <div class="px-4 py-3 border-b border-gray-100 hover:bg-gray-50 transition cursor-pointer"
+                                     onclick="markAnnouncementRead({{ $announcement->id }}); window.location.href='{{ $announcement->action_url ?? '#' }}'">
+                                    <div class="flex items-start">
+                                        <div class="flex-1">
+                                            <p class="text-sm font-medium text-gray-900 {{ !$announcement->is_read ? 'font-bold' : '' }}">
+                                                @if(!$announcement->is_read)
+                                                    <span class="bg-blue-100 text-blue-800 text-[10px] px-1.5 py-0.5 rounded mr-1">NEW</span>
+                                                @endif
+                                                {{ $announcement->title }}
+                                            </p>
+                                            <p class="text-xs text-gray-500 mt-1 line-clamp-2">{{ Str::limit($announcement->content, 60) }}</p>
+                                            <p class="text-[10px] text-gray-400 mt-1">{{ $announcement->created_at->diffForHumans() }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            @empty
+                                <div class="px-4 py-3 text-sm text-gray-500 text-center">
+                                    No announcements.
+                                </div>
+                            @endforelse
+                        </div>
+                        
+                        <div class="border-t border-gray-100">
+                             <a href="{{ route('admin.announcements.index') }}" class="block px-4 py-2 text-xs text-center text-gray-500 hover:bg-gray-100 transition">
+                                View All
+                            </a>
+                        </div>
+                    </x-slot>
+                </x-dropdown>
+            </div>
+
+            <!-- Subscription Badge -->
+            @if(($tenant = app('tenant')) && $tenant->currentPlan)
+            <div class="hidden sm:flex sm:items-center sm:ms-6">
+                <a href="{{ route('tenant.subscription.index', ['tenant' => $tenant->slug]) }}"
+                   class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 border border-transparent rounded-lg font-bold text-xs text-white uppercase tracking-widest hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150 shadow-md transform hover:scale-105">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    {{ $tenant->currentPlan->name }}
+                </a>
+            </div>
+            @endif
+
             <!-- Settings Dropdown -->
             <div class="hidden sm:flex sm:items-center sm:ms-6">
                 <x-dropdown align="right" width="48">
@@ -106,9 +170,7 @@
                  <x-responsive-nav-link :href="route('admin.banners.index')" :active="request()->routeIs('admin.banners.*')">
                     {{ __('Banners') }}
                 </x-responsive-nav-link>
-                 <x-responsive-nav-link :href="route('admin.theme.index')" :active="request()->routeIs('admin.theme.*')">
-                    {{ __('Theme') }}
-                </x-responsive-nav-link>
+
             </div>
 
              <!-- Accounting -->

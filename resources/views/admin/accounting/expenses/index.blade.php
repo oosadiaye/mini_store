@@ -30,7 +30,7 @@
                     <td class="px-6 py-3 font-mono text-xs text-gray-500">{{ $expense->reference_number }}</td>
                     <td class="px-6 py-3 font-medium text-gray-900">{{ $expense->account->account_name }}</td>
                     <td class="px-6 py-3 text-gray-600">{{ $expense->vendor_name ?? '-' }}</td>
-                    <td class="px-6 py-3 text-right font-bold text-red-600">-{{ tenant('data')['currency_symbol'] ?? '₦' }}{{ number_format($expense->amount, 2) }}</td>
+                    <td class="px-6 py-3 text-right font-bold text-red-600">-{{ $tenant->data['currency_symbol'] ?? '₦' }}{{ number_format($expense->amount, 2) }}</td>
                 </tr>
                 @empty
                 <tr>

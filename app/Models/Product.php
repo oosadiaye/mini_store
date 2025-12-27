@@ -7,12 +7,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Product extends Model
 {
-    use SoftDeletes;
+    use SoftDeletes, HasFactory, \App\Traits\BelongsToTenant;
 
     protected $fillable = [
+        'tenant_id',
         'name',
         'slug',
         'sku',
@@ -169,6 +171,15 @@ class Product extends Model
         }
 
         return 'https://via.placeholder.com/300?text=' . str_replace(' ', '+', $this->name);
+    }
+
+    /**
+     * Get primary image attribute (alias for image_url)
+     * This supports legacy/theme usages of $product->primary_image as a URL string
+     */
+    public function getPrimaryImageAttribute(): string
+    {
+        return $this->image_url;
     }
 
     /**

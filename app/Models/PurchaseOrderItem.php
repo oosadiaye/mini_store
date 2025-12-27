@@ -20,4 +20,9 @@ class PurchaseOrderItem extends Model
     {
         return $this->belongsTo(Product::class);
     }
+
+    public function taxCode()
+    {
+        return $this->belongsTo(TaxCode::class);
+    }
 }

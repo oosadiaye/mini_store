@@ -37,7 +37,7 @@ class CustomerOrderConfirmation extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         $url = route('storefront.checkout.success', $this->order->order_number);
-        $currency = tenant('data')['currency_symbol'] ?? '₦';
+        $currency = app('tenant')->data['currency_symbol'] ?? '₦';
 
         return (new MailMessage)
             ->subject('Order Confirmed - #' . $this->order->order_number)

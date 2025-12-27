@@ -38,17 +38,19 @@ class UserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
-            'role' => ['required', 'exists:roles,name'], 
+            'role' => ['nullable', 'exists:roles,name'],
         ]);
 
         $user = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
-            'role' => $validated['role'], // Legacy column, keeping for safety or remove if unused
+            'tenant_id' => app('tenant')->id,
         ]);
 
-        $user->assignRole($validated['role']);
+        if (!empty($validated['role'])) {
+            $user->assignRole($validated['role']);
+        }
 
         return redirect()->route('admin.users.index')->with('success', 'User created successfully.');
     }
@@ -72,13 +74,12 @@ class UserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
-            'role' => ['required', 'exists:roles,name'],
+            'role' => ['nullable', 'exists:roles,name'],
         ]);
 
         $data = [
             'name' => $validated['name'],
             'email' => $validated['email'],
-            'role' => $validated['role'],
         ];
 
         if (!empty($validated['password'])) {
@@ -86,7 +87,7 @@ class UserController extends Controller
         }
 
         $user->update($data);
-        $user->syncRoles([$validated['role']]);
+        $user->syncRoles($validated['role'] ?? []);
 
         return redirect()->route('admin.users.index')->with('success', 'User updated successfully.');
     }

@@ -7,6 +7,8 @@ use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
+use Illuminate\Validation\Rule;
+
 class CategoryController extends Controller
 {
     public function index()
@@ -32,7 +34,14 @@ class CategoryController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:categories,name',
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('categories')->where(function ($query) {
+                    return $query->where('tenant_id', app('tenant')->id);
+                }),
+            ],
             'description' => 'nullable|string',
             'parent_id' => 'nullable|exists:categories,id',
             'image' => 'nullable|image|max:2048',
@@ -49,13 +58,21 @@ class CategoryController extends Controller
             $validated['image'] = $request->file('image')->store('categories', 'public');
         }
 
-        Category::create($validated);
+        $category = Category::create($validated);
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'category' => $category,
+                'message' => 'Category created successfully!'
+            ]);
+        }
 
         return redirect()->route('admin.categories.index')
             ->with('success', 'Category created successfully!');
     }
 
-    public function edit(Category $category)
+    public function edit($tenant, Category $category)
     {
         $parentCategories = Category::whereNull('parent_id')
             ->where('id', '!=', $category->id)
@@ -66,10 +83,17 @@ class CategoryController extends Controller
         return view('admin.categories.edit', compact('category', 'parentCategories'));
     }
 
-    public function update(Request $request, Category $category)
+    public function update(Request $request, $tenant, Category $category)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:categories,name,' . $category->id,
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('categories')->ignore($category->id)->where(function ($query) {
+                    return $query->where('tenant_id', app('tenant')->id);
+                }),
+            ],
             'description' => 'nullable|string',
             'parent_id' => 'nullable|exists:categories,id',
             'image' => 'nullable|image|max:2048',
@@ -89,10 +113,10 @@ class CategoryController extends Controller
         $category->update($validated);
 
         return redirect()->route('admin.categories.index')
-            ->with('success', 'Category updated successfully!');
+             ->with('success', 'Category updated successfully!');
     }
 
-    public function destroy(Category $category)
+    public function destroy($tenant, Category $category)
     {
         $category->delete();
 

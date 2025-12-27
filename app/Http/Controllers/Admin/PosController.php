@@ -22,20 +22,23 @@ class PosController extends Controller
         $paymentTypes = \App\Models\PaymentType::where('is_active', true)->with('account')->get();
         $customers = \App\Models\Customer::orderBy('name')->get(); // Fetch customers
         
-        $tenantData = tenant()->data ?? [];
+        $tenantData = app('tenant')->data ?? [];
         $taxRate = $tenantData['tax_rate'] ?? 0;
         $enableTax = $tenantData['enable_pos_tax'] ?? false;
         $currencySymbol = $tenantData['currency_symbol'] ?? '₦';
         
+        // Fetch active tax codes
+        $taxCodes = \App\Models\TaxCode::active()->get();
+        
         // Logo for display
         $logoUrl = isset($tenantData['logo']) ? route('tenant.media', ['path' => $tenantData['logo']]) : null;
 
-        return view('admin.pos.index', compact('categories', 'paymentTypes', 'customers', 'taxRate', 'enableTax', 'currencySymbol', 'logoUrl'));
+        return view('admin.pos.index', compact('categories', 'paymentTypes', 'customers', 'taxRate', 'enableTax', 'currencySymbol', 'logoUrl', 'taxCodes'));
     }
 
     public function display()
     {
-        $tenantData = tenant()->data ?? [];
+        $tenantData = app('tenant')->data ?? [];
         $currencySymbol = $tenantData['currency_symbol'] ?? '₦';
         $logoUrl = isset($tenantData['logo']) ? route('tenant.media', ['path' => $tenantData['logo']]) : null;
         
@@ -44,7 +47,7 @@ class PosController extends Controller
 
     public function receipt(Order $order)
     {
-        $tenantData = tenant()->data ?? [];
+        $tenantData = app('tenant')->data ?? [];
         $currencySymbol = $tenantData['currency_symbol'] ?? '₦';
         $logoUrl = isset($tenantData['logo']) ? route('tenant.media', ['path' => $tenantData['logo']]) : null;
 
@@ -58,6 +61,7 @@ class PosController extends Controller
             'items.*.id' => 'required|exists:products,id',
             'items.*.quantity' => 'required|integer|min:1',
             'items.*.price' => 'required|numeric|min:0',
+            'items.*.tax_code_id' => 'nullable|exists:tax_codes,id',
             'payment_method_id' => 'required|exists:payment_types,id',
             'subtotal' => 'required|numeric',
             'tax' => 'required|numeric',
@@ -75,7 +79,7 @@ class PosController extends Controller
             if (!$customerId) {
                 // Find or create Walk-in Customer
                 $guest = \App\Models\Customer::firstOrCreate(
-                    ['email' => 'walkin@' . tenant('id') . '.local'], // Unique per tenant context (though tenants are separate DBs usually, good practice)
+                    ['email' => 'walkin@' . app('tenant')->id . '.local'], 
                     [
                         'name' => 'Walk-in Customer',
                         'phone' => '0000000000',
@@ -99,25 +103,44 @@ class PosController extends Controller
                 'order_source' => 'pos',
             ]);
 
+            $totalTax = 0;
             $totalCost = 0;
 
             foreach ($request->items as $item) {
-                $product = Product::find($item['id']);
+                $product = Product::findOrFail($item['id']);
+                $itemTotal = $item['quantity'] * $item['price'];
+                
+                // Calculate item tax
+                $itemTax = 0;
+                $taxCodeId = $item['tax_code_id'] ?? null;
+                if ($taxCodeId) {
+                    $taxCode = \App\Models\TaxCode::find($taxCodeId);
+                    if ($taxCode) {
+                        $itemTax = ($itemTotal * $taxCode->rate) / 100;
+                    }
+                }
+                $totalTax += $itemTax;
+
                 OrderItem::create([
+                    'tenant_id' => app('tenant')->id,
                     'order_id' => $order->id,
                     'product_id' => $product->id,
                     'product_name' => $product->name,
                     'quantity' => $item['quantity'],
                     'price' => $item['price'],
-                    'total' => $item['price'] * $item['quantity'],
+                    'tax_amount' => $itemTax,
+                    'tax_code_id' => $taxCodeId,
+                    'total' => $itemTotal,
                 ]);
                 
-                // Deduct Inventory (Assuming Warehouse 1 for POS for now)
-                $stock = \App\Models\WarehouseStock::firstOrCreate(
-                    ['warehouse_id' => 1, 'product_id' => $product->id],
-                    ['quantity' => 0]
-                );
-                $stock->decrement('quantity', $item['quantity']);
+                // Deduct Inventory
+                if ($product->manage_stock) {
+                     $stock = \App\Models\WarehouseStock::firstOrCreate(
+                        ['warehouse_id' => 1, 'product_id' => $product->id], // Assuming Warehouse 1 for POS
+                        ['quantity' => 0]
+                    );
+                    $stock->decrement('quantity', $item['quantity']);
+                }
 
                 $cost = $product->cost_price ?? 0;
                 $totalCost += ($cost * $item['quantity']);
@@ -128,26 +151,25 @@ class PosController extends Controller
                 $jeService = app(\App\Services\JournalEntryService::class);
                 
                 // Determine Debit Account from Payment Type
-                $debitAccount = $paymentType->account->account_code;
+                $debitAccount = $paymentType->account->account_code ?? '1100'; // Default Cash
 
-                // 1. Record Revenue
-                // Tax Handling
-                $taxAmount = $request->tax; 
-                
-                $netRevenue = $request->total - $taxAmount;
+                // Prepare Credits
+                $netRevenue = $request->subtotal; // Subtotal usually excludes tax in frontend calc, but let's be safe.
+                // In this logic, subtotal is sum of (price * qty), handling tax separately.
                 
                 $credits = [];
                 $credits[] = [ 'account_code' => '4000', 'debit' => 0, 'credit' => $netRevenue ]; // Sales Revenue
 
-                if ($taxAmount > 0) {
-                    $credits[] = [ 'account_code' => '2100', 'debit' => 0, 'credit' => $taxAmount ]; // Sales Tax Payable
+                if ($request->tax > 0) {
+                     // We use the tax from request which should match calculated tax
+                    $credits[] = [ 'account_code' => '2100', 'debit' => 0, 'credit' => $request->tax ]; // Sales Tax Payable
                 }
 
                 $jeService->recordTransaction("POS Sale #{$order->order_number} ({$paymentType->name})", array_merge([
                     [ 'account_code' => $debitAccount, 'debit' => $request->total, 'credit' => 0 ],
                 ], $credits), now());
 
-                // 2. Record COGS
+                // Record COGS
                 if ($totalCost > 0) {
                      $jeService->recordTransaction("COGS for POS Sale #{$order->order_number}", [
                         [ 'account_code' => '5000', 'debit' => $totalCost, 'credit' => 0 ], // COGS

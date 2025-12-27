@@ -14,7 +14,7 @@
             @if($logoUrl)
                 <img src="{{ $logoUrl }}" class="max-w-xs mb-8 rounded-xl shadow-2xl bg-white p-4">
             @else
-                <h1 class="text-6xl font-black tracking-tighter mb-4">{{ tenant('name') }}</h1>
+                <h1 class="text-6xl font-black tracking-tighter mb-4">{{ $tenant->name }}</h1>
             @endif
             
             <p class="text-2xl opacity-75 text-center">Thank you for shopping with us!</p>

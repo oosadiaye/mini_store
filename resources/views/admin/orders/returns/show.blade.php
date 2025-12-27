@@ -68,7 +68,7 @@
                         <!-- Price -->
                         <div class="text-right">
                             <div class="font-bold text-gray-900">
-                                {{ tenant('data')['currency_symbol'] ?? '$' }}{{ number_format($item->refund_amount, 2) }}
+                                {{ $tenant->data['currency_symbol'] ?? '$' }}{{ number_format($item->refund_amount, 2) }}
                             </div>
                         </div>
                     </div>
@@ -78,7 +78,7 @@
                 <!-- Footer Total -->
                 <div class="px-6 py-4 bg-gray-50 flex justify-between items-center border-t border-gray-100">
                     <span class="text-sm font-bold text-gray-600">Total Refund Amount</span>
-                    <span class="text-xl font-bold text-gray-900">{{ tenant('data')['currency_symbol'] ?? '$' }}{{ number_format($return->refund_amount, 2) }}</span>
+                    <span class="text-xl font-bold text-gray-900">{{ $tenant->data['currency_symbol'] ?? '$' }}{{ number_format($return->refund_amount, 2) }}</span>
                 </div>
             </div>
 

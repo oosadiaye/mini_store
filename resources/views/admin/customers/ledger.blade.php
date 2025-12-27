@@ -26,7 +26,7 @@
              @endphp
              <span class="text-sm text-gray-500">Current Balance:</span>
              <span class="text-xl font-bold {{ $balance > 0 ? 'text-green-600' : ($balance < 0 ? 'text-red-600' : 'text-gray-800') }}">
-                 {{ tenant('data')['currency_symbol'] ?? '$' }}{{ number_format($balance, 2) }}
+                 {{ $tenant->data['currency_symbol'] ?? '$' }}{{ number_format($balance, 2) }}
              </span>
              <span class="text-xs text-gray-400 block">(Receivables)</span>
         </div>

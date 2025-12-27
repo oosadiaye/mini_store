@@ -13,9 +13,13 @@ return new class extends Migration
     {
         Schema::create('storefront_settings', function (Blueprint $table) {
             $table->id();
-            $table->string('key')->unique();
+            $table->string('tenant_id');
+            $table->string('key');
             $table->text('value')->nullable();
             $table->timestamps();
+
+            $table->foreign('tenant_id')->references('id')->on('tenants')->onDelete('cascade');
+            $table->unique(['tenant_id', 'key']);
         });
     }
 

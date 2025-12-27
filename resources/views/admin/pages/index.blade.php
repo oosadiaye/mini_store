@@ -33,7 +33,7 @@
                 <td class="p-4 text-center text-sm text-gray-500">{{ $page->updated_at->diffForHumans() }}</td>
                 <td class="p-4 text-center">
                     <div class="flex items-center justify-center space-x-3">
-                        <a href="{{ route('admin.pages.builder', $page->id) }}" class="text-indigo-600 hover:text-indigo-900 font-medium">Edit Content</a>
+                        <a href="{{ route('admin.pages.edit', $page->id) }}" class="text-indigo-600 hover:text-indigo-900 font-medium">Edit Content</a>
                         <form action="{{ route('admin.pages.destroy', $page->id) }}" method="POST" onsubmit="return confirm('Delete this page?')">
                             @csrf @method('DELETE')
                             <button class="text-red-500 hover:text-red-700">Delete</button>

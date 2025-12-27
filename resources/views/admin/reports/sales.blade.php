@@ -62,7 +62,7 @@
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm font-medium text-gray-600">Total Revenue</p>
-                    <p class="text-3xl font-bold text-green-600 mt-2">{{ tenant('data')['currency_symbol'] ?? '₦' }}{{ number_format($totalRevenue, 2) }}</p>
+                    <p class="text-3xl font-bold text-green-600 mt-2">{{ $tenant->data['currency_symbol'] ?? '₦' }}{{ number_format($totalRevenue, 2) }}</p>
                 </div>
                 <div class="p-3 bg-green-100 rounded-lg">
                     <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -76,7 +76,7 @@
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm font-medium text-gray-600">Avg Order Value</p>
-                    <p class="text-3xl font-bold text-purple-600 mt-2">{{ tenant('data')['currency_symbol'] ?? '₦' }}{{ number_format($averageOrderValue, 2) }}</p>
+                    <p class="text-3xl font-bold text-purple-600 mt-2">{{ $tenant->data['currency_symbol'] ?? '₦' }}{{ number_format($averageOrderValue, 2) }}</p>
                 </div>
                 <div class="p-3 bg-purple-100 rounded-lg">
                     <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -144,7 +144,7 @@
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $product->sku }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">{{ number_format($product->total_quantity) }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-green-600 text-right">
-                            {{ tenant('data')['currency_symbol'] ?? '₦' }}{{ number_format($product->total_revenue, 2) }}
+                            {{ $tenant->data['currency_symbol'] ?? '₦' }}{{ number_format($product->total_revenue, 2) }}
                         </td>
                     </tr>
                     @empty
@@ -197,7 +197,7 @@ new Chart(salesCtx, {
                 position: 'left',
                 title: {
                     display: true,
-                    text: 'Revenue ({{ tenant("data")["currency_symbol"] ?? "₦" }})'
+                    text: 'Revenue ({{ $tenant->data["currency_symbol"] ?? "₦" }})'
                 }
             },
             y1: {
@@ -268,7 +268,7 @@ new Chart(paymentCtx, {
                 beginAtZero: true,
                 title: {
                     display: true,
-                    text: 'Revenue ({{ tenant("data")["currency_symbol"] ?? "₦" }})'
+                    text: 'Revenue ({{ $tenant->data["currency_symbol"] ?? "₦" }})'
                 }
             }
         }

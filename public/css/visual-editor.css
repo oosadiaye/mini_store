@@ -1,0 +1,185 @@
+/**
+ * Visual Editor Styles
+ * Hover overlays, edit buttons, and selection highlights
+ */
+
+/* Overlay container */
+.ve-overlay {
+    position: absolute;
+    border: 2px dashed #6366F1;
+    pointer-events: none;
+    z-index: 9998;
+    transition: all 0.2s ease;
+    background: rgba(99, 102, 241, 0.05);
+    display: none;
+}
+
+.ve-overlay:hover {
+    background: rgba(99, 102, 241, 0.08);
+    border-color: #4F46E5;
+}
+
+.ve-overlay-selected {
+    border-style: solid;
+    border-width: 3px;
+    background: rgba(99, 102, 241, 0.1);
+}
+
+/* Toolbar at top of overlay */
+.ve-toolbar {
+    position: absolute;
+    top: -36px;
+    left: 0;
+    background: #4F46E5;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 6px 6px 0 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 500;
+    pointer-events: all;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.ve-label {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px;
+}
+
+/* Edit button */
+.ve-edit-btn {
+    background: white;
+    color: #4F46E5;
+    border: none;
+    border-radius: 4px;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    pointer-events: all;
+}
+
+.ve-edit-btn:hover {
+    background: #EEF2FF;
+    transform: scale(1.1);
+}
+
+.ve-edit-btn:active {
+    transform: scale(0.95);
+}
+
+.ve-edit-btn i {
+    font-size: 11px;
+}
+
+/* Selected element highlight */
+.ve-selected {
+    outline: 3px solid #4F46E5 !important;
+    outline-offset: 2px;
+    position: relative;
+    z-index: 9997;
+}
+
+/* Prevent text selection in edit mode */
+body[data-edit-mode="true"] {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+/* Allow text selection in input fields */
+body[data-edit-mode="true"] input,
+body[data-edit-mode="true"] textarea {
+    user-select: text;
+    -webkit-user-select: text;
+}
+
+/* Smooth transitions for content updates */
+[data-section-id] {
+    transition: background-color 0.3s ease,
+        background-image 0.3s ease;
+}
+
+[data-element-type] {
+    transition: color 0.2s ease,
+        font-size 0.2s ease;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .ve-toolbar {
+        font-size: 11px;
+        padding: 4px 8px;
+        top: -32px;
+    }
+
+    .ve-label {
+        max-width: 150px;
+    }
+
+    .ve-edit-btn {
+        width: 22px;
+        height: 22px;
+    }
+
+    .ve-edit-btn i {
+        font-size: 10px;
+    }
+}
+
+/* Animation for selection */
+@keyframes selectPulse {
+
+    0%,
+    100% {
+        outline-color: #4F46E5;
+    }
+
+    50% {
+        outline-color: #6366F1;
+    }
+}
+
+.ve-selected {
+    animation: selectPulse 2s ease-in-out infinite;
+}
+
+/* Hover state for sections */
+[data-section-id]:hover {
+    cursor: pointer;
+}
+
+/* Loading state */
+.ve-updating {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.ve-updating::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 40px;
+    height: 40px;
+    margin: -20px 0 0 -20px;
+    border: 3px solid #4F46E5;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}

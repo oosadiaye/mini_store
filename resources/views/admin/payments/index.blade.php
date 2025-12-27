@@ -52,9 +52,9 @@
                         </td>
                         <td class="px-6 py-4">{{ $order->customer->name }}</td>
                         <td class="px-6 py-4 text-gray-500">{{ $order->created_at->format('M d, Y') }}</td>
-                        <td class="px-6 py-4 text-right font-medium">${{ number_format($order->total, 2) }}</td>
-                        <td class="px-6 py-4 text-right text-green-600">${{ number_format($order->amount_paid, 2) }}</td>
-                        <td class="px-6 py-4 text-right font-bold text-red-600">${{ number_format($balance, 2) }}</td>
+                        <td class="px-6 py-4 text-right font-medium">{{ app('tenant')->data['currency_symbol'] ?? '₦' }}{{ number_format($order->total, 2) }}</td>
+                        <td class="px-6 py-4 text-right text-green-600">{{ app('tenant')->data['currency_symbol'] ?? '₦' }}{{ number_format($order->amount_paid, 2) }}</td>
+                        <td class="px-6 py-4 text-right font-bold text-red-600">{{ app('tenant')->data['currency_symbol'] ?? '₦' }}{{ number_format($balance, 2) }}</td>
                         <td class="px-6 py-4 text-right">
                             <button @click="$dispatch('open-payment-modal', { type: 'customer', id: {{ $order->id }}, balance: {{ $balance }}, ref: '{{ $order->order_number }}' })" 
                                 class="text-indigo-600 hover:text-indigo-900 text-xs font-bold uppercase border border-indigo-200 px-3 py-1 rounded-full hover:bg-indigo-50 transition">
@@ -105,9 +105,9 @@
                         </td>
                         <td class="px-6 py-4">{{ $po->supplier->name }}</td>
                         <td class="px-6 py-4 text-gray-500">{{ $po->order_date ? $po->order_date->format('M d, Y') : '-' }}</td>
-                        <td class="px-6 py-4 text-right font-medium">${{ number_format($po->total, 2) }}</td>
-                        <td class="px-6 py-4 text-right text-green-600">${{ number_format($po->amount_paid, 2) }}</td>
-                        <td class="px-6 py-4 text-right font-bold text-red-600">${{ number_format($balance, 2) }}</td>
+                        <td class="px-6 py-4 text-right font-medium">{{ app('tenant')->data['currency_symbol'] ?? '₦' }}{{ number_format($po->total, 2) }}</td>
+                        <td class="px-6 py-4 text-right text-green-600">{{ app('tenant')->data['currency_symbol'] ?? '₦' }}{{ number_format($po->amount_paid, 2) }}</td>
+                        <td class="px-6 py-4 text-right font-bold text-red-600">{{ app('tenant')->data['currency_symbol'] ?? '₦' }}{{ number_format($balance, 2) }}</td>
                         <td class="px-6 py-4 text-right">
                              <button @click="$dispatch('open-payment-modal', { type: 'supplier', id: {{ $po->id }}, balance: {{ $balance }}, ref: 'PO-{{ substr($po->id, 0, 8) }}' })" 
                                 class="text-indigo-600 hover:text-indigo-900 text-xs font-bold uppercase border border-indigo-200 px-3 py-1 rounded-full hover:bg-indigo-50 transition">
@@ -167,7 +167,7 @@
                                         <label class="block text-sm font-medium text-gray-700">Amount</label>
                                         <div class="mt-1 relative rounded-md shadow-sm">
                                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                                <span class="text-gray-500 sm:text-sm">$</span>
+                                                <span class="text-gray-500 sm:text-sm">{{ app('tenant')->data['currency_symbol'] ?? '₦' }}</span>
                                             </div>
                                             <input type="number" name="amount" step="0.01" x-model="amount" class="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-7 pr-12 sm:text-sm border-gray-300 rounded-md">
                                         </div>

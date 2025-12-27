@@ -49,7 +49,7 @@
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm font-medium text-gray-600">Total Inventory Value</p>
-                    <p class="text-3xl font-bold text-green-600 mt-2">{{ tenant('data')['currency_symbol'] ?? '₦' }}{{ number_format($totalInventoryValue, 2) }}</p>
+                    <p class="text-3xl font-bold text-green-600 mt-2">{{ $tenant->data['currency_symbol'] ?? '₦' }}{{ number_format($totalInventoryValue, 2) }}</p>
                 </div>
                 <div class="p-3 bg-green-100 rounded-lg">
                     <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -108,7 +108,7 @@
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">{{ number_format($stock->product_count) }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">{{ number_format($stock->total_units) }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-green-600 text-right">
-                            {{ tenant('data')['currency_symbol'] ?? '₦' }}{{ number_format($stock->total_value, 2) }}
+                            {{ $tenant->data['currency_symbol'] ?? '₦' }}{{ number_format($stock->total_value, 2) }}
                         </td>
                     </tr>
                     @empty

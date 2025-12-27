@@ -4,24 +4,7 @@
 <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 md:mb-6 gap-3">
     <h2 class="text-xl md:text-2xl font-bold text-gray-800">Categories</h2>
     <div class="flex gap-2 w-full md:w-auto">
-        <!-- Export / Import Dropdown -->
-        <div class="relative flex-1 md:flex-none" x-data="{ open: false }">
-            <button @click="open = !open" @click.away="open = false" class="w-full md:w-auto bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 px-3 md:px-4 py-2 rounded-lg transition flex items-center justify-center shadow-sm text-sm">
-                <i class="fas fa-file-export mr-2"></i> Export / Import <i class="fas fa-chevron-down ml-2 text-xs"></i>
-            </button>
-            <div x-show="open" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-20 border border-gray-100 py-1" x-cloak>
-                <a href="{{ route('admin.categories.export') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                    <i class="fas fa-download mr-2 text-gray-400"></i> Export CSV
-                </a>
-                <div class="border-t border-gray-100 my-1"></div>
-                 <a href="{{ route('admin.categories.template') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                    <i class="fas fa-file-csv mr-2 text-gray-400"></i> Download Template
-                </a>
-                <button @click="open = false; $dispatch('open-import-modal')" class="w-full text-left block px-4 py-2 text-sm text-blue-600 hover:bg-blue-50 font-medium">
-                    <i class="fas fa-file-import mr-2"></i> Import CSV
-                </button>
-            </div>
-        </div>
+
 
         <a href="{{ route('admin.categories.create') }}" class="flex-1 md:flex-none bg-indigo-600 hover:bg-indigo-700 text-white px-4 md:px-6 py-2 rounded-lg transition shadow-md flex items-center justify-center text-sm">
             <i class="fas fa-plus mr-2"></i> Add Category
@@ -29,50 +12,7 @@
     </div>
 </div>
 
-<!-- Import Modal using Alpine.js -->
-<div x-data="{ open: false }" 
-     @open-import-modal.window="open = true" 
-     x-show="open" 
-     class="fixed inset-0 z-50 overflow-y-auto" 
-     x-cloak>
-    <div class="flex items-center justify-center min-h-screen px-4">
-        <!-- Backdrop -->
-        <div class="fixed inset-0 bg-black opacity-30" @click="open = false"></div>
 
-        <!-- Modal Content -->
-        <div class="relative bg-white rounded-lg max-w-lg w-full p-6 shadow-xl transform transition-all">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-lg font-bold text-gray-900">Import Categories</h3>
-                <button @click="open = false" class="text-gray-400 hover:text-gray-500">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            
-            <form action="{{ route('admin.categories.import') }}" method="POST" enctype="multipart/form-data">
-                @csrf
-                <div class="space-y-4">
-                    <div class="p-4 bg-blue-50 rounded-md">
-                        <p class="text-sm text-blue-700 mb-2 font-bold">Instructions:</p>
-                        <ul class="list-disc list-inside text-sm text-blue-600 space-y-1">
-                            <li>Download the template first to see the required format.</li>
-                            <li>The <b>Name</b> column is required.</li>
-                            <li>Use 'Yes' or 'No' for Active and Storefront columns.</li>
-                        </ul>
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Upload CSV File</label>
-                        <input type="file" name="file" accept=".csv, .txt" required class="w-full border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-blue-500 hover:bg-gray-50 cursor-pointer">
-                    </div>
-                </div>
-
-                <div class="mt-6 flex justify-end gap-3">
-                    <button type="button" @click="open = false" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">Cancel</button>
-                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 shadow-md">Upload & Import</button>
-                </div>
-            </form>
-        </div>
-    </div>
 
 <!-- Desktop Table View -->
 <div class="hidden lg:block bg-white rounded-lg shadow overflow-hidden">

@@ -121,18 +121,29 @@
             </template>
 
             <template x-for="(item, index) in cart" :key="item.id">
-                <div class="flex items-center justify-between p-2 md:p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
-                    <div class="flex-1 min-w-0 mr-2">
-                        <h4 class="font-medium text-gray-800 text-xs md:text-sm truncate" x-text="item.name"></h4>
-                        <p class="text-xs text-gray-500" x-text="formatPrice(item.price)"></p>
+                <div class="flex flex-col p-2 md:p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="flex-1 min-w-0 mr-2">
+                            <h4 class="font-medium text-gray-800 text-xs md:text-sm truncate" x-text="item.name"></h4>
+                            <p class="text-xs text-gray-500" x-text="formatPrice(item.price)"></p>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <button @click="updateQty(index, -1)" class="w-7 h-7 md:w-8 md:h-8 rounded-full bg-white border border-gray-300 flex items-center justify-center text-gray-600 hover:bg-gray-100 text-sm">-</button>
+                            <span class="font-bold w-4 text-center text-sm" x-text="item.quantity"></span>
+                            <button @click="updateQty(index, 1)" class="w-7 h-7 md:w-8 md:h-8 rounded-full bg-white border border-gray-300 flex items-center justify-center text-gray-600 hover:bg-gray-100 text-sm">+</button>
+                        </div>
+                        <div class="text-right ml-2 w-16 md:w-20">
+                            <p class="font-bold text-gray-800 text-xs md:text-sm" x-text="formatPrice(item.price * item.quantity)"></p>
+                        </div>
                     </div>
-                    <div class="flex items-center space-x-2">
-                        <button @click="updateQty(index, -1)" class="w-7 h-7 md:w-8 md:h-8 rounded-full bg-white border border-gray-300 flex items-center justify-center text-gray-600 hover:bg-gray-100 text-sm">-</button>
-                        <span class="font-bold w-4 text-center text-sm" x-text="item.quantity"></span>
-                        <button @click="updateQty(index, 1)" class="w-7 h-7 md:w-8 md:h-8 rounded-full bg-white border border-gray-300 flex items-center justify-center text-gray-600 hover:bg-gray-100 text-sm">+</button>
-                    </div>
-                    <div class="text-right ml-2 w-16 md:w-20">
-                        <p class="font-bold text-gray-800 text-xs md:text-sm" x-text="formatPrice(item.price * item.quantity)"></p>
+                    <!-- Tax Selection -->
+                    <div class="flex justify-end">
+                         <select x-model="item.tax_code_id" class="text-[10px] py-1 pl-2 pr-6 rounded border-gray-200 bg-white text-gray-600 focus:border-indigo-500 focus:ring-indigo-500">
+                            <option value="">No Tax</option>
+                            <template x-for="code in taxCodes" :key="code.id">
+                                <option :value="code.id" x-text="code.name + ' (' + Number(code.rate) + '%)'"></option>
+                            </template>
+                        </select>
                     </div>
                 </div>
             </template>
@@ -145,7 +156,7 @@
                 <span x-text="formatPrice(subtotal)"></span>
             </div>
             <div class="flex justify-between text-gray-600 text-sm">
-                <span>Tax (<span x-text="enableTax ? taxRate + '%' : 'Off'"></span>)</span>
+                <span>Tax</span>
                 <span x-text="formatPrice(tax)"></span>
             </div>
             <div class="flex justify-between text-lg md:text-xl font-bold text-gray-900 border-t border-gray-200 pt-2 mt-2">
@@ -170,7 +181,11 @@
                     <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
                         <span class="text-gray-500 text-sm" x-text="currencySymbol"></span>
                     </div>
-                    <input type="number" x-model="amountTendered" step="0.01" class="block w-full rounded-md border-gray-300 pl-7 pr-12 focus:border-indigo-500 focus:ring-indigo-500 text-base md:text-lg font-bold" placeholder="0.00">
+                    <input type="number" x-model="amountTendered" step="0.01" 
+                           @keydown.enter="canCheckout && processPayment()" 
+                           id="amount-tendered-input"
+                           class="block w-full rounded-md border-gray-300 pl-7 pr-12 focus:border-indigo-500 focus:ring-indigo-500 text-base md:text-lg font-bold" 
+                           placeholder="0.00">
                 </div>
             </div>
 
@@ -216,8 +231,7 @@ function posSystem() {
         online: navigator.onLine,
         unsyncedOrders: 0,
         
-        taxRate: {{ $taxRate ?? 0 }},
-        enableTax: {{ $enableTax ? 'true' : 'false' }},
+        taxCodes: @json($taxCodes),
         currencySymbol: '{{ $currencySymbol }}',
         
         // Barcode Scanner
@@ -235,7 +249,7 @@ function posSystem() {
 
         async init() {
             // Setup DB
-            this.db = new Dexie(`pos_db_{{ tenant('id') }}`);
+            this.db = new Dexie(`pos_db_{{ $tenant->id }}`);
             this.db.version(1).stores({
                 products: 'id, category_id, name',
                 customers: 'id, name',
@@ -261,6 +275,26 @@ function posSystem() {
             
             // Setup USB Barcode Scanner Listener
             this.setupBarcodeListener();
+            
+            // Listen for fullscreen changes (e.g., ESC key)
+            document.addEventListener('fullscreenchange', () => {
+                const sidebar = document.querySelector('.md\\:flex.md\\:flex-shrink-0');
+                if (sidebar) {
+                    if (document.fullscreenElement) {
+                        sidebar.classList.add('!hidden');
+                    } else {
+                        sidebar.classList.remove('!hidden');
+                    }
+                }
+            });
+            
+            // Auto-focus amount tendered input
+            this.$nextTick(() => {
+                const amountInput = document.getElementById('amount-tendered-input');
+                if (amountInput) {
+                    amountInput.focus();
+                }
+            });
         },
 
         async loadData() {
@@ -321,6 +355,7 @@ function posSystem() {
             }
         },
 
+
         openDisplay() {
             window.open('{{ route("admin.pos.display") }}', 'CustomerDisplay', 'width=800,height=600,menubar=no,toolbar=no,location=no,status=no');
         },
@@ -349,7 +384,14 @@ function posSystem() {
         },
 
         get subtotal() { return this.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0); },
-        get tax() { return !this.enableTax ? 0 : this.subtotal * (this.taxRate / 100); },
+        get tax() { 
+            return this.cart.reduce((sum, item) => {
+                if (!item.tax_code_id) return sum;
+                const code = this.taxCodes.find(c => c.id == item.tax_code_id);
+                const rate = code ? parseFloat(code.rate) : 0;
+                return sum + ((item.price * item.quantity) * (rate / 100));
+            }, 0);
+        },
         get total() { return this.subtotal + this.tax; },
         get change() { return (parseFloat(this.amountTendered) || 0) - this.total; },
         get canCheckout() {
@@ -411,7 +453,7 @@ function posSystem() {
                     await this.saveOffline(orderData);
                 }
             } else {
-                // Save Offline directly
+                // Save Offline directly - only when truly offline
                 await this.saveOffline(orderData);
             }
             
@@ -420,11 +462,33 @@ function posSystem() {
 
         async saveOffline(orderData) {
             try {
-                await this.db.orders.add({ ...orderData, synced: 0 });
+                // Create a clean, serializable copy of the order data
+                const cleanOrderData = {
+                    items: orderData.items.map(item => ({
+                        id: item.id,
+                        name: item.name,
+                        price: item.price,
+                        quantity: item.quantity,
+                        category_id: item.category_id,
+                        tax_code_id: item.tax_code_id
+                    })),
+                    subtotal: orderData.subtotal,
+                    tax: orderData.tax,
+                    total: orderData.total,
+                    payment_method_id: orderData.payment_method_id,
+                    amount_tendered: orderData.amount_tendered,
+                    change: orderData.change,
+                    customer_id: orderData.customer_id,
+                    created_at: orderData.created_at,
+                    synced: 0
+                };
+                
+                await this.db.orders.add(cleanOrderData);
                 alert('Offline: Order saved locally. Will sync when online.');
                 this.countUnsynced();
                 this.resetCart();
             } catch (e) {
+                console.error('Error saving offline order:', e);
                 alert('Error saving offline order: ' + e.message);
             }
         },
@@ -567,18 +631,22 @@ function posSystem() {
         
         // Fullscreen Toggle
         toggleFullscreen() {
+            const sidebar = document.querySelector('.md\\:flex.md\\:flex-shrink-0');
+            
             if (!document.fullscreenElement) {
                 // Enter fullscreen and hide sidebar
                 document.documentElement.requestFullscreen().catch(err => {
                     console.error('Fullscreen error:', err);
                 });
-                const sidebar = document.querySelector('.sidebar');
                 if (sidebar) {
-                    sidebar.classList.add('hidden');
+                    sidebar.classList.add('!hidden');
                 }
             } else {
-                // Exit fullscreen
+                // Exit fullscreen and show sidebar
                 document.exitFullscreen();
+                if (sidebar) {
+                    sidebar.classList.remove('!hidden');
+                }
             }
         },
         
@@ -630,7 +698,7 @@ function posSystem() {
                 receipt += ESC + '@'; // Initialize
                 receipt += ESC + 'a' + '\x01'; // Center align
                 receipt += ESC + '!' + '\x30'; // Double height/width
-                receipt += '{{ tenant("name") }}\n';
+                receipt += '{{ $tenant->name }}\n';
                 receipt += ESC + '!' + '\x00'; // Normal
                 receipt += '\n';
                 receipt += ESC + 'a' + '\x00'; // Left align
@@ -681,7 +749,7 @@ function posSystem() {
                     </style>
                 </head>
                 <body>
-                    <div class="center bold">${'{{ tenant("name") }}'}</div>
+                    <div class="center bold">${'{{ $tenant->name }}'}</div>
                     <div class="line"></div>
                     <div>Order #: ${orderData.order_id || 'N/A'}</div>
                     <div>Date: ${new Date().toLocaleString()}</div>

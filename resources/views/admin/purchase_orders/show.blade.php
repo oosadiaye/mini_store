@@ -77,6 +77,7 @@
                             <th class="px-6 py-3">Product</th>
                             <th class="px-6 py-3 text-right">Cost</th>
                             <th class="px-6 py-3 text-right">Qty</th>
+                            <th class="px-6 py-3 text-right">Tax</th>
                             <th class="px-6 py-3 text-right">Total</th>
                             @if($purchaseOrder->status !== 'received' && $purchaseOrder->status !== 'ordered')
                             <th class="px-6 py-3 text-right">Actions</th>
@@ -90,9 +91,13 @@
                                 {{ $item->product->name }}
                                 <div class="text-xs text-gray-400">{{ $item->variant_sku }}</div>
                             </td>
-                            <td class="px-6 py-3 text-right">${{ number_format($item->unit_cost, 2) }}</td>
+                            <td class="px-6 py-3 text-right">{{ app('tenant')->data['currency_symbol'] ?? '₦' }}{{ number_format($item->unit_cost, 2) }}</td>
                             <td class="px-6 py-3 text-right font-mono">{{ $item->quantity_ordered }}</td>
-                            <td class="px-6 py-3 text-right font-bold">${{ number_format($item->total, 2) }}</td>
+                            <td class="px-6 py-3 text-right text-gray-600">
+                                {{ app('tenant')->data['currency_symbol'] ?? '₦' }}{{ number_format($item->tax_amount, 2) }}
+                                <div class="text-[10px] text-gray-400">{{ $item->taxCode ? $item->taxCode->name : 'No Tax' }}</div>
+                            </td>
+                            <td class="px-6 py-3 text-right font-bold">{{ app('tenant')->data['currency_symbol'] ?? '₦' }}{{ number_format($item->total + $item->tax_amount, 2) }}</td>
                             @if($purchaseOrder->status === 'draft')
                             <td class="px-6 py-3 text-right">
                                 <form action="{{ route('admin.purchase-orders.items.destroy', [$purchaseOrder->id, $item->id]) }}" method="POST" onsubmit="return confirm('Remove item?')">
@@ -106,8 +111,32 @@
                     </tbody>
                     <tfoot class="bg-gray-50 border-t border-gray-200">
                         <tr>
-                            <td colspan="3" class="px-6 py-3 text-right font-bold text-gray-600">Total Amount:</td>
-                            <td class="px-6 py-3 text-right font-extrabold text-indigo-900 text-lg">${{ number_format($purchaseOrder->total, 2) }}</td>
+                            <td colspan="4" class="px-6 py-2 text-right font-medium text-gray-500">Subtotal:</td>
+                            <td class="px-6 py-2 text-right font-bold text-gray-800">{{ app('tenant')->data['currency_symbol'] ?? '₦' }}{{ number_format($purchaseOrder->subtotal, 2) }}</td>
+                            @if($purchaseOrder->status === 'draft')<td></td>@endif
+                        </tr>
+                        <tr>
+                            <td colspan="4" class="px-6 py-2 text-right font-medium text-gray-500">Tax:</td>
+                            <td class="px-6 py-2 text-right font-bold text-gray-800">{{ app('tenant')->data['currency_symbol'] ?? '₦' }}{{ number_format($purchaseOrder->tax, 2) }}</td>
+                            @if($purchaseOrder->status === 'draft')<td></td>@endif
+                        </tr>
+                        @if($purchaseOrder->shipping > 0)
+                        <tr>
+                            <td colspan="4" class="px-6 py-2 text-right font-medium text-gray-500">Shipping:</td>
+                            <td class="px-6 py-2 text-right font-bold text-gray-800">{{ app('tenant')->data['currency_symbol'] ?? '₦' }}{{ number_format($purchaseOrder->shipping, 2) }}</td>
+                            @if($purchaseOrder->status === 'draft')<td></td>@endif
+                        </tr>
+                        @endif
+                        @if($purchaseOrder->discount > 0)
+                        <tr>
+                            <td colspan="4" class="px-6 py-2 text-right font-medium text-gray-500">Discount:</td>
+                            <td class="px-6 py-2 text-right font-bold text-red-600">-{{ app('tenant')->data['currency_symbol'] ?? '₦' }}{{ number_format($purchaseOrder->discount, 2) }}</td>
+                            @if($purchaseOrder->status === 'draft')<td></td>@endif
+                        </tr>
+                        @endif
+                        <tr class="border-t border-gray-200">
+                            <td colspan="4" class="px-6 py-3 text-right font-extra-bold text-gray-800 text-lg">Total Amount:</td>
+                            <td class="px-6 py-3 text-right font-extrabold text-indigo-900 text-xl">{{ app('tenant')->data['currency_symbol'] ?? '₦' }}{{ number_format($purchaseOrder->total, 2) }}</td>
                             @if($purchaseOrder->status === 'draft')<td></td>@endif
                         </tr>
                     </tfoot>

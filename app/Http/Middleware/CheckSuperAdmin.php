@@ -15,7 +15,7 @@ class CheckSuperAdmin
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if ($request->user() && $request->user()->role !== 'superadmin') {
+        if ($request->user() && !$request->user()->is_superadmin) {
             abort(403, 'Unauthorized action. Superadmin access only.');
         }
 

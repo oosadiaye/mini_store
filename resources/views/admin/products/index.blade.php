@@ -356,7 +356,7 @@
                         {{ $product->category->name ?? '-' }}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
-                        {{ tenant('data')['currency_symbol'] ?? '₦' }}{{ number_format($product->price, 2) }}
+                        {{ $tenant->data['currency_symbol'] ?? '₦' }}{{ number_format($product->price, 2) }}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                         @if($product->track_inventory)
@@ -452,7 +452,7 @@
                     </div>
                     <div class="flex items-center gap-2">
                         <span class="text-xs text-gray-500">Price:</span>
-                        <span class="text-sm font-bold text-gray-900">{{ tenant('data')['currency_symbol'] ?? '₦' }}{{ number_format($product->price, 2) }}</span>
+                        <span class="text-sm font-bold text-gray-900">{{ app('tenant')->data['currency_symbol'] ?? '₦' }}{{ number_format($product->price, 2) }}</span>
                     </div>
                     <div class="flex items-center gap-2">
                         <span class="text-xs text-gray-500">Stock:</span>

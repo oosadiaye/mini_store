@@ -113,10 +113,10 @@
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $customer->email }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">{{ $customer->order_count }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-green-600 text-right">
-                            {{ tenant('data')['currency_symbol'] ?? '₦' }}{{ number_format($customer->total_spent, 2) }}
+                            {{ $tenant->data['currency_symbol'] ?? '₦' }}{{ number_format($customer->total_spent, 2) }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
-                            {{ tenant('data')['currency_symbol'] ?? '₦' }}{{ number_format($customer->avg_order_value, 2) }}
+                            {{ $tenant->data['currency_symbol'] ?? '₦' }}{{ number_format($customer->avg_order_value, 2) }}
                         </td>
                     </tr>
                     @empty

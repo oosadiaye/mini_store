@@ -5,14 +5,16 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Model;
 
-class Customer extends Authenticatable
+class Customer extends Model
 {
-    use HasFactory, Notifiable;
+    use HasFactory, \App\Traits\BelongsToTenant;
 
     protected $fillable = [
-        'name',
-        'email',
+        'tenant_id',
+        'first_name',
+        'last_name',
         'phone',
         'password',
     ];

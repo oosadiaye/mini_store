@@ -28,8 +28,8 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        if (function_exists('tenant') && tenant()) {
-            return redirect()->intended('/admin/dashboard');
+        if (app()->bound('tenant')) {
+            return redirect()->intended(route('admin.dashboard', ['tenant' => app('tenant')->slug]));
         }
 
         // Strict Superadmin Check for Central Domain
@@ -51,11 +51,17 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
+        $tenant = app()->bound('tenant') ? app('tenant') : null;
+
         Auth::guard('web')->logout();
 
         $request->session()->invalidate();
 
         $request->session()->regenerateToken();
+
+        if ($tenant) {
+            return redirect()->route('tenant.login', ['tenant' => $tenant->slug]);
+        }
 
         return redirect('/');
     }

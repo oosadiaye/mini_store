@@ -26,6 +26,28 @@ class CustomerController extends Controller
         return view('admin.customers.index', compact('customers'));
     }
 
+    public function create()
+    {
+        return view('admin.customers.create');
+    }
+
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:customers,email',
+            'phone' => 'nullable|string|max:20',
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        $validated['password'] = bcrypt($validated['password']);
+        $validated['tenant_id'] = app('tenant')->id;
+
+        Customer::create($validated);
+
+        return redirect()->route('admin.customers.index')->with('success', 'Customer created successfully');
+    }
+
     public function show(Customer $customer)
     {
         $customer->load(['orders' => function($query) {
@@ -54,5 +76,29 @@ class CustomerController extends Controller
             ->paginate(50);
 
         return view('admin.customers.ledger', compact('customer', 'transactions'));
+    }
+
+    /**
+     * Store a new customer (Quick creation from POS/Sales)
+     */
+    public function quickStore(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'nullable|email|max:255',
+            'phone' => 'nullable|string|max:20',
+        ]);
+
+        $customer = Customer::create($validated);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'customer' => $customer,
+                'message' => 'Customer created successfully'
+            ]);
+        }
+
+        return redirect()->back()->with('success', 'Customer created successfully');
     }
 }

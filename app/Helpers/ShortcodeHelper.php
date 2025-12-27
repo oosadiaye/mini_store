@@ -29,14 +29,15 @@ class ShortcodeHelper
     protected static function replaceShortcodes($string)
     {
         // [company_name]
-        $string = str_replace('[company_name]', tenant('name') ?? 'Our Store', $string);
+        $tenantName = app()->bound('tenant') ? app('tenant')->name : 'Our Store';
+        $string = str_replace('[company_name]', $tenantName, $string);
 
         // [company_logo]
         // This creates an IMG tag. If user wants JUST the URL, they might need [company_logo_url]
         // Assuming [company_logo] is used in a text block, we render the img.
         if (str_contains($string, '[company_logo]')) {
             $logoUrl = \App\Helpers\LogoHelper::getLogo();
-            $imgTag = "<img src='{$logoUrl}' alt='" . (tenant('name') ?? 'Logo') . "' class='h-8 inline-block align-middle'>";
+            $imgTag = "<img src='{$logoUrl}' alt='" . (app()->bound('tenant') ? app('tenant')->name : 'Logo') . "' class='h-8 inline-block align-middle'>";
             $string = str_replace('[company_logo]', $imgTag, $string);
         }
 
