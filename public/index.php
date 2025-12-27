@@ -11,6 +11,14 @@ if (file_exists($maintenance = __DIR__.'/../storage/framework/maintenance.php'))
 }
 
 // Register the Composer autoloader...
+if (!file_exists(__DIR__.'/../vendor/autoload.php')) {
+    if (file_exists(__DIR__.'/init.php')) {
+        require __DIR__.'/init.php';
+        exit;
+    }
+    die("Vendor directory missing and init.php not found. Please run 'composer install'.");
+}
+
 require __DIR__.'/../vendor/autoload.php';
 
 // Bootstrap Laravel and handle the request...
