@@ -8,25 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        // Shopping Cart
-        Schema::create('carts', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('customer_id')->nullable()->constrained();
-            $table->string('session_id')->nullable();
-            $table->timestamps();
-            
-            $table->index('session_id');
-        });
-
-        Schema::create('cart_items', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('cart_id')->constrained()->onDelete('cascade');
-            $table->foreignId('product_id')->constrained();
-            $table->foreignId('product_variant_id')->nullable()->constrained();
-            $table->integer('quantity');
-            $table->decimal('price', 10, 2);
-            $table->timestamps();
-        });
+        // Shopping Cart and Cart Items are already created in 2024_01_06_000001_create_carts_tables.php
 
         // Wishlist
         Schema::create('wishlists', function (Blueprint $table) {
