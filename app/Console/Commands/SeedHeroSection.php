@@ -46,8 +46,12 @@ class SeedHeroSection extends Command
         ];
 
         $layout = PageLayout::updateOrCreate(
-            ['page_name' => 'home'],
             [
+                'tenant_id' => $tenant->id,
+                'page_name' => 'home'
+            ],
+            [
+                'tenant_id' => $tenant->id,
                 'page_name' => 'home',
                 'is_active' => true,
                 'sections' => [$heroData]
