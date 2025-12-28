@@ -25,5 +25,8 @@ class AppServiceProvider extends ServiceProvider
 
         // Register Announcement/Onboarding View Composer for Tenant Admin Layout
         \Illuminate\Support\Facades\View::composer('layouts.app', \App\Http\View\Composers\ActiveAnnouncementComposer::class);
+
+        // Load Single-DB Tenant Migrations
+        $this->loadMigrationsFrom(database_path('migrations/tenant'));
     }
 }
