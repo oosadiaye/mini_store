@@ -77,14 +77,14 @@
                 </div>
             @endif
 
-            <!-- Plans Grid -->
-            <div class="grid gap-8 lg:grid-cols-3 sm:grid-cols-2 grid-cols-1 max-w-sm sm:max-w-none mx-auto items-stretch">
+            <!-- Plans Flex Layout (Responsive & Centered) -->
+            <div class="flex flex-wrap justify-center gap-8 mx-auto">
                 @foreach($plans as $index => $plan)
                 @php
                     $isActive = $plan->id === app('tenant')->plan_id;
                     $isPopular = $index === 1 && !$isActive; // Only highlight popular if not current
                 @endphp
-                <div class="relative bg-white rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 flex flex-col {{ $isActive ? 'border-2 border-indigo-600 ring-4 ring-indigo-50' : ($isPopular ? 'border-2 border-indigo-400 ring-2 ring-indigo-50/50' : 'border border-gray-100') }}">
+                <div class="relative w-full max-w-sm flex-shrink-0 bg-white rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 flex flex-col {{ $isActive ? 'border-2 border-indigo-600 ring-4 ring-indigo-50' : ($isPopular ? 'border-2 border-indigo-400 ring-2 ring-indigo-50/50' : 'border border-gray-100') }}">
                     
                     @if($isActive)
                     <div class="absolute top-0 right-0 left-0 bg-indigo-600 text-white text-xs font-bold px-3 py-1 uppercase tracking-widest text-center rounded-t-xl">
