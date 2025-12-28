@@ -12,7 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('product_variants', function (Blueprint $table) {
-            $table->json('attributes')->nullable()->after('name');
+            if (!Schema::hasColumn('product_variants', 'attributes')) {
+                $table->json('attributes')->nullable()->after('name');
+            }
         });
     }
 

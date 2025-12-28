@@ -12,8 +12,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('products', function (Blueprint $table) {
-            $table->decimal('flash_sale_price', 10, 2)->nullable()->after('price');
-            $table->timestamp('flash_sale_end_date')->nullable()->after('flash_sale_price');
+            if (!Schema::hasColumn('products', 'flash_sale_price')) {
+                 $table->decimal('flash_sale_price', 10, 2)->nullable()->after('price');
+            }
+            if (!Schema::hasColumn('products', 'flash_sale_end_date')) {
+                 $table->timestamp('flash_sale_end_date')->nullable()->after('flash_sale_price');
+            }
         });
     }
 

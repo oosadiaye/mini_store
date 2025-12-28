@@ -12,7 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('storefront_templates', function (Blueprint $table) {
-            $table->json('layout_data')->nullable()->after('default_settings');
+            if (!Schema::hasColumn('storefront_templates', 'layout_data')) {
+                $table->json('layout_data')->nullable()->after('default_settings');
+            }
         });
     }
 
