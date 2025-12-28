@@ -12,7 +12,16 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('page_layouts', function (Blueprint $table) {
-            $table->dropUnique('page_name'); // Explicitly drop the index named 'page_name'
+            // Drop the existing unique index (handle varied names robustly)
+            try {
+                $table->dropUnique(['page_name']);
+            } catch (\Exception $e) {
+                try {
+                    $table->dropUnique('page_name');
+                } catch (\Exception $ex) {
+                    // Ignore if not found
+                }
+            }
             $table->unique(['page_name', 'template_id']);
         });
     }
