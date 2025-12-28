@@ -12,22 +12,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (Account::where('account_code', '1300')->doesntExist()) {
-            Account::create([
-                'account_code' => '1300',
-                'account_name' => 'Input Tax Receivable',
-                'account_type' => 'asset',
-                'description' => 'Tax paid on purchases to be claimed',
-                'is_active' => true,
-            ]);
-        }
+        // This logic is already handled in ChartOfAccountsSeeder.
+        // Removed to prevent "Field 'tenant_id' doesn't have a default value" error during migration.
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Account::where('account_code', '1300')->delete();
     }
 };
