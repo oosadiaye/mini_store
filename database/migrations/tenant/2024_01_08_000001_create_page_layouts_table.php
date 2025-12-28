@@ -14,12 +14,14 @@ return new class extends Migration
         if (!Schema::hasTable('page_layouts')) {
             Schema::create('page_layouts', function (Blueprint $table) {
                 $table->id();
+                $table->string('tenant_id');
                 $table->string('page_name'); // 'home', 'product', 'category', etc.
                 $table->json('sections'); // Ordered array of section configurations
                 $table->boolean('is_active')->default(true);
                 $table->timestamps();
                 
-                $table->unique('page_name');
+                $table->unique(['tenant_id', 'page_name']);
+                $table->foreign('tenant_id')->references('id')->on('tenants')->cascadeOnDelete();
             });
         }
     }
