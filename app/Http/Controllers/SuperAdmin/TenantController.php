@@ -121,24 +121,60 @@ class TenantController extends Controller
         return back()->with('success', 'Tenant reactivated successfully.');
     }
     
+    public function edit(Tenant $tenant)
+    {
+        $plans = Plan::where('is_active', true)->get();
+        return view('superadmin.tenants.edit', compact('tenant', 'plans'));
+    }
+
+    public function update(Request $request, Tenant $tenant)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:tenants,email,' . $tenant->id,
+            'plan_id' => 'required|exists:plans,id',
+            'is_active' => 'boolean',
+        ]);
+
+        $plan = Plan::find($request->plan_id);
+
+        $tenant->update([
+            'name' => $request->name,
+            'email' => $request->email,
+            'plan_id' => $plan->id,
+            // 'plan' => $plan->name, // Keeping plan string updated for compatibility
+            'is_active' => $request->has('is_active'),
+        ]);
+
+        // If you were to handle plan changes logic (dates etc), do it here or in a service
+        // For now, this is a basic CRUD update
+
+        \App\Helpers\AuditHelper::log('update_tenant', "Updated tenant: {$tenant->id}", ['tenant_id' => $tenant->id]);
+
+        return redirect()->route('superadmin.tenants.index')->with('success', 'Tenant updated successfully.');
+    }
+
+    /** 
+     * @deprecated Use update() method instead. Kept for legacy routes if any.
+     */
     public function updatePlan(Request $request, Tenant $tenant)
     {
+        // ... previous implementation refactored into update() or kept if specific route uses it
+        // The previous updatePlan only updated plan_id. The new update() does more.
+        
         $validate = $request->validate([
-            'plan_id' => 'required|exists:plans,id',
+             'plan_id' => 'required|exists:plans,id',
         ]);
         
         $plan = Plan::find($validate['plan_id']);
-        
+         
         $tenant->update([
-            'plan_id' => $plan->id,
-            // Also update the 'plan' string column for backward compatibility if needed, or deprecate it
-            'plan' => $plan->name 
+             'plan_id' => $plan->id,
+             'plan' => $plan->name 
         ]);
-        
-        // You might want to update subscription dates here or trigger events
-        
-        \App\Helpers\AuditHelper::log('update_tenant_plan', "Updated tenant plan to {$plan->name}: {$tenant->id}", ['tenant_id' => $tenant->id]);
-        
-        return back()->with('success', 'Tenant plan updated successfully.');
+         
+         \App\Helpers\AuditHelper::log('update_tenant_plan', "Updated tenant plan to {$plan->name}: {$tenant->id}", ['tenant_id' => $tenant->id]);
+         
+         return back()->with('success', 'Tenant plan updated successfully.');
     }
 }
