@@ -208,6 +208,7 @@ Route::middleware(['web', \App\Http\Middleware\IdentifyTenantFromPath::class])
             
             // Basic Reports
             Route::get('/accounting/profit-loss', [Admin\AccountingController::class, 'profitLoss'])->name('accounting.profit-loss');
+            Route::get('/financial-analysis', [Admin\FinancialAnalysisController::class, 'index'])->name('financial-analysis.index');
         });
 
         // Advanced Accounting (Balance Sheet, Trial Balance)

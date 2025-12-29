@@ -37,6 +37,12 @@ Route::post('superadmin/stop-impersonation', [SuperAdmin\TenantController::class
 Route::prefix('superadmin')->middleware(['auth', 'superadmin'])->name('superadmin.')->group(function () {
     Route::post('/logout', [SuperAdmin\AuthController::class, 'destroy'])->name('logout');
     Route::get('/', [SuperAdmin\DashboardController::class, 'index'])->name('dashboard');
+
+    // Role Management
+    Route::resource('roles', SuperAdmin\RoleController::class);
+
+    // Staff Management
+    Route::resource('staff', SuperAdmin\StaffController::class);
     
     // Tenant Management
     Route::get('tenants/{tenant}/impersonate', [SuperAdmin\TenantController::class, 'impersonate'])->name('tenants.impersonate');

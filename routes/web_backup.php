@@ -15,10 +15,6 @@ Route::prefix('install')->name('install.')->group(function () {
     Route::get('/finish', [\App\Http\Controllers\InstallerController::class, 'finish'])->name('finish');
 });
 
-// Email Previews
-Route::get('/preview/email/financial', [\App\Http\Controllers\Admin\EmailPreviewController::class, 'weeklyFinancialReport']);
-Route::get('/preview/email/staff-invitation', [\App\Http\Controllers\Admin\EmailPreviewController::class, 'staffInvitation']);
-
 // Load Central Routes (landing, registration, superadmin)
 require __DIR__ . '/central.php';
 
