@@ -89,7 +89,7 @@ class PlanController extends Controller
     public function destroy(Plan $plan)
     {
         // Check if plan has tenants
-        if ($plan->tenants()->exists()) {
+        if (\App\Models\Tenant::where('plan_id', $plan->id)->exists()) {
             return back()->with('error', 'Cannot delete plan as it has assigned tenants. Please reassign them first.');
         }
 

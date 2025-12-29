@@ -14,7 +14,7 @@
                     <span class="px-2.5 py-0.5 rounded-full text-xs font-medium {{ $tenant->is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
                         {{ $tenant->is_active ? 'Active' : 'Inactive' }}
                     </span>
-                    <span class="text-sm text-gray-500">Plan: {{ $tenant->plan ? $tenant->plan->name : 'No Plan' }}</span>
+                    <span class="text-sm text-gray-500">Plan: {{ $tenant->currentPlan ? $tenant->currentPlan->name : ($tenant->plan ?? 'No Plan') }}</span>
                 </div>
             </div>
             <div class="flex space-x-3">
