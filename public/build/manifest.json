@@ -1,6 +1,22 @@
 {
+  "_alpine-S4M4TpEG.js": {
+    "file": "assets/alpine-S4M4TpEG.js",
+    "name": "alpine"
+  },
+  "_axios-B9ygI19o.js": {
+    "file": "assets/axios-B9ygI19o.js",
+    "name": "axios"
+  },
+  "_vendor-bOEoWcnc.js": {
+    "file": "assets/vendor-bOEoWcnc.js",
+    "name": "vendor"
+  },
+  "_vue-BODBsizo.js": {
+    "file": "assets/vue-BODBsizo.js",
+    "name": "vue"
+  },
   "resources/css/app.css": {
-    "file": "assets/app-BabuztRU.css",
+    "file": "assets/app-CMz01ZrE.css",
     "src": "resources/css/app.css",
     "isEntry": true,
     "name": "app",
@@ -9,12 +25,18 @@
     ]
   },
   "resources/js/app.js": {
-    "file": "assets/app-ChB9HYfm.js",
+    "file": "assets/app-mnAIaIUq.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
+    "imports": [
+      "_vendor-bOEoWcnc.js",
+      "_alpine-S4M4TpEG.js",
+      "_vue-BODBsizo.js",
+      "_axios-B9ygI19o.js"
+    ],
     "css": [
-      "assets/app-SydBMb-O.css"
+      "assets/app-TsM-QTHb.css"
     ]
   }
 }

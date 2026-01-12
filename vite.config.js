@@ -18,4 +18,25 @@ export default defineConfig({
             'vue': 'vue/dist/vue.esm-bundler.js',
         },
     },
+    build: {
+        chunkSizeWarningLimit: 1000,
+        rollupOptions: {
+            output: {
+                manualChunks(id) {
+                    if (id.includes('node_modules')) {
+                        if (id.includes('vue')) {
+                            return 'vue';
+                        }
+                        if (id.includes('alpinejs')) {
+                            return 'alpine';
+                        }
+                        if (id.includes('axios')) {
+                            return 'axios';
+                        }
+                        return 'vendor';
+                    }
+                }
+            }
+        }
+    },
 });
