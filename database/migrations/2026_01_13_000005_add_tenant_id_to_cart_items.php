@@ -12,9 +12,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('cart_items', function (Blueprint $table) {
-            $table->string('tenant_id')->nullable()->after('id')->index();
-        });
+        if (!Schema::hasColumn('cart_items', 'tenant_id')) {
+            Schema::table('cart_items', function (Blueprint $table) {
+                $table->string('tenant_id')->nullable()->after('id')->index();
+            });
+        }
 
         // Backfill tenant_id from parent carts
         $driver = DB::getDriverName();
