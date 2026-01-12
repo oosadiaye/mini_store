@@ -8,11 +8,12 @@ use Illuminate\Database\Eloquent\Builder;
 
 class Announcement extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Traits\BelongsToTenant;
 
     protected $connection = 'mysql'; // Ensure it always uses the central database
 
     protected $fillable = [
+        'tenant_id',
         'title',
         'content',
         'type',

@@ -7,9 +7,10 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Coupon extends Model
 {
-    use SoftDeletes;
+    use SoftDeletes, \App\Traits\BelongsToTenant;
 
     protected $fillable = [
+        'tenant_id',
         'code',
         'type',
         'value',

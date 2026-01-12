@@ -7,9 +7,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class WarehouseStock extends Model
 {
+    use \App\Traits\BelongsToTenant;
+
     protected $table = 'product_warehouse';
 
     protected $fillable = [
+        'tenant_id',
         'warehouse_id',
         'product_id',
         'product_variant_id',

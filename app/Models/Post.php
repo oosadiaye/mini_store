@@ -9,9 +9,10 @@ use Illuminate\Support\Str;
 
 class Post extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, \App\Traits\BelongsToTenant;
 
     protected $fillable = [
+        'tenant_id',
         'title',
         'slug',
         'excerpt',

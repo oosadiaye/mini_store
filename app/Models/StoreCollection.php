@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Builder;
 
 class StoreCollection extends Category
 {
+    use \App\Traits\BelongsToTenant;
+
     protected $table = 'categories';
 
     /**

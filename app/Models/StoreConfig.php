@@ -8,8 +8,10 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class StoreConfig extends Model
 {
     use HasFactory;
+    use \App\Traits\BelongsToTenant;
 
     protected $fillable = [
+        'tenant_id',
         'store_name',
         'logo_path',
         'brand_color',

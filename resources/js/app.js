@@ -26,6 +26,7 @@ import MessageInbox from './components/messages/MessageInbox.vue';
 import StoreContent from './components/storefront/StoreContent.vue';
 import TenantLogin from './components/auth/TenantLogin.vue';
 import DomainSettings from './components/settings/DomainSettings.vue';
+import InventoryReport from './components/admin/reports/InventoryReport.vue';
 
 import { EditorStore } from './cms/store';
 import editable from './cms/editable';
@@ -72,6 +73,7 @@ app.component('message-inbox', MessageInbox);
 app.component('store-content', StoreContent);
 app.component('tenant-login', TenantLogin);
 app.component('domain-settings', DomainSettings);
+app.component('inventory-report', InventoryReport);
 
 
 app.mount('#app');

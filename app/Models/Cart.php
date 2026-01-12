@@ -7,7 +7,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Cart extends Model
 {
+    use \App\Traits\BelongsToTenant;
+
     protected $fillable = [
+        'tenant_id',
         'session_id',
         'customer_id',
         'coupon_id',

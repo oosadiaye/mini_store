@@ -7,9 +7,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class CustomerAddress extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Traits\BelongsToTenant;
 
     protected $fillable = [
+        'tenant_id',
         'customer_id',
         'address_type',
         'address_line1',

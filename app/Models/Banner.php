@@ -8,9 +8,10 @@ use Illuminate\Support\Facades\Storage;
 
 class Banner extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Traits\BelongsToTenant;
 
     protected $fillable = [
+        'tenant_id',
         'title',
         'description',
         'image',

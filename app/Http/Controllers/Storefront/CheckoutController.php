@@ -12,7 +12,9 @@ use App\Models\StorefrontProduct;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
-
+use Illuminate\Support\Facades\Mail;
+use App\Mail\OrderPlacedCustomer;
+use App\Mail\OrderPlacedAdmin;
 use Illuminate\Support\Str;
 
 class CheckoutController extends Controller
@@ -139,6 +141,7 @@ class CheckoutController extends Controller
 
             // 5. Handle Payment
             if ($request->payment_method === 'cod') {
+                $this->sendOrderEmails($order);
                 return redirect()->route('storefront.checkout.success', ['order' => $order->order_number]);
             } else {
                 // Initialize Online Payment
@@ -193,6 +196,8 @@ class CheckoutController extends Controller
                         'transaction_id' => $verify['reference'], // Save gateway ref
                     ]);
                     
+                    $this->sendOrderEmails($order);
+                    
                     // Record Payment in Accounting?
                     // app(\App\Services\AccountingService::class)->recordPayment(...) // Optimized for later
                     
@@ -215,6 +220,20 @@ class CheckoutController extends Controller
         $order = Order::where('order_number', $orderNumber)->firstOrFail();
         
         return view('storefront.checkout.success', compact('order'));
+    }
+
+    private function sendOrderEmails($order)
+    {
+        try {
+            $tenant = app('tenant');
+            // Notify Customer
+            Mail::to($order->customer->email)->send(new OrderPlacedCustomer($order, $tenant));
+            
+            // Notify Admin (Tenant Email)
+            Mail::to($tenant->email)->send(new OrderPlacedAdmin($order, $tenant));
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Order emails failed: ' . $e->getMessage());
+        }
     }
 
     private function getCart()

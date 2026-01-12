@@ -7,7 +7,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class CartItem extends Model
 {
+    use \App\Traits\BelongsToTenant;
+
     protected $fillable = [
+        'tenant_id',
         'cart_id',
         'product_id',
         'product_variant_id',

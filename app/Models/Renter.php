@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Renter extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, \App\Traits\BelongsToTenant;
 
     protected $fillable = [
         'name',
@@ -36,12 +36,6 @@ class Renter extends Model
     protected static function boot()
     {
         parent::boot();
-        
-        static::creating(function ($model) {
-            if (empty($model->tenant_id)) {
-                $model->tenant_id = app('tenant')->id ?? null;
-            }
-        });
     }
 
     /**
@@ -75,12 +69,4 @@ class Renter extends Model
         return $query->where('status', 'active');
     }
 
-    /**
-     * Scope for tenant context
-     */
-    public function scopeForTenant($query, $tenantId = null)
-    {
-        $tenantId = $tenantId ?? (app('tenant')->id ?? null);
-        return $query->where('tenant_id', $tenantId);
-    }
 }

@@ -7,6 +7,8 @@ use App\Models\Customer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\CustomerWelcome;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
@@ -77,6 +79,13 @@ class AuthController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
         ]);
+
+        // Send Welcome Email
+        try {
+            Mail::to($customer->email)->send(new CustomerWelcome($customer, app('tenant')));
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Welcome email failed: ' . $e->getMessage());
+        }
 
         Auth::guard('customer')->login($customer);
 

@@ -7,9 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class AuditLog extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Traits\BelongsToTenant;
 
-    protected $fillable = ['user_id', 'action', 'description', 'ip_address', 'details'];
+    protected $fillable = ['tenant_id', 'user_id', 'action', 'description', 'ip_address', 'details'];
 
     protected $casts = [
         'details' => 'array',

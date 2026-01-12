@@ -7,9 +7,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class PageSection extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Traits\BelongsToTenant;
 
     protected $fillable = [
+        'tenant_id',
         'page_id',
         'section_type',
         'title',

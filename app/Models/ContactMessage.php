@@ -7,9 +7,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class ContactMessage extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Traits\BelongsToTenant;
 
     protected $fillable = [
+        'tenant_id',
         'store_id',
         'name',
         'email',

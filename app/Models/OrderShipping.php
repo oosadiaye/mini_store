@@ -7,11 +7,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class OrderShipping extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Traits\BelongsToTenant;
 
     protected $table = 'order_shipping';
 
     protected $fillable = [
+        'tenant_id',
         'order_id',
         'address_line1',
         'address_line2',

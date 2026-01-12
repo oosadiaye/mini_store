@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class SubscriptionPayment extends Model
 {
+    use \App\Traits\BelongsToTenant;
+
     protected $fillable = [
         'tenant_id',
         'plan_id',

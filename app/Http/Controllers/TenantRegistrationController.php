@@ -90,6 +90,16 @@ class TenantRegistrationController extends Controller
                 'show_on_storefront' => true,
             ]);
 
+            // Create Default Store Config
+            \App\Models\StoreConfig::create([
+                'tenant_id' => $tenant->id,
+                'store_name' => $tenant->name,
+                'brand_color' => '#4f46e5',
+                'selected_categories' => [],
+                'layout_preference' => 'grid',
+                'is_completed' => true,
+            ]);
+
             // Create Default Supplier
             \App\Models\Supplier::create([
                 'tenant_id' => $tenant->id,

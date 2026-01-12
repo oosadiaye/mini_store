@@ -15,17 +15,31 @@ class PermissionSeeder extends Seeder
         }
 
         $permissions = [
-            // Products
+            // Dashboard
+            'view_dashboard',
+            'view_analytics',
+
+            // Products & Inventory
             'view_products',
             'create_products',
             'edit_products',
             'delete_products',
+            'manage_inventory', // Stock adjustments
+            'view_warehouses',
+            'manage_warehouses',
+            'view_brands',
+            'manage_brands',
+            'view_categories',
+            'manage_categories',
             
-            // Orders
-            'view_orders',
+            // Sales & POS
+            'access_pos',
             'create_orders',
+            'view_orders',
             'edit_orders',
             'delete_orders',
+            'manage_returns',
+            'view_pos_reports',
             
             // Customers
             'view_customers',
@@ -33,32 +47,25 @@ class PermissionSeeder extends Seeder
             'edit_customers',
             'delete_customers',
             
-            // Suppliers
+            // Suppliers & POs
             'view_suppliers',
-            'create_suppliers',
-            'edit_suppliers',
-            'delete_suppliers',
-            
-            // Inventory
-            'view_inventory',
-            'manage_inventory',
-            
-            // Purchase Orders
-            'view_purchases',
-            'create_purchases',
-            'edit_purchases',
-            'delete_purchases',
+            'manage_suppliers', // create/edit/delete
+            'view_purchase_orders',
+            'create_purchase_orders',
+            'edit_purchase_orders',
+            'delete_purchase_orders',
+            'receive_items', // GRN
             
             // Accounting
-            'view_accounting',
-            'manage_accounting',
-            'view_reports',
+            'access_accounting',
+            'view_financial_reports',
+            'manage_accounts',
+            'manage_journals',
+            'view_payments',
+            'manage_payments',
             
-            // Renters
-            'view_renters',
-            'create_renters',
-            'edit_renters',
-            'delete_renters',
+            // Storefront
+            'manage_storefront', // Banners, settings
             
             // Users & Roles
             'view_users',
@@ -66,17 +73,14 @@ class PermissionSeeder extends Seeder
             'edit_users',
             'delete_users',
             'view_roles',
-            'create_roles',
-            'edit_roles',
-            'delete_roles',
+            'manage_roles',
             
             // Settings
             'manage_settings',
-            'manage_warehouses',
         ];
 
         foreach ($permissions as $permission) {
-            Permission::create(['name' => $permission]);
+            Permission::firstOrCreate(['name' => $permission, 'guard_name' => 'web']);
         }
     }
 }

@@ -8,7 +8,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class TicketCategory extends Model
 {
-    protected $fillable = ['name', 'description', 'assigned_to'];
+    use \App\Traits\BelongsToTenant;
+
+    protected $fillable = ['tenant_id', 'name', 'description', 'assigned_to'];
 
     public function assignedStaff(): BelongsTo
     {

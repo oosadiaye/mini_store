@@ -78,7 +78,7 @@ return new class extends Migration
                         } catch (\Exception $e) {}
 
                         $table->foreign('tenant_id')
-                            ->references('slug')
+                            ->references('id')
                             ->on('tenants')
                             ->onDelete('cascade')
                             ->onUpdate('cascade');

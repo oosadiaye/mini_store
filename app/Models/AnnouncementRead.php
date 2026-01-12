@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class AnnouncementRead extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Traits\BelongsToTenant;
     
     protected $connection = 'mysql'; // Ensure it always uses the central database
     

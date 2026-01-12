@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class SupportTicket extends Model
 {
+    use \App\Traits\BelongsToTenant;
+
     protected $fillable = [
         'tenant_id',
         'category_id',

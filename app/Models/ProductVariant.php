@@ -8,7 +8,10 @@ use Illuminate\Support\Str;
 
 class ProductVariant extends Model
 {
+    use \App\Traits\BelongsToTenant;
+
     protected $fillable = [
+        'tenant_id',
         'product_id',
         'name',
         'sku',
