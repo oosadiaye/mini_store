@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class OrderReturn extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Traits\BelongsToTenant;
 
     protected $fillable = [
         'order_id',

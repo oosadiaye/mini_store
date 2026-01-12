@@ -11,14 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('product_combos', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('parent_product_id')->constrained('products')->cascadeOnDelete();
-            $table->foreignId('child_product_id')->constrained('products')->cascadeOnDelete();
-            $table->integer('quantity')->default(1);
-            $table->decimal('discount_amount', 8, 2)->nullable();
-            $table->timestamps();
-        });
+        if (!Schema::hasTable('product_combos')) {
+            Schema::create('product_combos', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('parent_product_id')->constrained('products')->cascadeOnDelete();
+                $table->foreignId('child_product_id')->constrained('products')->cascadeOnDelete();
+                $table->integer('quantity')->default(1);
+                $table->decimal('discount_amount', 8, 2)->nullable();
+                $table->timestamps();
+            });
+        }
     }
 
     /**

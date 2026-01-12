@@ -7,14 +7,14 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Model;
 
-class Customer extends Model
+class Customer extends Authenticatable
 {
     use HasFactory, \App\Traits\BelongsToTenant;
 
     protected $fillable = [
         'tenant_id',
-        'first_name',
-        'last_name',
+        'name',
+        'email',
         'phone',
         'password',
     ];
@@ -37,5 +37,10 @@ class Customer extends Model
     public function transactions()
     {
         return $this->morphMany(JournalEntryLine::class, 'entity');
+    }
+
+    public function payments()
+    {
+        return $this->morphMany(Payment::class, 'entity');
     }
 }

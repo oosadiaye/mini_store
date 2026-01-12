@@ -85,7 +85,14 @@ class PurchaseReturnController extends Controller
                 // Deduct from inventory
                 $poItem = $purchaseOrder->items()->find($item['purchase_order_item_id']);
                 if ($poItem->product && $poItem->product->track_inventory) {
-                    $poItem->product->decrement('stock_quantity', $item['quantity_returned']);
+                    $poItem->product->recordMovement(
+                        $purchaseOrder->warehouse_id, 
+                        -$item['quantity_returned'], 
+                        'return', 
+                        'purchase_return', 
+                        $return->id, 
+                        "Return to supplier via Return #{$return->id}"
+                    );
                 }
             }
 

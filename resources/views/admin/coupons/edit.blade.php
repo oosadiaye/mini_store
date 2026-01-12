@@ -16,14 +16,14 @@
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Coupon Code *</label>
                 <input type="text" name="code" value="{{ old('code', $coupon->code) }}" required
-                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 uppercase font-mono">
+                    class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 uppercase font-mono">
             </div>
 
             <div class="grid grid-cols-2 gap-6">
                 <!-- Type -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Discount Type *</label>
-                    <select name="type" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                    <select name="type" required class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
                         <option value="percent" {{ old('type', $coupon->type) == 'percent' ? 'selected' : '' }}>Percentage (%)</option>
                         <option value="fixed" {{ old('type', $coupon->type) == 'fixed' ? 'selected' : '' }}>Fixed Amount ($)</option>
                     </select>
@@ -33,7 +33,7 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Value *</label>
                     <input type="number" name="value" value="{{ old('value', $coupon->value) }}" required step="0.01" min="0"
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
                 </div>
             </div>
 
@@ -42,14 +42,14 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Minimum Spend</label>
                     <input type="number" name="min_spend" value="{{ old('min_spend', $coupon->min_spend) }}" step="0.01" min="0"
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
                 </div>
 
                 <!-- Usage Limit -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Usage Limit</label>
                     <input type="number" name="usage_limit" value="{{ old('usage_limit', $coupon->usage_limit) }}" min="1"
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
                 </div>
             </div>
 
@@ -58,21 +58,21 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
                     <input type="datetime-local" name="start_date" value="{{ old('start_date', $coupon->start_date ? $coupon->start_date->format('Y-m-d\TH:i') : '') }}"
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
                 </div>
 
                 <!-- End Date -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">End Date</label>
                     <input type="datetime-local" name="end_date" value="{{ old('end_date', $coupon->end_date ? $coupon->end_date->format('Y-m-d\TH:i') : '') }}"
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
                 </div>
             </div>
 
             <!-- Status -->
             <div class="flex items-center">
                 <input type="checkbox" name="is_active" value="1" {{ old('is_active', $coupon->is_active) ? 'checked' : '' }}
-                    class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded mr-2">
+                    class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-2 border-gray-300 rounded mr-2">
                 <label class="text-sm font-medium text-gray-700">Active</label>
             </div>
             
@@ -82,7 +82,7 @@
         </div>
 
         <div class="mt-8 flex justify-end">
-             <a href="{{ route('admin.coupons.index') }}" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 mr-4">
+             <a href="{{ route('admin.coupons.index') }}" class="px-6 py-2 border-2 border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 mr-4">
                 Cancel
             </a>
             <button type="submit" class="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition">

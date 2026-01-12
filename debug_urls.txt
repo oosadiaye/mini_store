@@ -1,0 +1,2 @@
+Brand: http://127.0.0.1:8000/storage/global/branding/3b945b12-79b7-400f-ab85-1585d22ea776.png
+Tenant: http://127.0.0.1:8000/storage/page-assets/branding/dd4d7929-11fd-4cb9-a822-0de4c44261b6.png

@@ -94,7 +94,15 @@ class OrderReturnController extends Controller
                 if ($item['restock_inventory']) {
                     $orderItem = $order->items()->find($item['order_item_id']);
                     if ($orderItem->product && $orderItem->product->track_inventory) {
-                        $orderItem->product->increment('stock_quantity', $item['quantity_returned']);
+                        $warehouseId = $order->warehouse_id ?? 1; // Default to 1 if not set
+                        $orderItem->product->recordMovement(
+                            $warehouseId, 
+                            $item['quantity_returned'], 
+                            'return', 
+                            'order_return', 
+                            $return->id, 
+                            "Restock from return #{$return->id}"
+                        );
                     }
                 }
             }

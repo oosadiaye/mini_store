@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class JournalEntry extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Traits\BelongsToTenant;
 
     protected $guarded = ['id'];
     protected $casts = ['entry_date' => 'date'];

@@ -12,22 +12,32 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Essential for VPS/Load Balancers
+        $middleware->trustProxies(at: '*');
+        
+        // Remove CSRF exceptions for sensitive endpoints
         $middleware->validateCsrfTokens(except: [
-            '/login',
-            '/logout',
+            // No exceptions for login/logout (Security risk)
+            // Add external webhooks here if needed
         ]);
         
         $middleware->web(append: [
             \App\Http\Middleware\CheckInstalled::class,
             \App\Http\Middleware\IdentifyTenantFromCustomDomain::class,
             \App\Http\Middleware\IdentifyTenantFromSubdomain::class,
+            \App\Http\Middleware\SecurityHeaders::class, // Global security headers
         ]);
 
         $middleware->alias([
             'superadmin' => \App\Http\Middleware\CheckSuperAdmin::class,
             'feature' => \App\Http\Middleware\CheckFeature::class,
             'subscription' => \App\Http\Middleware\EnsureTenantHasSubscription::class,
+            'tenant.access' => \App\Http\Middleware\TenantAccess::class, // Tenant isolation
+            'storefront_active' => \App\Http\Middleware\EnsureStorefrontActive::class,
         ]);
+        
+        // API Rate Limiting
+        $middleware->throttleApi();
         
         // Configure authentication redirects to maintain tenant context
         $middleware->redirectGuestsTo(function (\Illuminate\Http\Request $request) {
@@ -54,12 +64,20 @@ return Application::configure(basePath: dirname(__DIR__))
         });
         
         $middleware->redirectUsersTo(function () {
+            $user = auth()->user();
+
             // Check if we're in a tenant context
-            if (function_exists('tenant') && tenant()) {
+            if (app()->bound('tenant') && tenant()) {
                 return url('/admin/dashboard');
             }
-            // Central domain - redirect to superadmin dashboard
-            return url('/superadmin/dashboard');
+
+            // Central domain - redirect to superadmin dashboard ONLY if superadmin
+            if ($user && $user->is_superadmin) {
+                return url('/superadmin/dashboard');
+            }
+
+            // Otherwise, redirect to a safe landing page or back home
+            return url('/');
         });
     })
     ->withExceptions(function (Exceptions $exceptions): void {

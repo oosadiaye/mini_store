@@ -15,6 +15,22 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="font-sans text-gray-900 antialiased bg-gray-50">
+    @if(session('superadmin_impersonator_id'))
+        <div class="fixed top-0 left-0 w-full z-50 bg-indigo-600 px-4 py-2 text-white shadow-md">
+            <div class="flex items-center justify-between max-w-7xl mx-auto">
+                <p class="text-sm font-medium">
+                    <i class="fas fa-user-secret mr-2"></i> Impersonating <span class="font-bold underline">{{ Auth::user()->name }}</span>
+                </p>
+                <form action="{{ route('superadmin.stop-impersonation') }}" method="POST">
+                    @csrf
+                    <button type="submit" class="bg-white text-indigo-700 hover:bg-gray-100 px-3 py-1 rounded-md text-xs font-bold uppercase tracking-wide transition shadow-sm border border-transparent">
+                        Exit Impersonation
+                    </button>
+                </form>
+            </div>
+        </div>
+        <style>body { padding-top: 40px; }</style>
+    @endif
     <div class="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-100 py-12 px-4 sm:px-6 lg:px-8 font-sans">
         <div class="max-w-7xl mx-auto">
             <!-- Header -->

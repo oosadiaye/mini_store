@@ -92,23 +92,10 @@ class StockTransfer extends Model
             }
 
             // Decrease stock in source warehouse
-            \DB::table('product_warehouse')
-                ->where('product_id', $this->product_id)
-                ->where('warehouse_id', $this->from_warehouse_id)
-                ->decrement('quantity', $this->quantity);
+            $this->product->recordMovement($this->from_warehouse_id, -$this->quantity, 'transfer', 'transfer', $this->id, 'Transfer to ' . $this->toWarehouse->name, false);
 
-            // Increase stock in destination warehouse (or create record)
-            \DB::table('product_warehouse')
-                ->updateOrInsert(
-                    [
-                        'product_id' => $this->product_id,
-                        'warehouse_id' => $this->to_warehouse_id,
-                    ],
-                    [
-                        'quantity' => \DB::raw("quantity + {$this->quantity}"),
-                        'updated_at' => now(),
-                    ]
-                );
+            // Increase stock in destination warehouse
+            $this->product->recordMovement($this->to_warehouse_id, $this->quantity, 'transfer', 'transfer', $this->id, 'Transfer from ' . $this->fromWarehouse->name, false);
 
             // Update transfer status
             $this->update([

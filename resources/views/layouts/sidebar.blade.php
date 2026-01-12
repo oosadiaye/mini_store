@@ -1,4 +1,4 @@
-<div class="flex flex-col h-full bg-slate-900 text-white border-r border-slate-800">
+<div class="flex flex-col h-full bg-slate-900 text-white border-r border-slate-800" v-pre>
     <!-- Logo area -->
     <div class="flex items-center justify-center h-16 shrink-0 px-4 border-b border-slate-800 bg-slate-950">
         <a href="{{ route('admin.dashboard', ['tenant' => $tenant->slug]) }}" class="flex items-center space-x-3">
@@ -152,6 +152,39 @@
             </a>
             @endif
 
+            @endif
+
+            <!-- Online Store Section -->
+            @if($tenant->hasFeature('online_store'))
+            <div class="pt-6 pb-2">
+                <h3 class="px-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Online Store</h3>
+            </div>
+            
+            @if($tenant->hasFeature('woocommerce'))
+            <a href="{{ route('admin.woocommerce.index', ['tenant' => $tenant->slug]) }}"
+               class="group flex items-center px-3 py-2.5 text-sm font-medium rounded-md transition-all duration-200 {{ request()->routeIs('admin.woocommerce.index') || request()->routeIs('admin.woocommerce.settings') ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
+                <svg class="mr-3 h-5 w-5 flex-shrink-0 {{ request()->routeIs('admin.woocommerce.index') || request()->routeIs('admin.woocommerce.settings') ? 'text-white' : 'text-slate-400 group-hover:text-white' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                   <path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
+                </svg>
+                WooCommerce Settings
+            </a>
+            
+            <a href="{{ route('admin.woocommerce.orders', ['tenant' => $tenant->slug]) }}"
+               class="group flex items-center px-3 py-2.5 text-sm font-medium rounded-md transition-all duration-200 {{ request()->routeIs('admin.woocommerce.orders') ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
+                <svg class="mr-3 h-5 w-5 flex-shrink-0 {{ request()->routeIs('admin.woocommerce.orders') ? 'text-white' : 'text-slate-400 group-hover:text-white' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                   <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                </svg>
+                WooCommerce Orders
+            </a>
+            @endif
+            
+            <a href="{{ route('admin.store-content.edit', ['tenant' => $tenant->slug]) }}"
+               class="group flex items-center px-3 py-2.5 text-sm font-medium rounded-md transition-all duration-200 {{ request()->routeIs('admin.store-content.*') ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
+                <svg class="mr-3 h-5 w-5 flex-shrink-0 {{ request()->routeIs('admin.store-content.*') ? 'text-white' : 'text-slate-400 group-hover:text-white' }}" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+                </svg>
+                Store Content
+            </a>
             @endif
 
              <!-- Finance Section -->

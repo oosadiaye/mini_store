@@ -6,9 +6,20 @@ use App\Http\Controllers\Controller;
 use App\Models\Banner;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use App\Services\SecureFileUploader;
 
 class BannerController extends Controller
 {
+    /**
+     * @var SecureFileUploader
+     */
+    protected $uploader;
+
+    public function __construct(SecureFileUploader $uploader)
+    {
+        $this->uploader = $uploader;
+    }
+
     public function index()
     {
         $banners = Banner::orderBy('position')
@@ -34,7 +45,7 @@ class BannerController extends Controller
         $data = $request->except('image');
 
         if ($request->hasFile('image')) {
-            $data['image'] = $request->file('image')->store('banners', 'public');
+            $data['image'] = $this->uploader->upload($request->file('image'), 'banners', 'tenant');
         }
 
         Banner::create($data);
@@ -60,9 +71,9 @@ class BannerController extends Controller
 
         if ($request->hasFile('image')) {
             if ($banner->image) {
-                Storage::disk('public')->delete($banner->image);
+                Storage::disk('tenant')->delete($banner->image);
             }
-            $data['image'] = $request->file('image')->store('banners', 'public');
+            $data['image'] = $this->uploader->upload($request->file('image'), 'banners', 'tenant');
         }
 
         $banner->update($data);
@@ -74,7 +85,7 @@ class BannerController extends Controller
     public function destroy(Banner $banner)
     {
         if ($banner->image) {
-            Storage::disk('public')->delete($banner->image);
+            Storage::disk('tenant')->delete($banner->image);
         }
         
         $banner->delete();

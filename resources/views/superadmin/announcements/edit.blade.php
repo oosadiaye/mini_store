@@ -43,8 +43,8 @@
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Attachment (Image or Video)</label>
                 @if($announcement->attachment_path)
-                    <div class="mb-2 text-sm text-gray-600">
-                        Current: <a href="{{ Storage::url($announcement->attachment_path) }}" target="_blank" class="text-blue-600 underline">View File</a> ({{ $announcement->attachment_type }})
+                    <div class="mt-1 text-sm text-gray-500">
+                        Current: <a href="{{ $announcement->attachment_url }}" target="_blank" class="text-blue-600 underline">View File</a> ({{ $announcement->attachment_type }})
                     </div>
                 @endif
                 <input type="file" name="attachment" accept="image/*,video/*" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">

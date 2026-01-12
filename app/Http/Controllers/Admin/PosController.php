@@ -15,10 +15,8 @@ class PosController extends Controller
 {
     public function index()
     {
-        $categories = Category::with(['products' => function($q) {
-            $q->active()->with('images');
-        }])->active()->get();
-        
+        $categories = Category::active()->get();
+        $allProducts = Product::active()->with('images')->get();
         $paymentTypes = \App\Models\PaymentType::where('is_active', true)->with('account')->get();
         $customers = \App\Models\Customer::orderBy('name')->get(); // Fetch customers
         
@@ -33,7 +31,7 @@ class PosController extends Controller
         // Logo for display
         $logoUrl = isset($tenantData['logo']) ? route('tenant.media', ['path' => $tenantData['logo']]) : null;
 
-        return view('admin.pos.index', compact('categories', 'paymentTypes', 'customers', 'taxRate', 'enableTax', 'currencySymbol', 'logoUrl', 'taxCodes'));
+        return view('admin.pos.index', compact('categories', 'allProducts', 'paymentTypes', 'customers', 'taxRate', 'enableTax', 'currencySymbol', 'logoUrl', 'taxCodes'));
     }
 
     public function display()
@@ -134,12 +132,10 @@ class PosController extends Controller
                 ]);
                 
                 // Deduct Inventory
-                if ($product->manage_stock) {
-                     $stock = \App\Models\WarehouseStock::firstOrCreate(
-                        ['warehouse_id' => 1, 'product_id' => $product->id], // Assuming Warehouse 1 for POS
-                        ['quantity' => 0]
-                    );
-                    $stock->decrement('quantity', $item['quantity']);
+                if ($product->track_inventory) {
+                    $warehouse = \App\Models\Warehouse::first();
+                    $warehouseId = $warehouse ? $warehouse->id : 1;
+                    $product->recordMovement($warehouseId, -$item['quantity'], 'sale', 'order', $order->id);
                 }
 
                 $cost = $product->cost_price ?? 0;

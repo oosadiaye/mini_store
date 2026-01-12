@@ -34,14 +34,17 @@
             <span class="text-xl font-bold tracking-tight text-white">{{ $branding['brand_name'] ?? config('app.name') }}</span>
         </div>
         <nav class="hidden md:flex gap-6 text-sm font-medium text-gray-300">
-            @if (Route::has('login'))
-                @auth
-                    <a href="{{ url('/superadmin') }}" class="hover:text-white transition">Dashboard</a>
-                @else
-                    <a href="{{ route('superadmin.login') }}" class="hover:text-white transition">SuperAdmin Login</a>
-                    <a href="{{ route('tenant.register') }}" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-full transition shadow-lg shadow-blue-600/20">Register</a>
-                @endauth
-            @endif
+                <div class="hidden fixed top-0 right-0 px-6 py-4 sm:block">
+                    @auth
+                        <a href="{{ url('/home') }}" class="text-sm text-gray-700 dark:text-gray-500 underline">Home</a>
+                    @else
+                        <a href="{{ route('login') }}" class="text-sm text-gray-700 dark:text-gray-500 underline">Log in</a>
+
+                        @if (Route::has('register'))
+                            <a href="{{ route('register') }}" class="ml-4 text-sm text-gray-700 dark:text-gray-500 underline">Register</a>
+                        @endif
+                    @endauth
+                </div>
         </nav>
     </header>
 

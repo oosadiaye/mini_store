@@ -39,6 +39,19 @@ class Announcement extends Model
         return $this->hasMany(AnnouncementRead::class);
     }
     
+    public function getAttachmentUrlAttribute()
+    {
+        if (!$this->attachment_path) {
+            return null;
+        }
+
+        if (filter_var($this->attachment_path, FILTER_VALIDATE_URL)) {
+            return $this->attachment_path;
+        }
+
+        return route('global.media', ['path' => $this->attachment_path]);
+    }
+
     /**
      * Scope a query to only include active announcements.
      */

@@ -19,7 +19,7 @@
                 <form action="{{ route('admin.enquiries.status', $enquiry) }}" method="POST">
                     @csrf
                     @method('PATCH')
-                    <select name="status" onchange="this.form.submit()" class="px-3 py-1 border border-gray-300 rounded text-sm">
+                    <select name="status" onchange="this.form.submit()" class="px-3 py-1 border-2 border-gray-300 rounded text-sm">
                         <option value="pending" {{ $enquiry->status === 'pending' ? 'selected' : '' }}>Pending</option>
                         <option value="replied" {{ $enquiry->status === 'replied' ? 'selected' : '' }}>Replied</option>
                         <option value="closed" {{ $enquiry->status === 'closed' ? 'selected' : '' }}>Closed</option>
@@ -78,7 +78,7 @@
                     @csrf
                     <label class="block text-sm font-medium text-gray-700 mb-2">Reply to Customer</label>
                     <textarea name="admin_reply" rows="6" required
-                        class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500"
+                        class="w-full border-2 border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500"
                         placeholder="Type your reply here...">{{ old('admin_reply') }}</textarea>
                     @error('admin_reply')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>

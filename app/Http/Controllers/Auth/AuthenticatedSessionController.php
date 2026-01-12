@@ -33,7 +33,7 @@ class AuthenticatedSessionController extends Controller
         }
 
         // Strict Superadmin Check for Central Domain
-        if ($request->user()->role !== 'superadmin') {
+        if (!$request->user()->is_superadmin) {
             Auth::guard('web')->logout();
             $request->session()->invalidate();
             $request->session()->regenerateToken();

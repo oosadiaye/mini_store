@@ -9,3 +9,6 @@ Artisan::command('inspire', function () {
 
 // Schedule Weekly Financial Reports
 Illuminate\Support\Facades\Schedule::command('report:weekly-financial')->weeklyOn(0, '8:00');
+
+// Schedule Daily Product Expiry Checks
+Illuminate\Support\Facades\Schedule::command('products:check-expiry')->dailyAt('07:00');

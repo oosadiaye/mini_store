@@ -14,12 +14,15 @@
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Category Name *</label>
                 <input type="text" name="name" value="{{ old('name') }}" required
-                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                    class="w-full px-4 py-2 border-2 @error('name') border-red-500 @else border-gray-300 @enderror rounded-lg focus:ring-2 focus:ring-indigo-500">
+                @error('name')
+                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                @enderror
             </div>
 
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Parent Category</label>
-                <select name="parent_id" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                <select name="parent_id" class="w-full px-4 py-2 border-2 @error('parent_id') border-red-500 @else border-gray-300 @enderror rounded-lg focus:ring-2 focus:ring-indigo-500">
                     <option value="">None (Root Category)</option>
                     @foreach($parentCategories as $parent)
                         <option value="{{ $parent->id }}" {{ old('parent_id') == $parent->id ? 'selected' : '' }}>
@@ -27,42 +30,45 @@
                         </option>
                     @endforeach
                 </select>
+                @error('parent_id')
+                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                @enderror
             </div>
 
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
                 <textarea name="description" rows="3"
-                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">{{ old('description') }}</textarea>
+                    class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">{{ old('description') }}</textarea>
             </div>
 
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Category Image</label>
                 <input type="file" name="image" accept="image/*"
-                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                    class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
             </div>
 
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Sort Order</label>
                 <input type="number" name="sort_order" value="{{ old('sort_order', 0) }}" min="0"
-                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                    class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
             </div>
 
             <div class="flex items-center space-x-6">
                 <label class="flex items-center">
                     <input type="checkbox" name="is_active" value="1" {{ old('is_active', true) ? 'checked' : '' }}
-                        class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 mr-2">
+                        class="rounded border-2 border-gray-300 text-indigo-600 focus:ring-indigo-500 mr-2">
                     <span class="text-sm font-medium text-gray-700">Active</span>
                 </label>
                 <label class="flex items-center">
                     <input type="checkbox" name="show_on_storefront" value="1" {{ old('show_on_storefront', true) ? 'checked' : '' }}
-                        class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 mr-2">
+                        class="rounded border-2 border-gray-300 text-indigo-600 focus:ring-indigo-500 mr-2">
                     <span class="text-sm font-medium text-gray-700">Show on Storefront</span>
                 </label>
             </div>
         </div>
 
         <div class="mt-8 flex justify-end space-x-4">
-            <a href="{{ route('admin.categories.index') }}" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
+            <a href="{{ route('admin.categories.index') }}" class="px-6 py-2 border-2 border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
                 Cancel
             </a>
             <button type="submit" class="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition">

@@ -28,7 +28,7 @@
         <button disabled class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-gray-400 cursor-not-allowed">
             Please fix issues to continue
         </button>
-        <a href="{{ route('install.requirements') }}" class="ml-4 inline-flex items-center px-4 py-3 border border-gray-300 text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+        <a href="{{ route('install.requirements') }}" class="ml-4 inline-flex items-center px-4 py-3 border-2 border-gray-300 text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
             Check Again
         </a>
     @endif

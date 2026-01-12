@@ -17,7 +17,7 @@
         <form method="GET" class="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
             <div>
                 <label class="block text-xs md:text-sm font-medium text-gray-700 mb-1">Status</label>
-                <select name="status" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm">
+                <select name="status" class="w-full px-3 py-2 border-2 border-gray-300 rounded-md text-sm">
                     <option value="">All Statuses</option>
                     <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
                     <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>Completed</option>
@@ -26,7 +26,7 @@
             </div>
             <div>
                 <label class="block text-xs md:text-sm font-medium text-gray-700 mb-1">Warehouse</label>
-                <select name="warehouse_id" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm">
+                <select name="warehouse_id" class="w-full px-3 py-2 border-2 border-gray-300 rounded-md text-sm">
                     <option value="">All Warehouses</option>
                     @foreach($warehouses as $warehouse)
                         <option value="{{ $warehouse->id }}" {{ request('warehouse_id') == $warehouse->id ? 'selected' : '' }}>

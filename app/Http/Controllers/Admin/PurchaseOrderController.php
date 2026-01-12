@@ -10,6 +10,8 @@ use App\Models\PurchaseOrder;
 use App\Models\Supplier;
 use App\Models\Warehouse;
 use App\Models\Product;
+use App\Models\PurchaseReturn;
+use App\Models\PurchaseReturnItem;
 use Illuminate\Support\Facades\DB;
 
 class PurchaseOrderController extends Controller
@@ -57,8 +59,13 @@ class PurchaseOrderController extends Controller
 
         $po = DB::transaction(function () use ($request) {
             // Generate PO Number (PO-YYYYMMDD-XXXX)
-            $count = \App\Models\PurchaseOrder::whereDate('created_at', today())->count() + 1;
-            $poNumber = 'PO-' . now()->format('Ymd') . '-' . str_pad($count, 4, '0', STR_PAD_LEFT);
+            $dateStr = now()->format('Ymd');
+            $count = PurchaseOrder::where('po_number', 'like', "PO-{$dateStr}-%")->count();
+            
+            do {
+                $count++;
+                $poNumber = 'PO-' . $dateStr . '-' . str_pad($count, 4, '0', STR_PAD_LEFT);
+            } while (PurchaseOrder::where('po_number', $poNumber)->exists());
 
             $po = PurchaseOrder::create([
                 'po_number' => $poNumber,
@@ -158,7 +165,7 @@ class PurchaseOrderController extends Controller
 
     public function receive(PurchaseOrder $purchaseOrder)
     {
-        if ($purchaseOrder->status === 'received') {
+        if ($purchaseOrder->status === 'received_order') {
             return back()->with('error', 'Already received.');
         }
 
@@ -178,11 +185,10 @@ class PurchaseOrderController extends Controller
             $item->update(['quantity_received' => $item->quantity_ordered]);
 
             // Update Warehouse Stock
-            $stock = \App\Models\WarehouseStock::firstOrCreate(
-                ['warehouse_id' => $purchaseOrder->warehouse_id, 'product_id' => $item->product_id],
-                ['quantity' => 0]
-            );
-            $stock->increment('quantity', $item->quantity_ordered);
+            $product = $item->product;
+            if ($product) {
+                $product->recordMovement($purchaseOrder->warehouse_id, $item->quantity_ordered, 'purchase', 'purchase_order', $purchaseOrder->id);
+            }
 
             $totalValue += ($item->quantity_ordered * $item->unit_cost);
         }
@@ -217,7 +223,7 @@ class PurchaseOrderController extends Controller
             // \Log::error("Accounting Error: " . $e->getMessage());
         }
 
-        $purchaseOrder->update(['status' => 'received']);
+        $purchaseOrder->update(['status' => 'received_order']);
     }
     
     public function convertToBill(Request $request, PurchaseOrder $purchaseOrder)
@@ -228,11 +234,48 @@ class PurchaseOrderController extends Controller
 
     private function processConversion(PurchaseOrder $purchaseOrder, $invoiceNumber = null)
     {
+        if (!$invoiceNumber) {
+            $year = now()->format('Y');
+            $count = \App\Models\SupplierInvoice::where('invoice_number', 'like', "SI-{$year}-%")->count();
+            do {
+                $count++;
+                $invoiceNumber = 'SI-' . $year . '-' . str_pad($count, 4, '0', STR_PAD_LEFT);
+            } while (\App\Models\SupplierInvoice::where('invoice_number', $invoiceNumber)->exists());
+        }
+        
         $purchaseOrder->update([
             'billed_status' => 'billed',
-            'invoice_number' => $invoiceNumber ?? $purchaseOrder->po_number . '-INV'
+            'invoice_number' => $invoiceNumber
         ]);
 
+        // 1. Create Supplier Invoice
+        $invoice = \App\Models\SupplierInvoice::create([
+            'tenant_id' => $purchaseOrder->tenant_id,
+            'purchase_order_id' => $purchaseOrder->id,
+            'supplier_id' => $purchaseOrder->supplier_id,
+            'invoice_number' => $invoiceNumber,
+            'invoice_date' => now(),
+            'due_date' => now()->addDays(30),
+            'subtotal' => $purchaseOrder->subtotal,
+            'tax' => $purchaseOrder->tax,
+            'discount' => $purchaseOrder->discount,
+            'shipping' => $purchaseOrder->shipping,
+            'total' => $purchaseOrder->total,
+            'status' => 'unpaid',
+        ]);
+
+        foreach ($purchaseOrder->items as $item) {
+            $invoice->items()->create([
+                'product_id' => $item->product_id,
+                'description' => $item->product ? $item->product->name : 'Unknown Product',
+                'quantity' => $item->quantity_received,
+                'unit_price' => $item->unit_cost,
+                'tax_amount' => $item->tax_amount,
+                'total' => $item->total + $item->tax_amount,
+            ]);
+        }
+
+        // 2. Accounting Entries
         try {
             $jeService = app(\App\Services\JournalEntryService::class);
             
@@ -244,14 +287,18 @@ class PurchaseOrderController extends Controller
 
             $entries = [
                 [
-                    'account_code' => '2020', // GR/IR Clearing (Debit)
+                    'account_code' => '2020', // GR/IR Clearing (Debit) - Removes the liability from receipt
                     'debit' => $subtotal,
                     'credit' => 0,
+                    'description' => "Clear GR/IR for PO #{$purchaseOrder->po_number}",
                 ],
                 [
-                    'account_code' => '2000', // Accounts Payable (Credit)
+                    'account_code' => '2000', // Accounts Payable (Credit) - Recognizes the debt to supplier
                     'debit' => 0,
                     'credit' => $total,
+                    'entity_type' => 'App\Models\Supplier',
+                    'entity_id' => $purchaseOrder->supplier_id,
+                    'description' => "Invoice Payable for PO #{$purchaseOrder->po_number}",
                 ]
             ];
             
@@ -280,12 +327,12 @@ class PurchaseOrderController extends Controller
             }
             
             $jeService->recordTransaction(
-                "Invoice Receipt for PO #{$purchaseOrder->po_number}",
+                "Invoice Receipt for PO #{$purchaseOrder->po_number} - Invoice #{$invoiceNumber}",
                 $entries,
                 now()
             );
         } catch (\Exception $e) {
-             // Log
+             \Illuminate\Support\Facades\Log::error("PO Conversion Accounting Error: " . $e->getMessage());
         }
     }
 
@@ -318,8 +365,9 @@ class PurchaseOrderController extends Controller
         $suppliers = Supplier::all();
         $warehouses = Warehouse::all();
         $products = Product::active()->orderBy('name')->get();
+        $taxCodes = \App\Models\TaxCode::active()->get();
 
-        return view('admin.purchase_orders.edit', compact('purchaseOrder', 'suppliers', 'warehouses', 'products'));
+        return view('admin.purchase_orders.edit', compact('purchaseOrder', 'suppliers', 'warehouses', 'products', 'taxCodes'));
     }
 
     public function update(Request $request, PurchaseOrder $purchaseOrder)
@@ -387,7 +435,7 @@ class PurchaseOrderController extends Controller
              return back()->with('error', 'Order is not in draft status.');
         }
 
-        $purchaseOrder->update(['status' => 'ordered']);
+        $purchaseOrder->update(['status' => 'created_order']);
 
         // Optional: Email Supplier logic would go here
 
@@ -411,14 +459,14 @@ class PurchaseOrderController extends Controller
             $count = PurchaseOrder::whereIn('id', $ids)->where('status', 'draft')->delete();
             $message = "$count draft orders deleted.";
         } elseif ($request->action === 'mark_ordered') {
-            // Only update drafts to ordered
+            // Only update drafts to created_order
             $count = PurchaseOrder::whereIn('id', $ids)
                 ->where('status', 'draft')
-                ->update(['status' => 'ordered']);
+                ->update(['status' => 'created_order']);
             $message = "$count orders placed.";
         } elseif ($request->action === 'receive') {
-            // Only receive ordered items
-            $orders = PurchaseOrder::whereIn('id', $ids)->where('status', 'ordered')->get();
+            // Only receive created_order items
+            $orders = PurchaseOrder::whereIn('id', $ids)->where('status', 'created_order')->get();
             foreach ($orders as $order) {
                 DB::transaction(function () use ($order) {
                     $this->processReceipt($order);
@@ -427,9 +475,9 @@ class PurchaseOrderController extends Controller
             }
             $message = "$count orders received.";
         } elseif ($request->action === 'convert') {
-            // Only convert received items not yet billed
+            // Only convert received_order items not yet billed
             $orders = PurchaseOrder::whereIn('id', $ids)
-                ->where('status', 'received')
+                ->where('status', 'received_order')
                 ->where('billed_status', '!=', 'billed')
                 ->get();
             foreach ($orders as $order) {
@@ -441,31 +489,195 @@ class PurchaseOrderController extends Controller
 
         return back()->with('success', $message);
     }
+    public function reverseBill(\App\Models\SupplierInvoice $invoice)
+    {
+        if ($invoice->status === 'paid' || $invoice->amount_paid > 0) {
+            return back()->with('error', 'Cannot reverse invoice with payments. Please void/delete payments first.');
+        }
+
+        DB::transaction(function () use ($invoice) {
+            // 1. Update Invoice Status
+            $invoice->update(['status' => 'reversed']);
+
+            // 2. Revert PO Status
+            $purchaseOrder = $invoice->purchaseOrder;
+            if ($purchaseOrder) {
+                $purchaseOrder->update([
+                    'billed_status' => null,
+                    'invoice_number' => null,
+                    // Keeping 'received_order' status as we are just reversing the BILL, not the receipt
+                ]);
+            }
+
+            // 3. Accounting Reversal
+            try {
+                $jeService = app(\App\Services\JournalEntryService::class);
+                
+                // Fetch original amounts from invoice to be accurate
+                $subtotal = $invoice->subtotal;
+                $tax = $invoice->tax;
+                $shipping = $invoice->shipping;
+                $discount = $invoice->discount;
+                $total = $invoice->total;
+
+                $entries = [
+                    [
+                        'account_code' => '2000', // Accounts Payable (Debit) - Reduce Liability
+                        'debit' => $total,
+                        'credit' => 0,
+                        'entity_type' => 'App\Models\Supplier',
+                        'entity_id' => $invoice->supplier_id,
+                        'description' => "Reversal of Invoice #{$invoice->invoice_number}",
+                    ],
+                    [
+                        'account_code' => '2020', // GR/IR Clearing (Credit) - Restore Liability to 'Unbilled'
+                        'debit' => 0,
+                        'credit' => $subtotal,
+                        'description' => "Restore GR/IR for PO #{$purchaseOrder->po_number}",
+                    ]
+                ];
+                
+                if ($tax > 0) {
+                    $entries[] = [
+                        'account_code' => '1300', // Input Tax (Credit)
+                        'debit' => 0,
+                        'credit' => $tax,
+                    ];
+                }
+                
+                if ($shipping > 0) {
+                    $entries[] = [
+                        'account_code' => '5100', // Freight In (Credit)
+                        'debit' => 0,
+                        'credit' => $shipping,
+                    ];
+                }
+                
+                if ($discount > 0) {
+                     $entries[] = [
+                        'account_code' => '5200', // Purchase Discounts (Debit)
+                        'debit' => $discount,
+                        'credit' => 0,
+                    ];
+                }
+                
+                $jeService->recordTransaction(
+                    "Reversal of Supplier Invoice #{$invoice->invoice_number}",
+                    $entries,
+                    now()
+                );
+            } catch (\Exception $e) {
+                 \Illuminate\Support\Facades\Log::error("Invoice Reversal Accounting Error: " . $e->getMessage());
+            }
+        });
+
+        return back()->with('success', 'Supplier Invoice reversed successfully.');
+    }
+
     public function returnsCreate(PurchaseOrder $purchaseOrder)
     {
-        if ($purchaseOrder->status !== 'received' && $purchaseOrder->status !== 'billed') {
+        if ($purchaseOrder->status !== 'received_order' && $purchaseOrder->status !== 'billed') {
             return back()->with('error', 'Only received orders can be returned.');
         }
+
+        if ($purchaseOrder->billed_status === 'billed') {
+            return back()->with('error', 'Cannot return items for a billed order. Please reverse the Supplier Invoice first in the Supplier Ledger.');
+        }
+
         return view('admin.purchase_orders.returns.create', compact('purchaseOrder'));
     }
     
     public function returnsStore(Request $request, PurchaseOrder $purchaseOrder)
     {
-        // Logic for return (Draft/Simple implementation for now)
-        // 1. Validate items
-        // 2. Reduce Stock
-        // 3. Accounting (Credit Inventory, Debit AP/Cash or Suspense)
-        
-        // For now, let's just create a placeholder implementation to fix the error
-        // Real implementation requires detailed design: Do we create a "Purchase Return" document?
-        // Or just reverse the PO items?
-        // Let's assume we create a logical "Return" record or just modify stock directly for now.
-        
         $request->validate([
             'items' => 'required|array',
-            'items.*.quantity' => 'required|integer|min:1',
+            'items.*.quantity' => 'required|integer|min:0',
         ]);
+
+        $totalRefund = 0;
+
+        try {
+            DB::transaction(function () use ($request, $purchaseOrder, &$totalRefund) {
+                $purchaseReturn = PurchaseReturn::create([
+                    'purchase_order_id' => $purchaseOrder->id,
+                    'status' => 'completed',
+                    'refund_amount' => 0, 
+                ]);
+
+                foreach ($request->items as $itemId => $data) {
+                    $qty = (int)$data['quantity'];
+                    if ($qty <= 0) continue;
+
+                    $poItem = $purchaseOrder->items()->findOrFail($itemId);
+                    
+                    if ($qty > $poItem->quantity_received) {
+                         throw new \Exception("Cannot return more than received for {$poItem->product->name}");
+                    }
+
+                    $refundForLine = $qty * $poItem->unit_cost;
+                    $totalRefund += $refundForLine;
+
+                    $purchaseReturn->items()->create([
+                        'purchase_order_item_id' => $poItem->id,
+                        'quantity_returned' => $qty,
+                        'refund_amount' => $refundForLine,
+                    ]);
+
+                    // Update stock
+                    $poItem->product->recordMovement(
+                        $purchaseOrder->warehouse_id, 
+                        -$qty, 
+                        'return', 
+                        'purchase_order', 
+                        $purchaseOrder->id,
+                        "Return for PO #{$purchaseOrder->po_number}"
+                    );
+                    
+                    $poItem->decrement('quantity_received', $qty);
+                }
+
+                if ($totalRefund > 0) {
+                    $purchaseReturn->update(['refund_amount' => $totalRefund]);
+                    $this->processReturnAccounting($purchaseOrder, $totalRefund);
+                } else {
+                    $purchaseReturn->delete(); // Nothing returned
+                    throw new \Exception("No items selected for return.");
+                }
+            });
+        } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage());
+        }
+
+        return redirect()->route('admin.purchase-orders.show', $purchaseOrder->id)
+            ->with('success', 'Return processed successfully.');
+    }
+
+    private function processReturnAccounting(PurchaseOrder $purchaseOrder, $totalRefund)
+    {
+        $jeService = app(\App\Services\JournalEntryService::class);
         
-        return back()->with('success', 'Return processed (Simulation).');
+        // If already billed, reverse AP (2000). If not, reverse GR/IR (2020).
+        $payableAccountCode = ($purchaseOrder->billed_status === 'billed') ? '2000' : '2020';
+        
+        $entries = [
+            [
+                'account_code' => $payableAccountCode,
+                'debit' => $totalRefund, 
+                'credit' => 0,
+                'entity_type' => 'App\Models\Supplier',
+                'entity_id' => $purchaseOrder->supplier_id,
+            ],
+            [
+                'account_code' => '1200', // Inventory Asset
+                'debit' => 0,
+                'credit' => $totalRefund, 
+            ]
+        ];
+
+        $jeService->recordTransaction(
+            "Purchase Return for PO #{$purchaseOrder->po_number}",
+            $entries,
+            now()
+        );
     }
 }

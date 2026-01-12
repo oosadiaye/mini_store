@@ -8,6 +8,16 @@ use Illuminate\Support\Str;
 class ImageMatchingService
 {
     /**
+     * @var SecureFileUploader
+     */
+    protected $uploader;
+
+    public function __construct(SecureFileUploader $uploader)
+    {
+        $this->uploader = $uploader;
+    }
+
+    /**
      * Extract SKU from filename using various patterns
      */
     public function extractSkuFromFilename(string $filename): ?string
@@ -47,19 +57,18 @@ class ImageMatchingService
      */
     public function uploadAndAttach(Product $product, $file, bool $setPrimary = false): array
     {
-        $path = $file->store('products', 'public');
-        $url = \Storage::url($path);
+        $path = $this->uploader->upload($file, 'products', 'tenant');
         
         $isPrimary = $setPrimary || $product->images()->count() === 0;
         
         $image = $product->images()->create([
-            'url' => $url,
+            'image_path' => $path,
             'is_primary' => $isPrimary,
         ]);
         
         return [
             'success' => true,
-            'url' => $url,
+            'url' => route('tenant.media', ['path' => $path]),
             'image_id' => $image->id,
         ];
     }

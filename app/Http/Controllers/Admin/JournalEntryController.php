@@ -13,4 +13,10 @@ class JournalEntryController extends Controller
         $entries = JournalEntry::with(['lines.account', 'lines.entity'])->latest('entry_date')->latest('id')->paginate(20);
         return view('admin.accounting.journal_entries.index', compact('entries'));
     }
+
+    public function show($id)
+    {
+        $entry = JournalEntry::with(['lines.account', 'lines.entity'])->findOrFail($id);
+        return view('admin.accounting.journal_entries.show', compact('entry'));
+    }
 }

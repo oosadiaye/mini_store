@@ -9,9 +9,21 @@ use App\Models\ProductImage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
+use App\Services\SecureFileUploader;
+use Illuminate\Validation\Rule;
 
 class ProductController extends Controller
 {
+    /**
+     * @var SecureFileUploader
+     */
+    protected $uploader;
+
+    public function __construct(SecureFileUploader $uploader)
+    {
+        $this->uploader = $uploader;
+    }
+
     public function index(Request $request)
     {
         $query = Product::select('products.*')->with(['category', 'images']);
@@ -102,7 +114,13 @@ class ProductController extends Controller
             'price' => 'required|numeric|min:0',
             'cost_price' => 'nullable|numeric|min:0',
             'compare_at_price' => 'nullable|numeric|min:0',
-            'sku' => 'nullable|string|unique:products,sku',
+            'sku' => [
+                'nullable',
+                'string',
+                Rule::unique('products')->where(function ($query) {
+                    return $query->where('tenant_id', app('tenant')->id);
+                }),
+            ],
             'barcode' => 'nullable|string',
             'track_inventory' => 'boolean',
             'stock_quantity' => 'nullable|integer|min:0',
@@ -113,6 +131,7 @@ class ProductController extends Controller
             'meta_description' => 'nullable|string',
             'meta_keywords' => 'nullable|string',
             'images.*' => 'nullable|image|max:2048',
+            'expiry_date' => 'nullable|date',
         ]);
 
         $validated['track_inventory'] = $request->has('track_inventory');
@@ -126,7 +145,7 @@ class ProductController extends Controller
         // Handle image uploads
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $index => $image) {
-                $path = $image->store('products', 'public');
+                $path = $this->uploader->upload($image, 'products', 'tenant');
                 ProductImage::create([
                     'product_id' => $product->id,
                     'image_path' => $path,
@@ -159,7 +178,13 @@ class ProductController extends Controller
             'price' => 'required|numeric|min:0',
             'cost_price' => 'nullable|numeric|min:0',
             'compare_at_price' => 'nullable|numeric|min:0',
-            'sku' => 'nullable|string|unique:products,sku,' . $product->id,
+            'sku' => [
+                'nullable',
+                'string',
+                Rule::unique('products')->ignore($product->id)->where(function ($query) {
+                    return $query->where('tenant_id', app('tenant')->id);
+                }),
+            ],
             'barcode' => 'nullable|string',
             'track_inventory' => 'boolean',
             'stock_quantity' => 'nullable|integer|min:0',
@@ -172,6 +197,7 @@ class ProductController extends Controller
             'images.*' => 'nullable|image|max:2048',
             'flash_sale_price' => 'nullable|numeric|min:0',
             'flash_sale_end_date' => 'nullable|date',
+            'expiry_date' => 'nullable|date',
         ]);
 
         $validated['track_inventory'] = $request->has('track_inventory');
@@ -182,16 +208,25 @@ class ProductController extends Controller
 
     // Sync warehouse stock
     if ($request->has('warehouse_stock')) {
-        $warehouseStock = [];
+        $totalStock = 0;
         foreach ($request->warehouse_stock as $warehouseId => $quantity) {
             if ($quantity !== null && $quantity >= 0) {
-                $warehouseStock[$warehouseId] = ['quantity' => (int)$quantity];
+                $oldStock = \DB::table('product_warehouse')
+                    ->where('product_id', $product->id)
+                    ->where('warehouse_id', $warehouseId)
+                    ->value('quantity') ?? 0;
+                
+                $newQuantity = (int)$quantity;
+                if ($oldStock != $newQuantity) {
+                    $diff = $newQuantity - $oldStock;
+                    $product->recordMovement($warehouseId, $diff, 'adjustment', null, null, 'Manual admin update', false);
+                }
+                $totalStock += $newQuantity;
             }
         }
-        $product->warehouses()->sync($warehouseStock);
         
         // Update total stock_quantity as sum of all warehouse stocks
-        $product->stock_quantity = array_sum(array_column($warehouseStock, 'quantity'));
+        $product->stock_quantity = $totalStock;
         $product->save();
     }
 
@@ -199,7 +234,7 @@ class ProductController extends Controller
         if ($request->hasFile('images')) {
             $currentMaxOrder = $product->images()->max('sort_order') ?? -1;
             foreach ($request->file('images') as $index => $image) {
-                $path = $image->store('products', 'public');
+                $path = $this->uploader->upload($image, 'products', 'tenant');
                 ProductImage::create([
                     'product_id' => $product->id,
                     'image_path' => $path,
@@ -215,12 +250,16 @@ class ProductController extends Controller
 
     public function destroy(Product $product)
     {
+        \Illuminate\Support\Facades\Log::info('Destroy called for product', ['id' => $product->id, 'tenant' => $product->tenant_id]);
+        
         // Delete images from storage
         foreach ($product->images as $image) {
-            Storage::disk('public')->delete($image->image_path);
+            Storage::disk('tenant')->delete($image->image_path);
         }
 
         $product->delete();
+        
+        \Illuminate\Support\Facades\Log::info('Product deleted', ['id' => $product->id]);
 
         return redirect()->route('admin.products.index')
             ->with('success', 'Product deleted successfully!');
@@ -228,7 +267,7 @@ class ProductController extends Controller
 
     public function deleteImage(ProductImage $image)
     {
-        Storage::disk('public')->delete($image->image_path);
+        Storage::disk('tenant')->delete($image->image_path);
         $image->delete();
 
         return back()->with('success', 'Image deleted successfully!');
@@ -239,8 +278,10 @@ class ProductController extends Controller
      */
     public function quickImageUpload(Request $request, Product $product)
     {
+        // Validation is now partially handled by the service, 
+        // but we keep the request validation for basic presence and size.
         $request->validate([
-            'image' => 'required|image|mimes:jpeg,jpg,png,webp|max:5120',
+            'image' => 'required|file|mimes:jpeg,jpg,png,webp|max:5120',
         ]);
         
         $imageService = app(\App\Services\ImageMatchingService::class);
@@ -259,6 +300,8 @@ class ProductController extends Controller
      */
     public function bulkAction(Request $request)
     {
+        \Illuminate\Support\Facades\Log::info('Bulk Action called', ['action' => $request->action, 'ids' => $request->product_ids]);
+        
         $request->validate([
             'action' => 'required|string',
             'product_ids' => 'required|array',

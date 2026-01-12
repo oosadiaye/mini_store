@@ -14,6 +14,7 @@ class Category extends Model
     protected $fillable = [
         'tenant_id',
         'name',
+        'public_display_name',
         'slug',
         'description',
         'image',
@@ -21,11 +22,21 @@ class Category extends Model
         'sort_order',
         'is_active',
         'show_on_storefront',
+        'is_visible_online',
     ];
+
+    /**
+     * Get the display name (public or internal).
+     */
+    public function getDisplayNameAttribute()
+    {
+        return $this->public_display_name ?: $this->name;
+    }
 
     protected $casts = [
         'is_active' => 'boolean',
         'show_on_storefront' => 'boolean',
+        'is_visible_online' => 'boolean',
     ];
 
     /**
@@ -91,6 +102,11 @@ class Category extends Model
         if (!$this->image) {
             return null;
         }
-        return tenant_asset($this->image);
+        
+        if (filter_var($this->image, FILTER_VALIDATE_URL)) {
+            return $this->image;
+        }
+
+        return route('tenant.media', ['path' => $this->image]);
     }
 }

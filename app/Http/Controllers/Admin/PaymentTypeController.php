@@ -44,7 +44,7 @@ class PaymentTypeController extends Controller
         ]);
 
         // Create Payment Type
-        PaymentType::create([
+        $paymentType = PaymentType::create([
             'name' => $request->name,
             'type' => $request->type,
             'bank_details' => $request->type === 'bank' ? [
@@ -56,22 +56,63 @@ class PaymentTypeController extends Controller
             'gateway_provider' => $request->gateway_provider,
             'require_gateway' => $request->boolean('require_gateway'),
             'is_active' => true,
+            'is_active_on_storefront' => $request->boolean('is_active_on_storefront'),
         ]);
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Payment Type created with GL Account ' . $newCode,
+                'payment_type' => $paymentType->load('account')
+            ]);
+        }
 
         return redirect()->route('admin.settings.index', ['tab' => 'payments'])->with('success', 'Payment Type created with GL Account ' . $newCode);
     }
 
-    public function destroy(PaymentType $paymentType)
+    public function destroy(Request $request, PaymentType $paymentType)
     {
         // Optional: Check if used in transactions? 
         // For now, just delete. The GL account remains.
         $paymentType->delete();
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Payment Type deleted.'
+            ]);
+        }
+
         return redirect()->route('admin.settings.index', ['tab' => 'payments'])->with('success', 'Payment Type deleted.');
     }
     
-    public function toggle(PaymentType $paymentType)
+    public function toggle(Request $request, PaymentType $paymentType)
     {
         $paymentType->update(['is_active' => !$paymentType->is_active]);
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Status updated.',
+                'is_active' => $paymentType->is_active
+            ]);
+        }
+
         return back()->with('success', 'Status updated.');
+    }
+
+    public function toggleStorefront(Request $request, PaymentType $paymentType)
+    {
+        $paymentType->update(['is_active_on_storefront' => !$paymentType->is_active_on_storefront]);
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Storefront visibility updated.',
+                'is_active_on_storefront' => $paymentType->is_active_on_storefront
+            ]);
+        }
+
+        return back()->with('success', 'Storefront visibility updated.');
     }
 }

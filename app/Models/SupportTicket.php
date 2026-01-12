@@ -15,6 +15,8 @@ class SupportTicket extends Model
         'status',
         'priority',
         'assigned_to',
+        'contact_name',
+        'contact_email',
     ];
 
     public function tenant(): BelongsTo

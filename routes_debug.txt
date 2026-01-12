@@ -1,0 +1,374 @@
+
+  GET|HEAD        / ................................................................ landing › LandingController@index
+  GET|HEAD        api/dashboard-stats ................................................................................ 
+  POST            api/login ................................................................. Api\AuthController@login
+  POST            api/logout ............................................................... Api\AuthController@logout
+  GET|HEAD        api/user ................................................................... Api\AuthController@user
+  GET|HEAD        api/{tenant}/storefront/home ...................................... Api\StorefrontApiController@home
+  GET|HEAD        confirm-password ........................ password.confirm › Auth\ConfirmablePasswordController@show
+  POST            confirm-password .......................................... Auth\ConfirmablePasswordController@store
+  POST            email/verification-notification verification.send › Auth\EmailVerificationNotificationController@st…
+  GET|HEAD        forgot-password ......................... password.request › Auth\PasswordResetLinkController@create
+  POST            forgot-password ............................ password.email › Auth\PasswordResetLinkController@store
+  GET|HEAD        install .............................................. install.welcome › InstallerController@welcome
+  GET|HEAD        install/admin ............................................ install.admin › InstallerController@admin
+  POST            install/admin ................................. install.admin.store › InstallerController@storeAdmin
+  GET|HEAD        install/database ................................... install.database › InstallerController@database
+  POST            install/database ....................... install.database.migrate › InstallerController@runMigration
+  GET|HEAD        install/environment .......................... install.environment › InstallerController@environment
+  POST            install/environment ................. install.environment.save › InstallerController@saveEnvironment
+  GET|HEAD        install/finish ......................................... install.finish › InstallerController@finish
+  GET|HEAD        install/requirements ....................... install.requirements › InstallerController@requirements
+  GET|HEAD        login ........................................... login › Auth\AuthenticatedSessionController@create
+  POST            login .................................................... Auth\AuthenticatedSessionController@store
+  POST            logout ........................................ logout › Auth\AuthenticatedSessionController@destroy
+  PUT             password .......................................... password.update › Auth\PasswordController@update
+  GET|HEAD        preview/email/financial ......................... Admin\EmailPreviewController@weeklyFinancialReport
+  GET|HEAD        preview/email/staff-invitation ........................ Admin\EmailPreviewController@staffInvitation
+  GET|HEAD        register ..................................... tenant.register › TenantRegistrationController@create
+  POST            register ......................................... tenant.store › TenantRegistrationController@store
+  POST            reset-password ................................... password.store › Auth\NewPasswordController@store
+  GET|HEAD        reset-password/{token} .......................... password.reset › Auth\NewPasswordController@create
+  GET|HEAD        sanctum/csrf-cookie .............. sanctum.csrf-cookie › Laravel\Sanctum › CsrfCookieController@show
+  GET|HEAD        storage/{path} ....................................................................... storage.local
+  GET|HEAD        superadmin ............................. superadmin.dashboard › SuperAdmin\DashboardController@index
+  GET|HEAD        superadmin/announcements .. superadmin.announcements.index › SuperAdmin\AnnouncementController@index
+  POST            superadmin/announcements .. superadmin.announcements.store › SuperAdmin\AnnouncementController@store
+  GET|HEAD        superadmin/announcements/create superadmin.announcements.create › SuperAdmin\AnnouncementController…
+  GET|HEAD        superadmin/announcements/{announcement} superadmin.announcements.show › SuperAdmin\AnnouncementCont…
+  PUT|PATCH       superadmin/announcements/{announcement} superadmin.announcements.update › SuperAdmin\AnnouncementCo…
+  DELETE          superadmin/announcements/{announcement} superadmin.announcements.destroy › SuperAdmin\AnnouncementC…
+  GET|HEAD        superadmin/announcements/{announcement}/edit superadmin.announcements.edit › SuperAdmin\Announcemen…
+  GET|HEAD        superadmin/custom-domains superadmin.custom-domains.index › SuperAdmin\CustomDomainController@index
+  POST            superadmin/custom-domains/{id}/approve superadmin.custom-domains.approve › SuperAdmin\CustomDomainC…
+  POST            superadmin/custom-domains/{id}/reject superadmin.custom-domains.reject › SuperAdmin\CustomDomainCon…
+  POST            superadmin/logout ............................ superadmin.logout › SuperAdmin\AuthController@destroy
+  GET|HEAD        superadmin/payment-gateways superadmin.payment-gateways.index › SuperAdmin\PaymentGatewayController…
+  PUT             superadmin/payment-gateways/{gateway} superadmin.payment-gateways.update › SuperAdmin\PaymentGatewa…
+  GET|HEAD        superadmin/plans .......................... superadmin.plans.index › SuperAdmin\PlanController@index
+  POST            superadmin/plans .......................... superadmin.plans.store › SuperAdmin\PlanController@store
+  GET|HEAD        superadmin/plans/create ................. superadmin.plans.create › SuperAdmin\PlanController@create
+  GET|HEAD        superadmin/plans/{plan} ..................... superadmin.plans.show › SuperAdmin\PlanController@show
+  PUT|PATCH       superadmin/plans/{plan} ................. superadmin.plans.update › SuperAdmin\PlanController@update
+  DELETE          superadmin/plans/{plan} ............... superadmin.plans.destroy › SuperAdmin\PlanController@destroy
+  GET|HEAD        superadmin/plans/{plan}/edit ................ superadmin.plans.edit › SuperAdmin\PlanController@edit
+  GET|HEAD        superadmin/reports/subscriptions superadmin.reports.subscriptions › SuperAdmin\ReportController@sub…
+  GET|HEAD        superadmin/roles .......................... superadmin.roles.index › SuperAdmin\RoleController@index
+  POST            superadmin/roles .......................... superadmin.roles.store › SuperAdmin\RoleController@store
+  GET|HEAD        superadmin/roles/create ................. superadmin.roles.create › SuperAdmin\RoleController@create
+  GET|HEAD        superadmin/roles/{role} ..................... superadmin.roles.show › SuperAdmin\RoleController@show
+  PUT|PATCH       superadmin/roles/{role} ................. superadmin.roles.update › SuperAdmin\RoleController@update
+  DELETE          superadmin/roles/{role} ............... superadmin.roles.destroy › SuperAdmin\RoleController@destroy
+  GET|HEAD        superadmin/roles/{role}/edit ................ superadmin.roles.edit › SuperAdmin\RoleController@edit
+  GET|HEAD        superadmin/settings ................ superadmin.settings.index › SuperAdmin\SettingsController@index
+  POST            superadmin/settings .............. superadmin.settings.update › SuperAdmin\SettingsController@update
+  POST            superadmin/settings/test-email superadmin.settings.test-email › SuperAdmin\SettingsController@sendT…
+  GET|HEAD        superadmin/staff ......................... superadmin.staff.index › SuperAdmin\StaffController@index
+  POST            superadmin/staff ......................... superadmin.staff.store › SuperAdmin\StaffController@store
+  GET|HEAD        superadmin/staff/create ................ superadmin.staff.create › SuperAdmin\StaffController@create
+  GET|HEAD        superadmin/staff/{staff} ................... superadmin.staff.show › SuperAdmin\StaffController@show
+  PUT|PATCH       superadmin/staff/{staff} ............... superadmin.staff.update › SuperAdmin\StaffController@update
+  DELETE          superadmin/staff/{staff} ............. superadmin.staff.destroy › SuperAdmin\StaffController@destroy
+  GET|HEAD        superadmin/staff/{staff}/edit .............. superadmin.staff.edit › SuperAdmin\StaffController@edit
+  POST            superadmin/stop-impersonation superadmin.stop-impersonation › SuperAdmin\TenantController@stopImper…
+  GET|HEAD        superadmin/subscription-requests superadmin.subscription-requests.index › SuperAdmin\SubscriptionRe…
+  POST            superadmin/subscription-requests/{id}/approve superadmin.subscription-requests.approve › SuperAdmin…
+  POST            superadmin/subscription-requests/{id}/reject superadmin.subscription-requests.reject › SuperAdmin\S…
+  GET|HEAD        superadmin/tenants .................... superadmin.tenants.index › SuperAdmin\TenantController@index
+  POST            superadmin/tenants .................... superadmin.tenants.store › SuperAdmin\TenantController@store
+  GET|HEAD        superadmin/tenants/create ........... superadmin.tenants.create › SuperAdmin\TenantController@create
+  GET|HEAD        superadmin/tenants/{tenant} ............. superadmin.tenants.show › SuperAdmin\TenantController@show
+  PUT|PATCH       superadmin/tenants/{tenant} ......... superadmin.tenants.update › SuperAdmin\TenantController@update
+  DELETE          superadmin/tenants/{tenant} ....... superadmin.tenants.destroy › SuperAdmin\TenantController@destroy
+  GET|HEAD        superadmin/tenants/{tenant}/edit ........ superadmin.tenants.edit › SuperAdmin\TenantController@edit
+  GET|HEAD        superadmin/tenants/{tenant}/impersonate superadmin.tenants.impersonate › SuperAdmin\TenantControlle…
+  PUT             superadmin/tenants/{tenant}/password superadmin.tenants.password › SuperAdmin\TenantController@rese…
+  PUT             superadmin/tenants/{tenant}/plan superadmin.tenants.update-plan › SuperAdmin\TenantController@updat…
+  POST            superadmin/tenants/{tenant}/suspend superadmin.tenants.suspend › SuperAdmin\TenantController@suspend
+  POST            superadmin/tenants/{tenant}/unsuspend superadmin.tenants.unsuspend › SuperAdmin\TenantController@un…
+  GET|HEAD        superadmin/ticket-categories superadmin.ticket-categories.index › SuperAdmin\TicketCategoryControll…
+  POST            superadmin/ticket-categories superadmin.ticket-categories.store › SuperAdmin\TicketCategoryControll…
+  GET|HEAD        superadmin/ticket-categories/create superadmin.ticket-categories.create › SuperAdmin\TicketCategory…
+  GET|HEAD        superadmin/ticket-categories/{ticket_category} superadmin.ticket-categories.show › SuperAdmin\Ticke…
+  PUT|PATCH       superadmin/ticket-categories/{ticket_category} superadmin.ticket-categories.update › SuperAdmin\Tic…
+  DELETE          superadmin/ticket-categories/{ticket_category} superadmin.ticket-categories.destroy › SuperAdmin\Ti…
+  GET|HEAD        superadmin/ticket-categories/{ticket_category}/edit superadmin.ticket-categories.edit › SuperAdmin\…
+  GET|HEAD        superadmin/tickets ............. superadmin.tickets.index › SuperAdmin\SupportTicketController@index
+  GET|HEAD        superadmin/tickets/{supportTicket} superadmin.tickets.show › SuperAdmin\SupportTicketController@show
+  PUT             superadmin/tickets/{supportTicket} superadmin.tickets.update › SuperAdmin\SupportTicketController@u…
+  POST            superadmin/tickets/{supportTicket}/reply superadmin.tickets.reply › SuperAdmin\SupportTicketControl…
+  GET|HEAD        superadmin/users/{userId}/impersonate superadmin.users.impersonate › SuperAdmin\TenantController@im…
+  GET|HEAD        up ................................................................................................. 
+  GET|HEAD        verify-email .......................... verification.notice › Auth\EmailVerificationPromptController
+  GET|HEAD        verify-email/{id}/{hash} .......................... verification.verify › Auth\VerifyEmailController
+  GET|HEAD        {tenant} ......................................... storefront.home › Storefront\HomeController@index
+  GET|HEAD        {tenant}/about .................................. storefront.about › Storefront\HomeController@about
+  GET|HEAD        {tenant}/account ..................... storefront.account.index › Storefront\AccountController@index
+  GET|HEAD        {tenant}/admin ................................... admin.dashboard › Admin\DashboardController@index
+  GET|HEAD        {tenant}/admin/abandoned-carts ... admin.abandoned-carts.index › Admin\AbandonedCartController@index
+  POST            {tenant}/admin/abandoned-carts ... admin.abandoned-carts.store › Admin\AbandonedCartController@store
+  GET|HEAD        {tenant}/admin/abandoned-carts/create admin.abandoned-carts.create › Admin\AbandonedCartController@…
+  GET|HEAD        {tenant}/admin/abandoned-carts/{abandoned_cart} admin.abandoned-carts.show › Admin\AbandonedCartCon…
+  PUT|PATCH       {tenant}/admin/abandoned-carts/{abandoned_cart} admin.abandoned-carts.update › Admin\AbandonedCartC…
+  DELETE          {tenant}/admin/abandoned-carts/{abandoned_cart} admin.abandoned-carts.destroy › Admin\AbandonedCart…
+  GET|HEAD        {tenant}/admin/abandoned-carts/{abandoned_cart}/edit admin.abandoned-carts.edit › Admin\AbandonedCa…
+  GET|HEAD        {tenant}/admin/accounting/balance-sheet admin.accounting.balance-sheet › Admin\AccountingController…
+  GET|HEAD        {tenant}/admin/accounting/profit-loss admin.accounting.profit-loss › Admin\AccountingController@pro…
+  GET|HEAD        {tenant}/admin/accounting/trial-balance admin.accounting.trial-balance › Admin\AccountingController…
+  GET|HEAD        {tenant}/admin/accounts ....................... admin.accounts.index › Admin\AccountController@index
+  POST            {tenant}/admin/accounts ....................... admin.accounts.store › Admin\AccountController@store
+  GET|HEAD        {tenant}/admin/accounts/create .............. admin.accounts.create › Admin\AccountController@create
+  GET|HEAD        {tenant}/admin/accounts/{account} ............... admin.accounts.show › Admin\AccountController@show
+  PUT|PATCH       {tenant}/admin/accounts/{account} ........... admin.accounts.update › Admin\AccountController@update
+  DELETE          {tenant}/admin/accounts/{account} ......... admin.accounts.destroy › Admin\AccountController@destroy
+  GET|HEAD        {tenant}/admin/accounts/{account}/edit .......... admin.accounts.edit › Admin\AccountController@edit
+  GET|HEAD        {tenant}/admin/announcements ........ admin.announcements.index › Admin\AnnouncementController@index
+  POST            {tenant}/admin/announcements/{id}/read admin.announcements.read › Admin\AnnouncementController@mark…
+  GET|HEAD        {tenant}/admin/banners .......................... admin.banners.index › Admin\BannerController@index
+  POST            {tenant}/admin/banners .......................... admin.banners.store › Admin\BannerController@store
+  GET|HEAD        {tenant}/admin/banners/create ................. admin.banners.create › Admin\BannerController@create
+  GET|HEAD        {tenant}/admin/banners/{banner} ................... admin.banners.show › Admin\BannerController@show
+  PUT|PATCH       {tenant}/admin/banners/{banner} ............... admin.banners.update › Admin\BannerController@update
+  DELETE          {tenant}/admin/banners/{banner} ............. admin.banners.destroy › Admin\BannerController@destroy
+  GET|HEAD        {tenant}/admin/banners/{banner}/edit .............. admin.banners.edit › Admin\BannerController@edit
+  GET|HEAD        {tenant}/admin/brands ............................. admin.brands.index › Admin\BrandController@index
+  POST            {tenant}/admin/brands ............................. admin.brands.store › Admin\BrandController@store
+  GET|HEAD        {tenant}/admin/brands/create .................... admin.brands.create › Admin\BrandController@create
+  GET|HEAD        {tenant}/admin/brands/{brand} ....................... admin.brands.show › Admin\BrandController@show
+  PUT|PATCH       {tenant}/admin/brands/{brand} ................... admin.brands.update › Admin\BrandController@update
+  DELETE          {tenant}/admin/brands/{brand} ................. admin.brands.destroy › Admin\BrandController@destroy
+  GET|HEAD        {tenant}/admin/brands/{brand}/edit .................. admin.brands.edit › Admin\BrandController@edit
+  GET|HEAD        {tenant}/admin/categories .................. admin.categories.index › Admin\CategoryController@index
+  POST            {tenant}/admin/categories .................. admin.categories.store › Admin\CategoryController@store
+  GET|HEAD        {tenant}/admin/categories/create ......... admin.categories.create › Admin\CategoryController@create
+  GET|HEAD        {tenant}/admin/categories/{category} ......... admin.categories.show › Admin\CategoryController@show
+  PUT|PATCH       {tenant}/admin/categories/{category} ..... admin.categories.update › Admin\CategoryController@update
+  DELETE          {tenant}/admin/categories/{category} ... admin.categories.destroy › Admin\CategoryController@destroy
+  GET|HEAD        {tenant}/admin/categories/{category}/edit .... admin.categories.edit › Admin\CategoryController@edit
+  POST            {tenant}/admin/cms/save .................................. admin.cms.save › Admin\CMSController@save
+  GET|HEAD        {tenant}/admin/coupons .......................... admin.coupons.index › Admin\CouponController@index
+  POST            {tenant}/admin/coupons .......................... admin.coupons.store › Admin\CouponController@store
+  GET|HEAD        {tenant}/admin/coupons/create ................. admin.coupons.create › Admin\CouponController@create
+  GET|HEAD        {tenant}/admin/coupons/{coupon} ................... admin.coupons.show › Admin\CouponController@show
+  PUT|PATCH       {tenant}/admin/coupons/{coupon} ............... admin.coupons.update › Admin\CouponController@update
+  DELETE          {tenant}/admin/coupons/{coupon} ............. admin.coupons.destroy › Admin\CouponController@destroy
+  GET|HEAD        {tenant}/admin/coupons/{coupon}/edit .............. admin.coupons.edit › Admin\CouponController@edit
+  GET|HEAD        {tenant}/admin/customers .................... admin.customers.index › Admin\CustomerController@index
+  POST            {tenant}/admin/customers .................... admin.customers.store › Admin\CustomerController@store
+  GET|HEAD        {tenant}/admin/customers/create ........... admin.customers.create › Admin\CustomerController@create
+  POST            {tenant}/admin/customers/quick-store admin.customers.quick-store › Admin\CustomerController@quickSt…
+  GET|HEAD        {tenant}/admin/customers/{customer} ........... admin.customers.show › Admin\CustomerController@show
+  PUT|PATCH       {tenant}/admin/customers/{customer} ....... admin.customers.update › Admin\CustomerController@update
+  DELETE          {tenant}/admin/customers/{customer} ..... admin.customers.destroy › Admin\CustomerController@destroy
+  GET|HEAD        {tenant}/admin/customers/{customer}/edit ...... admin.customers.edit › Admin\CustomerController@edit
+  GET|HEAD        {tenant}/admin/enquiries .............. admin.enquiries.index › Admin\ProductEnquiryController@index
+  POST            {tenant}/admin/enquiries .............. admin.enquiries.store › Admin\ProductEnquiryController@store
+  GET|HEAD        {tenant}/admin/enquiries/create ..... admin.enquiries.create › Admin\ProductEnquiryController@create
+  GET|HEAD        {tenant}/admin/enquiries/{enquiry} ...... admin.enquiries.show › Admin\ProductEnquiryController@show
+  PUT|PATCH       {tenant}/admin/enquiries/{enquiry} .. admin.enquiries.update › Admin\ProductEnquiryController@update
+  DELETE          {tenant}/admin/enquiries/{enquiry} admin.enquiries.destroy › Admin\ProductEnquiryController@destroy
+  GET|HEAD        {tenant}/admin/enquiries/{enquiry}/edit . admin.enquiries.edit › Admin\ProductEnquiryController@edit
+  GET|HEAD        {tenant}/admin/expenses ....................... admin.expenses.index › Admin\ExpenseController@index
+  POST            {tenant}/admin/expenses ....................... admin.expenses.store › Admin\ExpenseController@store
+  GET|HEAD        {tenant}/admin/expenses/create .............. admin.expenses.create › Admin\ExpenseController@create
+  GET|HEAD        {tenant}/admin/expenses/{expense} ............... admin.expenses.show › Admin\ExpenseController@show
+  PUT|PATCH       {tenant}/admin/expenses/{expense} ........... admin.expenses.update › Admin\ExpenseController@update
+  DELETE          {tenant}/admin/expenses/{expense} ......... admin.expenses.destroy › Admin\ExpenseController@destroy
+  GET|HEAD        {tenant}/admin/expenses/{expense}/edit .......... admin.expenses.edit › Admin\ExpenseController@edit
+  GET|HEAD        {tenant}/admin/financial-analysis admin.financial-analysis.index › Admin\FinancialAnalysisControlle…
+  GET|HEAD        {tenant}/admin/incomes .......................... admin.incomes.index › Admin\IncomeController@index
+  POST            {tenant}/admin/incomes .......................... admin.incomes.store › Admin\IncomeController@store
+  GET|HEAD        {tenant}/admin/incomes/create ................. admin.incomes.create › Admin\IncomeController@create
+  GET|HEAD        {tenant}/admin/incomes/{income} ................... admin.incomes.show › Admin\IncomeController@show
+  PUT|PATCH       {tenant}/admin/incomes/{income} ............... admin.incomes.update › Admin\IncomeController@update
+  DELETE          {tenant}/admin/incomes/{income} ............. admin.incomes.destroy › Admin\IncomeController@destroy
+  GET|HEAD        {tenant}/admin/incomes/{income}/edit .............. admin.incomes.edit › Admin\IncomeController@edit
+  GET|HEAD        {tenant}/admin/messages ................ admin.messages.index › Admin\ContactMessageController@index
+  POST            {tenant}/admin/messages/{id}/read .. admin.messages.read › Admin\ContactMessageController@markAsRead
+  GET|HEAD        {tenant}/admin/orders ............................. admin.orders.index › Admin\OrderController@index
+  POST            {tenant}/admin/orders ............................. admin.orders.store › Admin\OrderController@store
+  GET|HEAD        {tenant}/admin/orders/create .................... admin.orders.create › Admin\OrderController@create
+  GET|HEAD        {tenant}/admin/orders/returns/{order}/create admin.orders.returns.create › Admin\OrderReturnControl…
+  GET|HEAD        {tenant}/admin/orders/{order} ....................... admin.orders.show › Admin\OrderController@show
+  PUT|PATCH       {tenant}/admin/orders/{order} ................... admin.orders.update › Admin\OrderController@update
+  DELETE          {tenant}/admin/orders/{order} ................. admin.orders.destroy › Admin\OrderController@destroy
+  GET|HEAD        {tenant}/admin/orders/{order}/edit .................. admin.orders.edit › Admin\OrderController@edit
+  GET|HEAD        {tenant}/admin/orders/{order}/invoice ......... admin.orders.invoice › Admin\OrderController@invoice
+  PUT             {tenant}/admin/orders/{order}/tracking admin.orders.tracking › Admin\OrderController@updateTracking
+  PATCH           {tenant}/admin/orders/{order}/update-payment admin.orders.update-payment › Admin\OrderController@up…
+  PATCH           {tenant}/admin/orders/{order}/update-status admin.orders.update-status › Admin\OrderController@upda…
+  GET|HEAD        {tenant}/admin/pages ................................ admin.pages.index › Admin\PageController@index
+  POST            {tenant}/admin/pages ................................ admin.pages.store › Admin\PageController@store
+  GET|HEAD        {tenant}/admin/pages/create ....................... admin.pages.create › Admin\PageController@create
+  GET|HEAD        {tenant}/admin/pages/{page} ........................... admin.pages.show › Admin\PageController@show
+  PUT|PATCH       {tenant}/admin/pages/{page} ....................... admin.pages.update › Admin\PageController@update
+  DELETE          {tenant}/admin/pages/{page} ..................... admin.pages.destroy › Admin\PageController@destroy
+  GET|HEAD        {tenant}/admin/pages/{page}/edit ...................... admin.pages.edit › Admin\PageController@edit
+  POST            {tenant}/admin/payment-types ......... admin.payment-types.store › Admin\PaymentTypeController@store
+  DELETE          {tenant}/admin/payment-types/{paymentType} admin.payment-types.destroy › Admin\PaymentTypeControlle…
+  GET|HEAD        {tenant}/admin/payments ....................... admin.payments.index › Admin\PaymentController@index
+  POST            {tenant}/admin/payments ....................... admin.payments.store › Admin\PaymentController@store
+  GET|HEAD        {tenant}/admin/payments/create .............. admin.payments.create › Admin\PaymentController@create
+  GET|HEAD        {tenant}/admin/payments/{payment} ............... admin.payments.show › Admin\PaymentController@show
+  PUT|PATCH       {tenant}/admin/payments/{payment} ........... admin.payments.update › Admin\PaymentController@update
+  DELETE          {tenant}/admin/payments/{payment} ......... admin.payments.destroy › Admin\PaymentController@destroy
+  GET|HEAD        {tenant}/admin/payments/{payment}/edit .......... admin.payments.edit › Admin\PaymentController@edit
+  GET|HEAD        {tenant}/admin/pos ..................................... admin.pos.index › Admin\PosController@index
+  POST            {tenant}/admin/pos ..................................... admin.pos.store › Admin\PosController@store
+  GET|HEAD        {tenant}/admin/pos/display ......................... admin.pos.display › Admin\PosController@display
+  GET|HEAD        {tenant}/admin/pos/receipt/{order} ................. admin.pos.receipt › Admin\PosController@receipt
+  GET|HEAD        {tenant}/admin/posts ................................ admin.posts.index › Admin\PostController@index
+  POST            {tenant}/admin/posts ................................ admin.posts.store › Admin\PostController@store
+  GET|HEAD        {tenant}/admin/posts/create ....................... admin.posts.create › Admin\PostController@create
+  GET|HEAD        {tenant}/admin/posts/{post} ........................... admin.posts.show › Admin\PostController@show
+  PUT|PATCH       {tenant}/admin/posts/{post} ....................... admin.posts.update › Admin\PostController@update
+  DELETE          {tenant}/admin/posts/{post} ..................... admin.posts.destroy › Admin\PostController@destroy
+  GET|HEAD        {tenant}/admin/posts/{post}/edit ...................... admin.posts.edit › Admin\PostController@edit
+  GET|HEAD        {tenant}/admin/preview-financial-email ............................................................. 
+  GET|HEAD        {tenant}/admin/products ....................... admin.products.index › Admin\ProductController@index
+  POST            {tenant}/admin/products ....................... admin.products.store › Admin\ProductController@store
+  POST            {tenant}/admin/products/bulk-action admin.products.bulk-action › Admin\ProductController@bulkAction
+  GET|HEAD        {tenant}/admin/products/bulk-upload admin.products.bulk-upload.index › Admin\BulkImageUploadControl…
+  POST            {tenant}/admin/products/bulk-upload admin.products.bulk-upload.store › Admin\BulkImageUploadControl…
+  GET|HEAD        {tenant}/admin/products/create .............. admin.products.create › Admin\ProductController@create
+  GET|HEAD        {tenant}/admin/products/export .. admin.products.export › Admin\ProductImportExportController@export
+  POST            {tenant}/admin/products/import .. admin.products.import › Admin\ProductImportExportController@import
+  GET|HEAD        {tenant}/admin/products/template admin.products.template › Admin\ProductImportExportController@temp…
+  GET|HEAD        {tenant}/admin/products/{product} ............... admin.products.show › Admin\ProductController@show
+  PUT|PATCH       {tenant}/admin/products/{product} ........... admin.products.update › Admin\ProductController@update
+  DELETE          {tenant}/admin/products/{product} ......... admin.products.destroy › Admin\ProductController@destroy
+  GET|HEAD        {tenant}/admin/products/{product}/edit .......... admin.products.edit › Admin\ProductController@edit
+  GET|HEAD        {tenant}/admin/profile ....................................... profile.edit › ProfileController@edit
+  PATCH           {tenant}/admin/profile ................................... profile.update › ProfileController@update
+  DELETE          {tenant}/admin/profile ................................. profile.destroy › ProfileController@destroy
+  GET|HEAD        {tenant}/admin/purchase-orders ... admin.purchase-orders.index › Admin\PurchaseOrderController@index
+  POST            {tenant}/admin/purchase-orders ... admin.purchase-orders.store › Admin\PurchaseOrderController@store
+  POST            {tenant}/admin/purchase-orders/bulk-action admin.purchase-orders.bulk-action › Admin\PurchaseOrderC…
+  GET|HEAD        {tenant}/admin/purchase-orders/create admin.purchase-orders.create › Admin\PurchaseOrderController@…
+  GET|HEAD        {tenant}/admin/purchase-orders/{purchase_order} admin.purchase-orders.show › Admin\PurchaseOrderCon…
+  PUT|PATCH       {tenant}/admin/purchase-orders/{purchase_order} admin.purchase-orders.update › Admin\PurchaseOrderC…
+  DELETE          {tenant}/admin/purchase-orders/{purchase_order} admin.purchase-orders.destroy › Admin\PurchaseOrder…
+  POST            {tenant}/admin/purchase-orders/{purchase_order}/convert admin.purchase-orders.convert › Admin\Purch…
+  GET|HEAD        {tenant}/admin/purchase-orders/{purchase_order}/edit admin.purchase-orders.edit › Admin\PurchaseOrd…
+  POST            {tenant}/admin/purchase-orders/{purchase_order}/items admin.purchase-orders.items.store › Admin\Pur…
+  DELETE          {tenant}/admin/purchase-orders/{purchase_order}/items/{item} admin.purchase-orders.items.destroy › …
+  POST            {tenant}/admin/purchase-orders/{purchase_order}/place admin.purchase-orders.place › Admin\PurchaseO…
+  POST            {tenant}/admin/purchase-orders/{purchase_order}/receive admin.purchase-orders.receive › Admin\Purch…
+  GET|HEAD        {tenant}/admin/purchase-orders/{purchase_order}/return admin.purchase-orders.returns.create › Admin…
+  POST            {tenant}/admin/purchase-orders/{purchase_order}/return admin.purchase-orders.returns.store › Admin\…
+  GET|HEAD        {tenant}/admin/renters .......................... admin.renters.index › Admin\RenterController@index
+  POST            {tenant}/admin/renters .......................... admin.renters.store › Admin\RenterController@store
+  GET|HEAD        {tenant}/admin/renters/create ................. admin.renters.create › Admin\RenterController@create
+  GET|HEAD        {tenant}/admin/renters/{renter} ................... admin.renters.show › Admin\RenterController@show
+  PUT|PATCH       {tenant}/admin/renters/{renter} ............... admin.renters.update › Admin\RenterController@update
+  DELETE          {tenant}/admin/renters/{renter} ............. admin.renters.destroy › Admin\RenterController@destroy
+  GET|HEAD        {tenant}/admin/renters/{renter}/edit .............. admin.renters.edit › Admin\RenterController@edit
+  POST            {tenant}/admin/renters/{renter}/invoice admin.renters.invoice › Admin\RenterController@generateInvo…
+  POST            {tenant}/admin/renters/{renter}/payment admin.renters.payment › Admin\RenterController@recordPayment
+  GET|HEAD        {tenant}/admin/reports ......................... admin.reports.index › Admin\ReportsController@index
+  GET|HEAD        {tenant}/admin/reports/customers ....... admin.reports.customers › Admin\ReportsController@customers
+  GET|HEAD        {tenant}/admin/reports/export ................ admin.reports.export › Admin\ReportsController@export
+  GET|HEAD        {tenant}/admin/reports/financial ....... admin.reports.financial › Admin\ReportsController@financial
+  GET|HEAD        {tenant}/admin/reports/inventory ....... admin.reports.inventory › Admin\ReportsController@inventory
+  GET|HEAD        {tenant}/admin/reports/sales ................... admin.reports.sales › Admin\ReportsController@sales
+  GET|HEAD        {tenant}/admin/roles ................................ admin.roles.index › Admin\RoleController@index
+  POST            {tenant}/admin/roles ................................ admin.roles.store › Admin\RoleController@store
+  GET|HEAD        {tenant}/admin/roles/create ....................... admin.roles.create › Admin\RoleController@create
+  GET|HEAD        {tenant}/admin/roles/{role} ........................... admin.roles.show › Admin\RoleController@show
+  PUT|PATCH       {tenant}/admin/roles/{role} ....................... admin.roles.update › Admin\RoleController@update
+  DELETE          {tenant}/admin/roles/{role} ..................... admin.roles.destroy › Admin\RoleController@destroy
+  GET|HEAD        {tenant}/admin/roles/{role}/edit ...................... admin.roles.edit › Admin\RoleController@edit
+  GET|HEAD        {tenant}/admin/settings ...................... admin.settings.index › Admin\SettingsController@index
+  POST            {tenant}/admin/settings .................... admin.settings.update › Admin\SettingsController@update
+  GET|HEAD        {tenant}/admin/settings/domain ............. admin.settings.domain › Admin\SettingsController@domain
+  POST            {tenant}/admin/settings/domain admin.settings.domain.request › Admin\SettingsController@requestDoma…
+  DELETE          {tenant}/admin/settings/domain/{id} admin.settings.domain.cancel › Admin\SettingsController@cancelD…
+  POST            {tenant}/admin/settings/test-email admin.settings.test-email › Admin\SettingsController@sendTestEma…
+  GET|HEAD        {tenant}/admin/stock-transfers ... admin.stock-transfers.index › Admin\StockTransferController@index
+  POST            {tenant}/admin/stock-transfers ... admin.stock-transfers.store › Admin\StockTransferController@store
+  GET|HEAD        {tenant}/admin/stock-transfers/create admin.stock-transfers.create › Admin\StockTransferController@…
+  GET|HEAD        {tenant}/admin/stock-transfers/{stock_transfer} admin.stock-transfers.show › Admin\StockTransferCon…
+  PUT|PATCH       {tenant}/admin/stock-transfers/{stock_transfer} admin.stock-transfers.update › Admin\StockTransferC…
+  DELETE          {tenant}/admin/stock-transfers/{stock_transfer} admin.stock-transfers.destroy › Admin\StockTransfer…
+  GET|HEAD        {tenant}/admin/stock-transfers/{stock_transfer}/edit admin.stock-transfers.edit › Admin\StockTransf…
+  GET|HEAD        {tenant}/admin/store-content .......... admin.store-content.edit › Admin\StoreContentController@edit
+  POST            {tenant}/admin/store-content ...... admin.store-content.update › Admin\StoreContentController@update
+  POST            {tenant}/admin/store-content/generate-policy admin.store-content.generate-policy › Admin\StoreConte…
+  POST            {tenant}/admin/store-content/regenerate admin.store-content.regenerate › Admin\StoreContentControll…
+  GET|HEAD        {tenant}/admin/suppliers .................... admin.suppliers.index › Admin\SupplierController@index
+  POST            {tenant}/admin/suppliers .................... admin.suppliers.store › Admin\SupplierController@store
+  GET|HEAD        {tenant}/admin/suppliers/create ........... admin.suppliers.create › Admin\SupplierController@create
+  GET|HEAD        {tenant}/admin/suppliers/{supplier} ........... admin.suppliers.show › Admin\SupplierController@show
+  PUT|PATCH       {tenant}/admin/suppliers/{supplier} ....... admin.suppliers.update › Admin\SupplierController@update
+  DELETE          {tenant}/admin/suppliers/{supplier} ..... admin.suppliers.destroy › Admin\SupplierController@destroy
+  GET|HEAD        {tenant}/admin/suppliers/{supplier}/edit ...... admin.suppliers.edit › Admin\SupplierController@edit
+  GET|HEAD        {tenant}/admin/suppliers/{supplier}/ledger admin.suppliers.ledger › Admin\SupplierController@ledger
+  GET|HEAD        {tenant}/admin/support ......................... admin.support.index › Admin\SupportController@index
+  POST            {tenant}/admin/support ......................... admin.support.store › Admin\SupportController@store
+  GET|HEAD        {tenant}/admin/support/{support} ................. admin.support.show › Admin\SupportController@show
+  POST            {tenant}/admin/support/{support}/reply ......... admin.support.reply › Admin\SupportController@reply
+  GET|HEAD        {tenant}/admin/tax-codes ..................... admin.tax-codes.index › Admin\TaxCodeController@index
+  POST            {tenant}/admin/tax-codes ..................... admin.tax-codes.store › Admin\TaxCodeController@store
+  GET|HEAD        {tenant}/admin/tax-codes/create ............ admin.tax-codes.create › Admin\TaxCodeController@create
+  GET|HEAD        {tenant}/admin/tax-codes/{tax_code} ............ admin.tax-codes.show › Admin\TaxCodeController@show
+  PUT|PATCH       {tenant}/admin/tax-codes/{tax_code} ........ admin.tax-codes.update › Admin\TaxCodeController@update
+  DELETE          {tenant}/admin/tax-codes/{tax_code} ...... admin.tax-codes.destroy › Admin\TaxCodeController@destroy
+  GET|HEAD        {tenant}/admin/tax-codes/{tax_code}/edit ....... admin.tax-codes.edit › Admin\TaxCodeController@edit
+  GET|HEAD        {tenant}/admin/users ................................ admin.users.index › Admin\UserController@index
+  POST            {tenant}/admin/users ................................ admin.users.store › Admin\UserController@store
+  GET|HEAD        {tenant}/admin/users/create ....................... admin.users.create › Admin\UserController@create
+  GET|HEAD        {tenant}/admin/users/{user} ........................... admin.users.show › Admin\UserController@show
+  PUT|PATCH       {tenant}/admin/users/{user} ....................... admin.users.update › Admin\UserController@update
+  DELETE          {tenant}/admin/users/{user} ..................... admin.users.destroy › Admin\UserController@destroy
+  GET|HEAD        {tenant}/admin/users/{user}/edit ...................... admin.users.edit › Admin\UserController@edit
+  GET|HEAD        {tenant}/admin/warehouses ................. admin.warehouses.index › Admin\WarehouseController@index
+  POST            {tenant}/admin/warehouses ................. admin.warehouses.store › Admin\WarehouseController@store
+  GET|HEAD        {tenant}/admin/warehouses/create ........ admin.warehouses.create › Admin\WarehouseController@create
+  GET|HEAD        {tenant}/admin/warehouses/{warehouse} ....... admin.warehouses.show › Admin\WarehouseController@show
+  PUT|PATCH       {tenant}/admin/warehouses/{warehouse} ... admin.warehouses.update › Admin\WarehouseController@update
+  DELETE          {tenant}/admin/warehouses/{warehouse} . admin.warehouses.destroy › Admin\WarehouseController@destroy
+  GET|HEAD        {tenant}/admin/warehouses/{warehouse}/edit .. admin.warehouses.edit › Admin\WarehouseController@edit
+  GET|HEAD        {tenant}/admin/wizard .................. admin.wizard.index › Admin\StoreSetupWizardController@index
+  POST            {tenant}/admin/wizard/finish ......... admin.wizard.finish › Admin\StoreSetupWizardController@finish
+  POST            {tenant}/admin/wizard/update ......... admin.wizard.update › Admin\StoreSetupWizardController@update
+  GET|HEAD        {tenant}/api/products ................. storefront.api.products › Storefront\ProductController@index
+  POST            {tenant}/api/storefront/contact ........ storefront.api.contact › Storefront\ContactController@store
+  GET|HEAD        {tenant}/api/storefront/home-sections . storefront.api.sections › Storefront\SectionController@index
+  GET|HEAD        {tenant}/api/storefront/product/{slug} storefront.api.product.show › Storefront\ProductController@s…
+  GET|HEAD        {tenant}/api/storefront/products ... storefront.api.products.v2 › Storefront\ProductController@index
+  GET|HEAD        {tenant}/cart .............................. storefront.cart.index › Storefront\CartController@index
+  POST            {tenant}/cart .............................. storefront.cart.store › Storefront\CartController@store
+  POST            {tenant}/cart/coupon ................ storefront.cart.coupon › Storefront\CartController@applyCoupon
+  DELETE          {tenant}/cart/coupon ........ storefront.cart.coupon.remove › Storefront\CartController@removeCoupon
+  PATCH           {tenant}/cart/{item} ..................... storefront.cart.update › Storefront\CartController@update
+  DELETE          {tenant}/cart/{item} ................... storefront.cart.destroy › Storefront\CartController@destroy
+  GET|HEAD        {tenant}/category/{slug} .................. storefront.category › Storefront\HomeController@category
+  GET|HEAD        {tenant}/checkout .................. storefront.checkout.index › Storefront\CheckoutController@index
+  POST            {tenant}/checkout .................. storefront.checkout.store › Storefront\CheckoutController@store
+  GET|HEAD        {tenant}/checkout/success ...... storefront.checkout.success › Storefront\CheckoutController@success
+  GET|HEAD        {tenant}/contact ............................ storefront.contact › Storefront\HomeController@contact
+  GET|HEAD        {tenant}/faq ........................................ storefront.faq › Storefront\PageController@faq
+  GET|HEAD        {tenant}/forgot-password ................ password.request › Auth\PasswordResetLinkController@create
+  POST            {tenant}/forgot-password ................... password.email › Auth\PasswordResetLinkController@store
+  GET|HEAD        {tenant}/login ........................... tenant.login › Auth\AuthenticatedSessionController@create
+  POST            {tenant}/login ...................... tenant.login.store › Auth\AuthenticatedSessionController@store
+  POST            {tenant}/logout ........................ tenant.logout › Auth\AuthenticatedSessionController@destroy
+  GET|HEAD        {tenant}/manifest.json ............................................................. tenant.manifest
+  GET|HEAD        {tenant}/media ........................................................................ tenant.media
+  GET|HEAD        {tenant}/product ..................... storefront.products.index › Storefront\ProductController@list
+  GET|HEAD        {tenant}/product/{slug} ............ storefront.product.detail › Storefront\ProductController@detail
+  GET|HEAD        {tenant}/register ........................... tenant.register › Auth\RegisteredUserController@create
+  POST            {tenant}/register .............................................. Auth\RegisteredUserController@store
+  POST            {tenant}/reset-password .......................... password.store › Auth\NewPasswordController@store
+  GET|HEAD        {tenant}/reset-password/{token} ................. password.reset › Auth\NewPasswordController@create
+  GET|HEAD        {tenant}/returns-policy ..................... storefront.returns › Storefront\PageController@returns
+  GET|HEAD        {tenant}/shipping-policy .................. storefront.shipping › Storefront\PageController@shipping
+  GET|HEAD        {tenant}/subscription/callback tenant.subscription.callback › Tenant\SubscriptionController@callback
+  POST            {tenant}/subscription/payment tenant.subscription.submit-payment › Tenant\SubscriptionController@su…
+  GET|HEAD        {tenant}/subscription/plans ........ tenant.subscription.index › Tenant\SubscriptionController@index
+  POST            {tenant}/subscription/plans ........ tenant.subscription.store › Tenant\SubscriptionController@store
+  GET|HEAD        {tenant}/track-order ............ storefront.orders.track › Storefront\OrderTrackingController@index
+  POST            {tenant}/track-order ...... storefront.orders.track.store › Storefront\OrderTrackingController@store
+
+                                                                                                  Showing [370] routes
+

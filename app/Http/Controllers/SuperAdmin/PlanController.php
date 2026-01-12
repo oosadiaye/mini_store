@@ -40,6 +40,12 @@ class PlanController extends Controller
             'caps' => 'array',
             'caps.max_products' => 'nullable|integer|min:0',
             'caps.max_transactions' => 'nullable|integer|min:0',
+            'caps.max_customers' => 'nullable|integer|min:0',
+            'caps.max_suppliers' => 'nullable|integer|min:0',
+            'caps.max_sales' => 'nullable|integer|min:0',
+            'caps.max_purchases' => 'nullable|integer|min:0',
+            'caps.max_warehouses' => 'nullable|integer|min:0',
+            'caps.max_users' => 'nullable|integer|min:0',
             'is_active' => 'boolean',
         ]);
 
@@ -73,6 +79,13 @@ class PlanController extends Controller
             'caps' => 'array',
             'caps.max_products' => 'nullable|integer|min:0',
             'caps.max_transactions' => 'nullable|integer|min:0',
+            'caps.max_customers' => 'nullable|integer|min:0',
+            'caps.max_suppliers' => 'nullable|integer|min:0',
+            'caps.max_sales' => 'nullable|integer|min:0',
+            'caps.max_purchases' => 'nullable|integer|min:0',
+            'caps.max_warehouses' => 'nullable|integer|min:0',
+            'caps.max_users' => 'nullable|integer|min:0',
+            'is_active' => 'boolean',
         ]);
 
         $validated['is_active'] = $request->has('is_active');

@@ -7,6 +7,14 @@
 
         <title>{{ config('app.name', 'Laravel') }}</title>
 
+        @php
+            $tenant = app('tenant');
+            $favicon = $tenant?->data['favicon'] ?? null;
+        @endphp
+        @if($favicon)
+            <link rel="icon" type="image/png" href="{{ '/storage/' . $favicon }}">
+        @endif
+
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
@@ -30,7 +38,7 @@
                 </div>
             </div>
         @endif
-        <div class="flex h-screen bg-gray-100 dark:bg-gray-900">
+        <div id="app" class="flex h-screen bg-gray-100 dark:bg-gray-900">
             @include('layouts.sidebar')
 
             <div class="flex-1 flex flex-col overflow-hidden">

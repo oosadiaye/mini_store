@@ -9,8 +9,14 @@
                 <h2 class="text-2xl font-bold text-gray-800">PO #{{ substr($purchaseOrder->id, 0, 8) }}</h2>
                 @if($purchaseOrder->status === 'draft')
                     <span class="bg-gray-100 text-gray-800 px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wide">Draft</span>
-                @elseif($purchaseOrder->status === 'received')
-                    <span class="bg-green-100 text-green-800 px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wide">Received</span>
+                @elseif($purchaseOrder->status === 'created_order')
+                    <span class="bg-blue-100 text-blue-800 px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wide">Created Order</span>
+                @elseif($purchaseOrder->status === 'received_order')
+                    @if($purchaseOrder->billed_status === 'billed')
+                        <span class="bg-purple-100 text-purple-800 px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wide">Billed</span>
+                    @else
+                        <span class="bg-green-100 text-green-800 px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wide">Received Order</span>
+                    @endif
                 @endif
             </div>
             <div class="text-sm text-gray-500">
@@ -20,7 +26,7 @@
 
         <div class="mt-4 md:mt-0 flex items-center space-x-3">
              @if($purchaseOrder->status === 'draft')
-                <a href="{{ route('admin.purchase-orders.edit', $purchaseOrder->id) }}" class="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg font-medium shadow-sm hover:bg-gray-50 flex items-center">
+                <a href="{{ route('admin.purchase-orders.edit', $purchaseOrder->id) }}" class="bg-white border-2 border-gray-300 text-gray-700 px-4 py-2 rounded-lg font-medium shadow-sm hover:bg-gray-50 flex items-center">
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                     Edit Order
                 </a>
@@ -38,6 +44,7 @@
                     @method('DELETE')
                     <button type="submit" class="text-red-600 hover:text-red-800 font-medium px-3">Delete</button>
                 </form>
+            @elseif($purchaseOrder->status === 'created_order')
                 <form action="{{ route('admin.purchase-orders.receive', $purchaseOrder->id) }}" method="POST" onsubmit="return confirm('Confirm receipt? This will add stock to inventory.')">
                     @csrf
                     <button type="submit" class="bg-green-600 text-white px-5 py-2 rounded-lg font-bold shadow-sm hover:bg-green-700 flex items-center">
@@ -45,16 +52,15 @@
                         Receive Stock
                     </button>
                 </form>
-            @elseif($purchaseOrder->status === 'received')
+            @elseif($purchaseOrder->status === 'received_order')
                 <a href="{{ route('admin.purchase-orders.returns.create', $purchaseOrder->id) }}" class="bg-red-50 hover:bg-red-100 text-red-700 px-4 py-2 rounded-lg transition border border-red-200 border-2 font-medium">
                     Return to Supplier
                 </a>
 
                 @if($purchaseOrder->billed_status !== 'billed')
-                <form action="{{ route('admin.purchase-orders.convert', $purchaseOrder->id) }}" method="POST" id="convert-form-{{$purchaseOrder->id}}">
+                <form action="{{ route('admin.purchase-orders.convert', $purchaseOrder->id) }}" method="POST" onsubmit="return confirm('Convert this PO to a Supplier Invoice? An Invoice Number will be auto-generated.')">
                     @csrf
-                    <input type="hidden" name="invoice_number" id="invoice_input-{{$purchaseOrder->id}}">
-                    <button type="button" onclick="let inv = prompt('Enter Supplier Invoice Number (e.g. INV-123):'); if(inv) { document.getElementById('invoice_input-{{$purchaseOrder->id}}').value = inv; document.getElementById('convert-form-{{$purchaseOrder->id}}').submit(); }" class="bg-purple-600 text-white px-5 py-2 rounded-lg font-bold shadow-sm hover:bg-purple-700 flex items-center transition">
+                    <button type="submit" class="bg-purple-600 text-white px-5 py-2 rounded-lg font-bold shadow-sm hover:bg-purple-700 flex items-center transition">
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                         Convert to Bill
                     </button>
@@ -63,6 +69,23 @@
             @endif
         </div>
     </div>
+
+    @if($purchaseOrder->billed_status === 'billed' && $purchaseOrder->invoice_number)
+    <div class="bg-purple-50 border border-purple-200 rounded-lg p-6 flex flex-col md:flex-row justify-between items-center shadow-sm">
+        <div class="flex items-center">
+            <div class="bg-purple-600 p-3 rounded-full mr-4 text-white">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+            </div>
+            <div>
+                <h3 class="text-purple-900 font-bold text-lg">Supplier Invoice Created</h3>
+                <p class="text-purple-700 text-sm">This Purchase Order has been converted to a bill (Invoice #{{ $purchaseOrder->invoice_number }}).</p>
+            </div>
+        </div>
+        <div class="mt-4 md:mt-0">
+             <span class="bg-purple-200 text-purple-800 px-4 py-2 rounded-lg font-bold text-sm">ACCOUNTS PAYABLE UPDATED</span>
+        </div>
+    </div>
+    @endif
 
     <div class="grid grid-cols-1 gap-6">
         <!-- Items List -->
@@ -79,7 +102,7 @@
                             <th class="px-6 py-3 text-right">Qty</th>
                             <th class="px-6 py-3 text-right">Tax</th>
                             <th class="px-6 py-3 text-right">Total</th>
-                            @if($purchaseOrder->status !== 'received' && $purchaseOrder->status !== 'ordered')
+                            @if($purchaseOrder->status !== 'received_order' && $purchaseOrder->status !== 'created_order')
                             <th class="px-6 py-3 text-right">Actions</th>
                             @endif
                         </tr>

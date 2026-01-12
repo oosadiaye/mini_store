@@ -22,6 +22,8 @@ return new class extends Migration
                 $table->dropColumn('duration_months');
             }
             if (Schema::hasColumn('plans', 'slug')) {
+                // Drop index first for SQLite compatibility
+                $table->dropUnique(['slug']); // standard laravel index name assumption: plans_slug_unique
                 $table->dropColumn('slug');
             }
             if (Schema::hasColumn('plans', 'currency')) {

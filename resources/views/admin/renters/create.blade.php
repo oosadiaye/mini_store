@@ -20,31 +20,31 @@
 
             <div>
                 <label class="block text-sm font-medium text-gray-700">Name *</label>
-                <input type="text" name="name" value="{{ old('name') }}" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                <input type="text" name="name" value="{{ old('name') }}" required class="mt-1 block w-full rounded-md border-2 border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                 @error('name')<span class="text-red-500 text-sm">{{ $message }}</span>@enderror
             </div>
 
             <div>
                 <label class="block text-sm font-medium text-gray-700">Email</label>
-                <input type="email" name="email" value="{{ old('email') }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                <input type="email" name="email" value="{{ old('email') }}" class="mt-1 block w-full rounded-md border-2 border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                 @error('email')<span class="text-red-500 text-sm">{{ $message }}</span>@enderror
             </div>
 
             <div>
                 <label class="block text-sm font-medium text-gray-700">Phone</label>
-                <input type="text" name="phone" value="{{ old('phone') }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                <input type="text" name="phone" value="{{ old('phone') }}" class="mt-1 block w-full rounded-md border-2 border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                 @error('phone')<span class="text-red-500 text-sm">{{ $message }}</span>@enderror
             </div>
 
             <div>
                 <label class="block text-sm font-medium text-gray-700">ID Number</label>
-                <input type="text" name="id_number" value="{{ old('id_number') }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                <input type="text" name="id_number" value="{{ old('id_number') }}" class="mt-1 block w-full rounded-md border-2 border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                 @error('id_number')<span class="text-red-500 text-sm">{{ $message }}</span>@enderror
             </div>
 
             <div class="md:col-span-2">
                 <label class="block text-sm font-medium text-gray-700">Address</label>
-                <textarea name="address" rows="2" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">{{ old('address') }}</textarea>
+                <textarea name="address" rows="2" class="mt-1 block w-full rounded-md border-2 border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">{{ old('address') }}</textarea>
                 @error('address')<span class="text-red-500 text-sm">{{ $message }}</span>@enderror
             </div>
 
@@ -55,25 +55,25 @@
 
             <div>
                 <label class="block text-sm font-medium text-gray-700">Contract Start Date</label>
-                <input type="date" name="contract_start_date" value="{{ old('contract_start_date') }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                <input type="date" name="contract_start_date" value="{{ old('contract_start_date') }}" class="mt-1 block w-full rounded-md border-2 border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                 @error('contract_start_date')<span class="text-red-500 text-sm">{{ $message }}</span>@enderror
             </div>
 
             <div>
                 <label class="block text-sm font-medium text-gray-700">Contract End Date</label>
-                <input type="date" name="contract_end_date" value="{{ old('contract_end_date') }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                <input type="date" name="contract_end_date" value="{{ old('contract_end_date') }}" class="mt-1 block w-full rounded-md border-2 border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                 @error('contract_end_date')<span class="text-red-500 text-sm">{{ $message }}</span>@enderror
             </div>
 
             <div>
                 <label class="block text-sm font-medium text-gray-700">Rental Amount *</label>
-                <input type="number" step="0.01" name="rental_amount" value="{{ old('rental_amount') }}" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                <input type="number" step="0.01" name="rental_amount" value="{{ old('rental_amount') }}" required class="mt-1 block w-full rounded-md border-2 border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                 @error('rental_amount')<span class="text-red-500 text-sm">{{ $message }}</span>@enderror
             </div>
 
             <div>
                 <label class="block text-sm font-medium text-gray-700">Payment Frequency *</label>
-                <select name="payment_frequency" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                <select name="payment_frequency" required class="mt-1 block w-full rounded-md border-2 border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                     <option value="monthly" {{ old('payment_frequency') == 'monthly' ? 'selected' : '' }}>Monthly</option>
                     <option value="weekly" {{ old('payment_frequency') == 'weekly' ? 'selected' : '' }}>Weekly</option>
                     <option value="quarterly" {{ old('payment_frequency') == 'quarterly' ? 'selected' : '' }}>Quarterly</option>
@@ -84,13 +84,13 @@
 
             <div>
                 <label class="block text-sm font-medium text-gray-700">Security Deposit</label>
-                <input type="number" step="0.01" name="security_deposit" value="{{ old('security_deposit', 0) }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                <input type="number" step="0.01" name="security_deposit" value="{{ old('security_deposit', 0) }}" class="mt-1 block w-full rounded-md border-2 border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                 @error('security_deposit')<span class="text-red-500 text-sm">{{ $message }}</span>@enderror
             </div>
 
             <div class="md:col-span-2">
                 <label class="block text-sm font-medium text-gray-700">Notes</label>
-                <textarea name="notes" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">{{ old('notes') }}</textarea>
+                <textarea name="notes" rows="3" class="mt-1 block w-full rounded-md border-2 border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">{{ old('notes') }}</textarea>
                 @error('notes')<span class="text-red-500 text-sm">{{ $message }}</span>@enderror
             </div>
         </div>

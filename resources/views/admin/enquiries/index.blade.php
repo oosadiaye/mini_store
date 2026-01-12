@@ -18,9 +18,9 @@
     <div class="bg-white rounded-lg shadow p-4 mb-6">
         <form method="GET" class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <input type="text" name="search" value="{{ request('search') }}" placeholder="Search by name, email, or message..." 
-                class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                class="px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
             
-            <select name="status" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+            <select name="status" class="px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
                 <option value="">All Status</option>
                 <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
                 <option value="replied" {{ request('status') == 'replied' ? 'selected' : '' }}>Replied</option>

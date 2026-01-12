@@ -39,6 +39,21 @@ class Product extends Model
         'flash_sale_start',
         'flash_sale_end',
         'expiry_date',
+        'rich_description',
+        'meta_tags',
+        'published_status',
+        'woocommerce_id',
+        'woocommerce_data',
+    ];
+
+    /**
+     * The accessors to append to the model's array form.
+     *
+     * @var array
+     */
+    protected $appends = [
+        'image_url',
+        'discount_percentage',
     ];
 
     protected $casts = [
@@ -53,6 +68,7 @@ class Product extends Model
         'is_active' => 'boolean',
         'is_featured' => 'boolean',
         'is_flash_sale' => 'boolean',
+        'meta_tags' => 'array',
     ];
 
     /**
@@ -67,7 +83,8 @@ class Product extends Model
                 $product->slug = Str::slug($product->name);
             }
             if (empty($product->sku)) {
-                $product->sku = 'SKU-' . strtoupper(Str::random(8));
+                // Generate Serial Number Format: SKU-YYYYMMDDHHMMSS
+                $product->sku = 'SKU-' . date('YmdHis') . rand(10, 99);
             }
         });
     }
@@ -163,14 +180,18 @@ class Product extends Model
     {
         $image = $this->primaryImage() ?? $this->images()->first();
         
-        if ($image) {
-            if (filter_var($image->image_path, FILTER_VALIDATE_URL)) {
-                return $image->image_path;
+        if ($image && !empty(trim($image->image_path))) {
+            $path = trim($image->image_path);
+            if (filter_var($path, FILTER_VALIDATE_URL)) {
+                return $path;
             }
-            return route('tenant.media', ['path' => $image->image_path]);
+            return route('tenant.media', ['path' => $path]);
         }
 
-        return 'https://via.placeholder.com/300?text=' . str_replace(' ', '+', $this->name);
+        // Return a local SVG placeholder data URI to avoid external network dependencies (ERR_FAILED issues)
+        // Simple gray rect with text
+        $svg = '<svg width="300" height="300" xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" fill="#eeeeee"/><text x="50%" y="50%" font-family="Arial" font-size="20" fill="#999999" dominant-baseline="middle" text-anchor="middle">No Image</text></svg>';
+        return 'data:image/svg+xml;base64,' . base64_encode($svg);
     }
 
     /**
@@ -203,6 +224,8 @@ class Product extends Model
         }
         return $this->stock_quantity <= $this->low_stock_threshold;
     }
+
+
 
     /**
      * Get discount percentage
@@ -303,5 +326,37 @@ class Product extends Model
         return $query->withCount('orderItems')
                     ->where('is_active', true)
                     ->orderBy('order_items_count', 'desc');
+    }
+
+    /**
+     * Record stock movement
+     */
+    public function recordMovement($warehouseId, $quantity, $type, $referenceType = null, $referenceId = null, $notes = null, $updateGlobal = true)
+    {
+        // 1. Update Global Stock if tracked
+        if ($this->track_inventory && $updateGlobal) {
+            $this->increment('stock_quantity', $quantity); // quantity can be negative
+        }
+
+        // 2. Update Warehouse Stock
+        $warehouseStock = \App\Models\WarehouseStock::firstOrCreate(
+            ['warehouse_id' => $warehouseId, 'product_id' => $this->id],
+            ['quantity' => 0]
+        );
+        $warehouseStock->increment('quantity', $quantity);
+        
+        // 3. Log History
+        return \App\Models\StockMovement::create([
+            'tenant_id' => $this->tenant_id,
+            'product_id' => $this->id,
+            'warehouse_id' => $warehouseId,
+            'type' => $type,
+            'quantity' => $quantity,
+            'balance_after' => $warehouseStock->quantity,
+            'reference_type' => $referenceType,
+            'reference_id' => $referenceId,
+            'notes' => $notes,
+            'created_by' => auth()->id(),
+        ]);
     }
 }

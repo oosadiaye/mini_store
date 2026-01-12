@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class PurchaseReturnItem extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Traits\BelongsToTenant;
 
     protected $fillable = [
         'purchase_return_id',

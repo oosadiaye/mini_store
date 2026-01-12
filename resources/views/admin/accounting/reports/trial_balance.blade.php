@@ -8,7 +8,7 @@
             <p class="mt-2 text-gray-600">Report as of {{ \Carbon\Carbon::parse($asOfDate)->format('M d, Y') }}</p>
         </div>
         <div class="mt-4 sm:mt-0 flex items-center space-x-3">
-             <form action="{{ route('admin.accounting.trial-balance') }}" method="GET" class="flex items-center space-x-2 bg-white p-1 rounded-lg border border-gray-300 shadow-sm">
+             <form action="{{ route('admin.accounting.trial-balance') }}" method="GET" class="flex items-center space-x-2 bg-white p-1 rounded-lg border-2 border-gray-300 shadow-sm">
                 <input type="date" name="date" value="{{ $asOfDate }}" class="border-0 focus:ring-0 text-sm rounded-md bg-transparent">
                 <button type="submit" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-md text-sm font-medium transition">
                     Update

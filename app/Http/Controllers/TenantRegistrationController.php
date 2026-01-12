@@ -6,6 +6,9 @@ use App\Models\Tenant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules;
+use App\Models\GlobalSetting;
+use App\Rules\TurnstileRule;
+use App\Rules\RecaptchaRule;
 
 class TenantRegistrationController extends Controller
 {
@@ -26,14 +29,24 @@ class TenantRegistrationController extends Controller
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
+        $rules = [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'phone' => ['required', 'string', 'max:20'],
             'store_name' => ['required', 'string', 'max:255', 'unique:tenants,name'],
             'subdomain' => ['required', 'string', 'max:255', 'alpha_dash', 'unique:tenants,slug'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
-        ]);
+        ];
+
+        $captchaType = GlobalSetting::where('key', 'captcha_type')->first()?->value ?? 'none';
+
+        if ($captchaType === 'turnstile') {
+            $rules['cf-turnstile-response'] = ['required', new TurnstileRule];
+        } elseif ($captchaType === 'recaptcha') {
+            $rules['g-recaptcha-response'] = ['required', new RecaptchaRule];
+        }
+
+        $validated = $request->validate($rules);
 
         try {
             \Illuminate\Support\Facades\DB::beginTransaction();

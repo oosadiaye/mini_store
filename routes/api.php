@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\StorefrontApiController;
 
 /*
 |--------------------------------------------------------------------------
@@ -16,10 +17,18 @@ use App\Http\Controllers\Api\AuthController;
 */
 
 // Public Authentication Routes
-Route::post('/login', [AuthController::class, 'login']);
+Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:login');
+
+// Public Storefront Routes (with tenant context from path)
+// Access via: /api/{tenant}/storefront/home
+Route::middleware([\App\Http\Middleware\IdentifyTenantFromPath::class])
+    ->prefix('{tenant}')
+    ->group(function () {
+        Route::get('/storefront/home', [StorefrontApiController::class, 'home']);
+    });
 
 // Protected Routes
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware(['auth:sanctum', \App\Http\Middleware\IdentifyTenantFromUser::class, 'tenant.access'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/user', [AuthController::class, 'user']);
     

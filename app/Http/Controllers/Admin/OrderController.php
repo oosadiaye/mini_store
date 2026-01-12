@@ -20,28 +20,96 @@ class OrderController extends Controller
             $query->where('warehouse_id', $request->warehouse_id);
         }
 
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('order_number', 'like', "%{$search}%")
+                  ->orWhereHas('customer', function($c) use ($search) {
+                      $c->where('name', 'like', "%{$search}%");
+                  });
+            });
+        }
+
         $orders = $query->paginate(15);
+
+        if ($request->wantsJson()) {
+            return response()->json($orders);
+        }
+
         $source = $request->source ?? 'all';
-        $pageTitle = match($source) {
-            'storefront' => 'Online Orders',
-            'admin' => 'Sales Orders',
-            'pos' => 'POS Orders',
-            default => 'All Orders'
-        };
+        $pageTitle = 'Omni Channel Orders';
             
         $warehouses = \App\Models\Warehouse::where('is_active', true)->get();
             
         return view('admin.orders.index', compact('orders', 'pageTitle', 'source', 'warehouses'));
     }
 
-    public function create()
+    public function bulkAction(Request $request, \App\Services\AccountingService $accountingService)
     {
-        $customers = \App\Models\Customer::all();
-        $products = \App\Models\Product::active()->get();
-        return view('admin.orders.create', compact('customers', 'products'));
+        $request->validate([
+            'order_ids' => 'required|array|min:1',
+            'order_ids.*' => 'exists:orders,id',
+            'action' => 'required|in:status_pending,status_processing,status_shipped,status_delivered,status_completed,status_cancelled,delete',
+        ]);
+
+        $orderIds = $request->order_ids;
+        $action = $request->action;
+
+        try {
+            \Illuminate\Support\Facades\DB::beginTransaction();
+
+            if ($action === 'delete') {
+                Order::whereIn('id', $orderIds)->delete();
+                $message = count($orderIds) . ' orders deleted successfully.';
+            } else {
+                $status = str_replace('status_', '', $action);
+                $orders = Order::whereIn('id', $orderIds)->get();
+
+                foreach ($orders as $order) {
+                    $oldStatus = $order->status;
+                    $order->update(['status' => $status]);
+
+                    if ($oldStatus !== $status) {
+                        // Trigger Accounting if Completed
+                        if ($status === 'completed') {
+                            $accountingService->recordSale($order);
+                        }
+
+                        // Trigger Notification (Silent fail to avoid breaking bulk)
+                        try {
+                            $order->customer->notify(new \App\Notifications\OrderStatusUpdated($order));
+                        } catch (\Exception $e) {
+                            \Illuminate\Support\Facades\Log::error('Failed to send order notification in bulk: ' . $e->getMessage());
+                        }
+
+                        if ($status === 'delivered') {
+                            $shipping = $order->shippingAddress;
+                            if ($shipping && !$shipping->delivered_at) {
+                                $shipping->update(['delivered_at' => now()]);
+                            }
+                        }
+                    }
+                }
+                $message = count($orderIds) . ' orders updated to ' . $status . ' successfully.';
+            }
+
+            \Illuminate\Support\Facades\DB::commit();
+
+            return response()->json(['success' => true, 'message' => $message]);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\DB::rollBack();
+            return response()->json(['success' => false, 'message' => 'Error processing bulk action: ' . $e->getMessage()], 500);
+        }
     }
 
-    public function store(Request $request)
+    public function create()
+    {
+        $tenant = app('tenant');
+        $currencySymbol = $tenant->currency ?? '₦'; 
+        return view('admin.orders.create', compact('currencySymbol'));
+    }
+
+    public function store(Request $request, \App\Services\AccountingService $accountingService)
     {
         // Enforce Plan Limits (Total Orders)
         $limit = app('tenant')->getLimit('orders_limit');
@@ -60,7 +128,6 @@ class OrderController extends Controller
             'items.*.quantity' => 'required|integer|min:1',
             'items.*.price' => 'required|numeric|min:0',
             'status' => 'required|in:pending,processing,completed',
-            'payment_status' => 'required|in:pending,paid',
             'warehouse_id' => 'nullable|exists:warehouses,id',
         ]);
 
@@ -80,13 +147,27 @@ class OrderController extends Controller
             // If explicit in request, use it. Else default to first active or null.
             $warehouseId = $request->warehouse_id;
             if (!$warehouseId) {
-                // Should we force a default?
-                $defaultWarehouse = \Illuminate\Support\Facades\DB::table('warehouses')->where('is_active', true)->first();
+                // Use Model to ensure tenant scope
+                $defaultWarehouse = \App\Models\Warehouse::active()->first();
                 $warehouseId = $defaultWarehouse ? $defaultWarehouse->id : null;
             }
 
+            \Illuminate\Support\Facades\Log::info('Order Store Debug:', [
+                'tenant_bound' => app()->bound('tenant'),
+                'tenant_obj' => app('tenant'),
+                'warehouse_id' => $warehouseId,
+                'user_id' => auth()->id(),
+            ]);
+
+            // Determine next order number
+            $maxOrderNumber = \App\Models\Order::selectRaw('MAX(CAST(order_number AS UNSIGNED)) as max_num')
+                ->whereRaw('order_number REGEXP "^[0-9]+$"')
+                ->value('max_num');
+
+            $nextOrderNumber = $maxOrderNumber ? intval($maxOrderNumber) + 1 : 1001;
+
             $order = Order::create([
-                'order_number' => 'ORD-' . strtoupper(\Illuminate\Support\Str::random(10)),
+                'order_number' => $nextOrderNumber,
                 'customer_id' => $request->customer_id,
                 'status' => $request->status,
                 'subtotal' => $subtotal,
@@ -94,20 +175,24 @@ class OrderController extends Controller
                 'shipping' => 0, 
                 'discount' => 0,
                 'total' => $total,
-                'payment_method' => 'manual', // Can be enhanced later
-                'payment_status' => $request->payment_status,
+                'payment_method' => 'manual', 
+                'payment_status' => 'pending', // Enforced Credit Sale
                 'order_source' => 'admin',
                 'warehouse_id' => $warehouseId,
             ]);
+            
+            \Illuminate\Support\Facades\Log::info('Order Created:', $order->toArray());
 
-            $admins = \App\Models\User::role(['admin', 'super-admin'])->get();
+            $admins = \App\Models\User::whereHas('roles', function($q) {
+                $q->whereIn('name', ['Super Admin', 'Admin', 'Manager', 'admin', 'super-admin']);
+            })->get();
 
             foreach ($request->items as $item) {
                 $product = \App\Models\Product::find($item['product_id']);
                 
                 // Decrement Stock
                 if ($product->track_inventory) {
-                    $product->decrement('stock_quantity', $item['quantity']);
+                    $product->recordMovement($warehouseId, -$item['quantity'], 'sale', 'order', $order->id);
                     
                     // Check Low Stock
                     if ($product->stock_quantity <= ($product->low_stock_threshold ?? 5)) {
@@ -126,6 +211,8 @@ class OrderController extends Controller
                     'quantity' => $item['quantity'],
                     'price' => $item['price'],
                     'total' => $item['price'] * $item['quantity'],
+                    'tax_amount' => 0,
+                    'tax_rate' => 0,
                 ]);
             }
             
@@ -136,12 +223,28 @@ class OrderController extends Controller
                 } catch (\Exception $e) {}
             }
 
+            // Trigger Accounting if Completed immediately (rare but possible)
+            if ($order->status === 'completed') {
+                $accountingService->recordSale($order);
+            }
+
             \Illuminate\Support\Facades\DB::commit();
+
+            if ($request->wantsJson()) {
+                 return response()->json([
+                     'message' => 'Sales order created successfully.',
+                     'order' => $order,
+                     'redirect' => route('admin.orders.index', ['source' => 'admin'])
+                 ]);
+            }
 
             return redirect()->route('admin.orders.index', ['source' => 'admin'])->with('success', 'Sales order created successfully.');
 
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\DB::rollBack();
+            if ($request->wantsJson()) {
+                return response()->json(['message' => 'Error creating order: ' . $e->getMessage()], 500);
+            }
             return back()->with('error', 'Error creating order: ' . $e->getMessage())->withInput();
         }
     }
@@ -152,7 +255,13 @@ class OrderController extends Controller
         return view('admin.orders.show', compact('order'));
     }
 
-    public function updateStatus(Request $request, Order $order)
+    public function edit(Order $order)
+    {
+        return redirect()->route('admin.orders.show', $order->id)
+            ->with('info', 'Order editing is handled via status updates and actions on this page.');
+    }
+
+    public function updateStatus(Request $request, Order $order, \App\Services\AccountingService $accountingService)
     {
         $request->validate([
             'status' => 'required|in:pending,processing,shipped,delivered,completed,cancelled,refunded',
@@ -162,6 +271,12 @@ class OrderController extends Controller
         $order->update(['status' => $request->status]);
 
         if ($oldStatus !== $request->status) {
+            
+            // Trigger Accounting if Completed
+            if ($request->status === 'completed') {
+                $accountingService->recordSale($order);
+            }
+
             // Trigger Notification
             try {
                 $order->customer->notify(new \App\Notifications\OrderStatusUpdated($order));
@@ -228,5 +343,21 @@ class OrderController extends Controller
         $order->update(['payment_status' => $request->payment_status]);
 
         return back()->with('success', 'Payment status updated successfully.');
+    }
+    public function invoice(Order $order)
+    {
+        $order->load(['customer', 'items.product', 'shippingAddress']);
+        $tenant = app('tenant');
+        return view('admin.orders.invoice', compact('order', 'tenant'));
+    }
+
+    public function getCustomers()
+    {
+        return response()->json(\App\Models\Customer::orderBy('name')->get(['id', 'name', 'phone', 'email']));
+    }
+
+    public function getProducts()
+    {
+        return response()->json(\App\Models\Product::active()->orderBy('name')->get(['id', 'name', 'price', 'stock_quantity', 'track_inventory']));
     }
 }

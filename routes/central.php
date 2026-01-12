@@ -5,6 +5,7 @@ use App\Http\Controllers\LandingController;
 use App\Http\Controllers\TenantRegistrationController;
 use App\Http\Controllers\SuperAdmin;
 
+
 /*
 |--------------------------------------------------------------------------
 | Central Routes
@@ -23,10 +24,7 @@ Route::get('/register', [TenantRegistrationController::class, 'create'])->name('
 Route::post('/register', [TenantRegistrationController::class, 'store'])->name('tenant.store');
 
 // SuperAdmin Authentication (No middleware or guest)
-Route::middleware('guest')->group(function () {
-    Route::get('superadmin/login', [SuperAdmin\AuthController::class, 'create'])->name('superadmin.login');
-    Route::post('superadmin/login', [SuperAdmin\AuthController::class, 'store'])->name('superadmin.login.store');
-});
+// Removed: consolidated into standard /login
 
 // Stop Impersonation Route (Must be accessible by impersonated user who is NOT superadmin)
 Route::post('superadmin/stop-impersonation', [SuperAdmin\TenantController::class, 'stopImpersonation'])
@@ -34,6 +32,10 @@ Route::post('superadmin/stop-impersonation', [SuperAdmin\TenantController::class
     ->name('superadmin.stop-impersonation');
 
 // SuperAdmin Panel
+Route::get('superadmin/dashboard', function() {
+    return redirect()->route('superadmin.dashboard');
+});
+
 Route::prefix('superadmin')->middleware(['auth', 'superadmin'])->name('superadmin.')->group(function () {
     Route::post('/logout', [SuperAdmin\AuthController::class, 'destroy'])->name('logout');
     Route::get('/', [SuperAdmin\DashboardController::class, 'index'])->name('dashboard');
@@ -50,6 +52,7 @@ Route::prefix('superadmin')->middleware(['auth', 'superadmin'])->name('superadmi
     Route::post('tenants/{tenant}/unsuspend', [SuperAdmin\TenantController::class, 'unsuspend'])->name('tenants.unsuspend');
     Route::put('tenants/{tenant}/plan', [SuperAdmin\TenantController::class, 'updatePlan'])->name('tenants.update-plan');
     Route::get('users/{userId}/impersonate', [SuperAdmin\TenantController::class, 'impersonateUser'])->name('users.impersonate');
+    Route::put('tenants/{tenant}/password', [SuperAdmin\TenantController::class, 'resetPassword'])->name('tenants.password');
     Route::resource('tenants', SuperAdmin\TenantController::class);
     
     // Custom Domain Management
@@ -87,7 +90,29 @@ Route::prefix('superadmin')->middleware(['auth', 'superadmin'])->name('superadmi
     Route::prefix('reports')->name('reports.')->group(function () {
         Route::get('subscriptions', [SuperAdmin\ReportController::class, 'subscriptions'])->name('subscriptions');
     });
+
+    // Audit Logs
+    Route::get('audit-logs', [SuperAdmin\AuditLogController::class, 'index'])->name('audit-logs.index');
     
     // Announcements
     Route::resource('announcements', SuperAdmin\AnnouncementController::class);
 });
+
+// Global Media Route for serving assets from private storage (SuperAdmin)
+Route::get('/global/media', function () {
+    $path = request()->query('path');
+    if (!$path) abort(404);
+    
+    // Fix for query strings
+    if (str_contains($path, '?')) {
+        $path = explode('?', $path)[0];
+    }
+
+    $disk = \Illuminate\Support\Facades\Storage::disk('local');
+    
+    if ($disk->exists($path)) {
+        return $disk->response($path);
+    }
+    
+    abort(404);
+})->name('global.media');

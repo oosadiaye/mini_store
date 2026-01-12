@@ -75,9 +75,25 @@ class SendWeeklyFinancialReports extends Command
 
             $netProfit = $revenue - $expenses;
             
-            // Top Product (Mocked simply as before or query)
-            // $topProduct = ...
-            $topProduct = null; 
+            // Top Product
+            // Use DB query for performance and avoiding model scope complexity in loop
+            $topProductRaw = \Illuminate\Support\Facades\DB::table('order_items')
+                ->join('orders', 'order_items.order_id', '=', 'orders.id')
+                ->where('orders.tenant_id', $tenant->id)
+                ->whereBetween('orders.created_at', [$start, $end])
+                ->select('order_items.product_name', \Illuminate\Support\Facades\DB::raw('SUM(order_items.quantity) as sold_count'), \Illuminate\Support\Facades\DB::raw('SUM(order_items.total) as revenue'))
+                ->groupBy('order_items.product_name')
+                ->orderByDesc('sold_count')
+                ->first();
+
+            $topProduct = null;
+            if ($topProductRaw) {
+                $topProduct = [
+                    'name' => $topProductRaw->product_name,
+                    'sold_count' => $topProductRaw->sold_count,
+                    'revenue' => '₦' . number_format($topProductRaw->revenue, 2)
+                ];
+            }
 
             // Format Currency (naive)
             $fmtRevenue = '₦' . number_format($revenue, 2);

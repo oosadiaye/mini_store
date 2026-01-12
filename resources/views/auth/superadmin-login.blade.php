@@ -4,7 +4,20 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>SuperAdmin Login - {{ config('app.name', 'Laravel') }}</title>
+    @php
+        $branding = \App\Models\GlobalSetting::where('group', 'branding')->pluck('value', 'key');
+        $brandLogo = $branding['brand_logo'] ?? null;
+        $brandFavicon = $branding['brand_favicon'] ?? null;
+        $brandName = $branding['brand_name'] ?? config('app.name', 'SuperAdmin');
+    @endphp
+
+    <title>Login - {{ $brandName }}</title>
+    
+    @if($brandFavicon)
+        <link rel="icon" href="{{ Storage::disk('public')->url($brandFavicon) }}?v={{ time() }}">
+    @elseif($brandLogo)
+         <link rel="icon" href="{{ Storage::disk('public')->url($brandLogo) }}?v={{ time() }}">
+    @endif
     
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
@@ -30,15 +43,19 @@
     <div class="relative z-10 sm:mx-auto sm:w-full sm:max-w-md">
         <!-- Logo (If available, otherwise simplified lock icon) -->
         <div class="flex justify-center mb-6">
-            <div class="bg-white/10 p-3 rounded-full backdrop-blur-sm border border-white/10">
-                <svg class="h-10 w-10 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
-                </svg>
-            </div>
+            @if($brandLogo)
+                <img src="{{ Storage::disk('public')->url($brandLogo) }}?v={{ time() }}" alt="{{ $brandName }}" class="h-16 w-auto object-contain">
+            @else
+                <div class="bg-white/10 p-3 rounded-full backdrop-blur-sm border border-white/10">
+                    <svg class="h-10 w-10 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                    </svg>
+                </div>
+            @endif
         </div>
         
         <h2 class="text-center text-3xl font-bold tracking-tight text-white">
-            SuperAdmin Portal
+            {{ $brandName }} Portal
         </h2>
         <p class="mt-2 text-center text-sm text-gray-400">
             Secure access for platform administrators

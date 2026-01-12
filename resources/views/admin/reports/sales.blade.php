@@ -1,44 +1,65 @@
 @extends('admin.layout')
 
 @section('content')
-<div class="max-w-7xl mx-auto">
+<div class="max-w-7xl mx-auto" x-data="salesReport()">
     <!-- Header -->
     <div class="flex justify-between items-center mb-6">
         <div>
             <h2 class="text-2xl font-bold text-gray-800">Sales Analytics</h2>
-            <p class="text-sm text-gray-600 mt-1">Comprehensive sales performance and revenue insights</p>
+            <p class="text-sm text-gray-600 mt-1">Comprehensive sales performance and revenue insights <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 animate-pulse" x-show="loading">Updating...</span></p>
         </div>
         <a href="{{ route('admin.reports.index') }}" class="text-gray-600 hover:text-gray-900">
             ← Back to Reports
         </a>
     </div>
 
-    <!-- Date Range Filter -->
+    <!-- Filters -->
     <div class="bg-white rounded-lg shadow p-4 mb-6">
-        <form method="GET" class="flex items-end gap-4">
-            <div class="flex-1">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
-                <input type="date" name="start_date" value="{{ $startDate }}" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+        <form method="GET" class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            <div>
+                <label class="block text-xs font-medium text-gray-700 mb-1">Start Date</label>
+                <input type="date" name="start_date" value="{{ $startDate }}" class="w-full px-3 py-2 border-2 border-gray-300 rounded-md text-sm">
             </div>
-            <div class="flex-1">
-                <input type="date" name="end_date" value="{{ $endDate }}" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+            <div>
+                <label class="block text-xs font-medium text-gray-700 mb-1">End Date</label>
+                <input type="date" name="end_date" value="{{ $endDate }}" class="w-full px-3 py-2 border-2 border-gray-300 rounded-md text-sm">
             </div>
-            <div class="flex-1">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Channel</label>
-                <select name="channel" class="w-full px-3 py-2 border border-gray-300 rounded-md">
-                    <option value="">All Channels</option>
-                    <option value="storefront" {{ request('channel') == 'storefront' ? 'selected' : '' }}>Storefront</option>
-                    <option value="admin" {{ request('channel') == 'admin' ? 'selected' : '' }}>Admin / Manual</option>
-                    <option value="pos" {{ request('channel') == 'pos' ? 'selected' : '' }}>POS</option>
+            <div>
+                <label class="block text-xs font-medium text-gray-700 mb-1">Warehouse</label>
+                <select name="warehouse_id" class="w-full px-3 py-2 border-2 border-gray-300 rounded-md text-sm">
+                    <option value="">All Warehouses</option>
+                    @foreach($warehouses as $wh)
+                        <option value="{{ $wh->id }}" {{ $warehouseId == $wh->id ? 'selected' : '' }}>{{ $wh->name }}</option>
+                    @endforeach
                 </select>
             </div>
-            <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-md transition">
-                Apply Filter
-            </button>
-            <a href="{{ route('admin.reports.export', ['type' => 'sales', 'start_date' => $startDate, 'end_date' => $endDate]) }}" 
-               class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-md transition">
-                <i class="fas fa-download mr-2"></i>Export CSV
-            </a>
+            <div>
+                <label class="block text-xs font-medium text-gray-700 mb-1">Category</label>
+                <select name="category_id" class="w-full px-3 py-2 border-2 border-gray-300 rounded-md text-sm">
+                    <option value="">All Categories</option>
+                    @foreach($categories as $cat)
+                        <option value="{{ $cat->id }}" {{ $categoryId == $cat->id ? 'selected' : '' }}>{{ $cat->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-gray-700 mb-1">Customer</label>
+                <select name="customer_id" class="w-full px-3 py-2 border-2 border-gray-300 rounded-md text-sm">
+                    <option value="">All Customers</option>
+                    @foreach($customers as $cust)
+                        <option value="{{ $cust->id }}" {{ $customerId == $cust->id ? 'selected' : '' }}>{{ $cust->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="flex items-end gap-2">
+                <button type="submit" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md transition text-sm">
+                    Filter
+                </button>
+                <a href="{{ route('admin.reports.export', ['type' => 'sales', 'start_date' => $startDate, 'end_date' => $endDate, 'warehouse_id' => $warehouseId, 'category_id' => $categoryId, 'customer_id' => $customerId]) }}" 
+                   class="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-md transition text-sm" title="Export CSV">
+                    <i class="fas fa-download text-sm"></i>
+                </a>
+            </div>
         </form>
     </div>
 
@@ -48,7 +69,7 @@
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm font-medium text-gray-600">Total Orders</p>
-                    <p class="text-3xl font-bold text-gray-900 mt-2">{{ number_format($totalOrders) }}</p>
+                    <p class="text-3xl font-bold text-gray-900 mt-2" x-text="formatNumber(totalOrders)">{{ number_format($totalOrders) }}</p>
                 </div>
                 <div class="p-3 bg-blue-100 rounded-lg">
                     <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -62,7 +83,9 @@
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm font-medium text-gray-600">Total Revenue</p>
-                    <p class="text-3xl font-bold text-green-600 mt-2">{{ $tenant->data['currency_symbol'] ?? '₦' }}{{ number_format($totalRevenue, 2) }}</p>
+                    <p class="text-3xl font-bold text-green-600 mt-2">
+                        <span x-text="currencySymbol">{{ $tenant->data['currency_symbol'] ?? '₦' }}</span><span x-text="formatNumber(totalRevenue, 2)">{{ number_format($totalRevenue, 2) }}</span>
+                    </p>
                 </div>
                 <div class="p-3 bg-green-100 rounded-lg">
                     <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -76,7 +99,9 @@
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm font-medium text-gray-600">Avg Order Value</p>
-                    <p class="text-3xl font-bold text-purple-600 mt-2">{{ $tenant->data['currency_symbol'] ?? '₦' }}{{ number_format($averageOrderValue, 2) }}</p>
+                    <p class="text-3xl font-bold text-purple-600 mt-2">
+                        <span x-text="currencySymbol">{{ $tenant->data['currency_symbol'] ?? '₦' }}</span><span x-text="formatNumber(averageOrderValue, 2)">{{ number_format($averageOrderValue, 2) }}</span>
+                    </p>
                 </div>
                 <div class="p-3 bg-purple-100 rounded-lg">
                     <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -90,7 +115,7 @@
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm font-medium text-gray-600">New Customers</p>
-                    <p class="text-3xl font-bold text-orange-600 mt-2">{{ number_format($newCustomers) }}</p>
+                    <p class="text-3xl font-bold text-orange-600 mt-2" x-text="formatNumber(newCustomers)">{{ number_format($newCustomers) }}</p>
                 </div>
                 <div class="p-3 bg-orange-100 rounded-lg">
                     <svg class="w-8 h-8 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -138,20 +163,19 @@
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
-                    @forelse($topProducts as $product)
-                    <tr class="hover:bg-gray-50">
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $product->name }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $product->sku }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">{{ number_format($product->total_quantity) }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-green-600 text-right">
-                            {{ $tenant->data['currency_symbol'] ?? '₦' }}{{ number_format($product->total_revenue, 2) }}
-                        </td>
-                    </tr>
-                    @empty
-                    <tr>
+                    <template x-for="product in topProducts" :key="product.sku">
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900" x-text="product.name"></td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="product.sku"></td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right" x-text="formatNumber(product.total_quantity)"></td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-green-600 text-right">
+                                <span x-text="currencySymbol"></span><span x-text="formatNumber(product.total_revenue, 2)"></span>
+                            </td>
+                        </tr>
+                    </template>
+                    <tr x-show="topProducts.length === 0">
                         <td colspan="4" class="px-6 py-8 text-center text-gray-500">No sales data available for this period</td>
                     </tr>
-                    @endforelse
                 </tbody>
             </table>
         </div>
@@ -161,118 +185,160 @@
 <!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
-// Sales Trend Chart
-const salesCtx = document.getElementById('salesTrendChart').getContext('2d');
-new Chart(salesCtx, {
-    type: 'line',
-    data: {
-        labels: {!! json_encode($salesData->pluck('date')) !!},
-        datasets: [{
-            label: 'Revenue',
-            data: {!! json_encode($salesData->pluck('revenue')) !!},
-            borderColor: 'rgb(59, 130, 246)',
-            backgroundColor: 'rgba(59, 130, 246, 0.1)',
-            tension: 0.4,
-            fill: true
-        }, {
-            label: 'Orders',
-            data: {!! json_encode($salesData->pluck('orders')) !!},
-            borderColor: 'rgb(16, 185, 129)',
-            backgroundColor: 'rgba(16, 185, 129, 0.1)',
-            tension: 0.4,
-            fill: true,
-            yAxisID: 'y1'
-        }]
-    },
-    options: {
-        responsive: true,
-        interaction: {
-            mode: 'index',
-            intersect: false,
+function salesReport() {
+    return {
+        loading: false,
+        totalOrders: {{ $totalOrders }},
+        totalRevenue: {{ $totalRevenue }},
+        averageOrderValue: {{ $averageOrderValue }},
+        newCustomers: {{ $newCustomers }},
+        topProducts: {!! json_encode($topProducts) !!},
+        currencySymbol: '{{ $tenant->data["currency_symbol"] ?? "₦" }}',
+        charts: {},
+
+        init() {
+            this.initCharts();
+            // Polling every 30 seconds
+            setInterval(() => this.fetchData(), 30000);
         },
-        scales: {
-            y: {
-                type: 'linear',
-                display: true,
-                position: 'left',
-                title: {
-                    display: true,
-                    text: 'Revenue ({{ $tenant->data["currency_symbol"] ?? "₦" }})'
-                }
-            },
-            y1: {
-                type: 'linear',
-                display: true,
-                position: 'right',
-                title: {
-                    display: true,
-                    text: 'Orders'
+
+        initCharts() {
+            // Sales Trend Chart
+            const salesCtx = document.getElementById('salesTrendChart').getContext('2d');
+            this.charts.sales = new Chart(salesCtx, {
+                type: 'line',
+                data: {
+                    labels: {!! json_encode($salesData->pluck('date')) !!},
+                    datasets: [{
+                        label: 'Revenue',
+                        data: {!! json_encode($salesData->pluck('revenue')) !!},
+                        borderColor: 'rgb(59, 130, 246)',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }, {
+                        label: 'Orders',
+                        data: {!! json_encode($salesData->pluck('orders')) !!},
+                        borderColor: 'rgb(16, 185, 129)',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        tension: 0.4,
+                        fill: true,
+                        yAxisID: 'y1'
+                    }]
                 },
-                grid: {
-                    drawOnChartArea: false,
+                options: {
+                    responsive: true,
+                    interaction: { mode: 'index', intersect: false },
+                    scales: {
+                        y: {
+                            type: 'linear', display: true, position: 'left',
+                            title: { display: true, text: 'Revenue (' + this.currencySymbol + ')' }
+                        },
+                        y1: {
+                            type: 'linear', display: true, position: 'right',
+                            title: { display: true, text: 'Orders' },
+                            grid: { drawOnChartArea: false }
+                        }
+                    }
                 }
-            }
-        }
-    }
-});
+            });
 
-// Category Revenue Chart
-const categoryCtx = document.getElementById('categoryChart').getContext('2d');
-new Chart(categoryCtx, {
-    type: 'doughnut',
-    data: {
-        labels: {!! json_encode($categoryRevenue->pluck('name')) !!},
-        datasets: [{
-            data: {!! json_encode($categoryRevenue->pluck('revenue')) !!},
-            backgroundColor: [
-                'rgb(59, 130, 246)',
-                'rgb(16, 185, 129)',
-                'rgb(249, 115, 22)',
-                'rgb(139, 92, 246)',
-                'rgb(236, 72, 153)',
-                'rgb(14, 165, 233)',
-            ]
-        }]
-    },
-    options: {
-        responsive: true,
-        plugins: {
-            legend: {
-                position: 'bottom',
-            }
-        }
-    }
-});
+            // Category Revenue Chart
+            const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+            this.charts.category = new Chart(categoryCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: {!! json_encode($categoryRevenue->pluck('name')) !!},
+                    datasets: [{
+                        data: {!! json_encode($categoryRevenue->pluck('revenue')) !!},
+                        backgroundColor: ['rgb(59, 130, 246)', 'rgb(16, 185, 129)', 'rgb(249, 115, 22)', 'rgb(139, 92, 246)', 'rgb(236, 72, 153)', 'rgb(14, 165, 233)']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { position: 'bottom' } }
+                }
+            });
 
-// Payment Methods Chart
-const paymentCtx = document.getElementById('paymentChart').getContext('2d');
-new Chart(paymentCtx, {
-    type: 'bar',
-    data: {
-        labels: {!! json_encode($paymentMethods->pluck('name')) !!},
-        datasets: [{
-            label: 'Revenue',
-            data: {!! json_encode($paymentMethods->pluck('revenue')) !!},
-            backgroundColor: 'rgba(59, 130, 246, 0.8)',
-        }]
-    },
-    options: {
-        responsive: true,
-        plugins: {
-            legend: {
-                display: false
+            // Payment Methods Chart
+            const paymentCtx = document.getElementById('paymentChart').getContext('2d');
+            this.charts.payment = new Chart(paymentCtx, {
+                type: 'bar',
+                data: {
+                    labels: {!! json_encode($paymentMethods->pluck('name')) !!},
+                    datasets: [{
+                        label: 'Revenue',
+                        data: {!! json_encode($paymentMethods->pluck('revenue')) !!},
+                        backgroundColor: 'rgba(59, 130, 246, 0.8)',
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: { display: true, text: 'Revenue (' + this.currencySymbol + ')' }
+                        }
+                    }
+                }
+            });
+        },
+
+        async fetchData() {
+            if (this.loading) return;
+            this.loading = true;
+            try {
+                const url = new URL(window.location.href);
+                const response = await fetch(url, {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
+                });
+                const data = await response.json();
+                
+                this.totalOrders = data.totalOrders;
+                this.totalRevenue = data.totalRevenue;
+                this.averageOrderValue = data.averageOrderValue;
+                this.newCustomers = data.newCustomers;
+                this.topProducts = data.topProducts;
+
+                // Update Charts
+                this.updateSalesChart(data.salesData);
+                this.updateCategoryChart(data.categoryRevenue);
+                this.updatePaymentChart(data.paymentMethods);
+
+            } catch (error) {
+                console.error('Failed to fetch real-time data:', error);
+            } finally {
+                this.loading = false;
             }
         },
-        scales: {
-            y: {
-                beginAtZero: true,
-                title: {
-                    display: true,
-                    text: 'Revenue ({{ $tenant->data["currency_symbol"] ?? "₦" }})'
-                }
-            }
+
+        updateSalesChart(data) {
+            this.charts.sales.data.labels = data.map(i => i.date);
+            this.charts.sales.data.datasets[0].data = data.map(i => i.revenue);
+            this.charts.sales.data.datasets[1].data = data.map(i => i.orders);
+            this.charts.sales.update();
+        },
+
+        updateCategoryChart(data) {
+            this.charts.category.data.labels = data.map(i => i.name);
+            this.charts.category.data.datasets[0].data = data.map(i => i.revenue);
+            this.charts.category.update();
+        },
+
+        updatePaymentChart(data) {
+            this.charts.payment.data.labels = data.map(i => i.name);
+            this.charts.payment.data.datasets[0].data = data.map(i => i.revenue);
+            this.charts.payment.update();
+        },
+
+        formatNumber(num, decimals = 0) {
+            return Number(num).toLocaleString('en-US', {
+                minimumFractionDigits: decimals,
+                maximumFractionDigits: decimals
+            });
         }
-    }
-});
+    };
+}
 </script>
 @endsection

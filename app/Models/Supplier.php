@@ -37,6 +37,11 @@ class Supplier extends Model
         return $this->hasMany(PurchaseOrder::class);
     }
 
+    public function invoices()
+    {
+        return $this->hasMany(SupplierInvoice::class);
+    }
+
     /**
      * Scope for active suppliers
      */
@@ -48,5 +53,10 @@ class Supplier extends Model
     public function transactions()
     {
         return $this->morphMany(JournalEntryLine::class, 'entity');
+    }
+
+    public function payments()
+    {
+        return $this->morphMany(Payment::class, 'entity');
     }
 }

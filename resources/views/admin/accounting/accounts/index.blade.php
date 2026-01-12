@@ -13,7 +13,7 @@
             <form action="{{ route('admin.accounts.index') }}" method="GET" class="relative">
                 <input type="text" name="search" value="{{ request('search') }}" 
                     placeholder="Search Code or Name..." 
-                    class="pl-8 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 w-64">
+                    class="pl-8 pr-4 py-2 text-sm border-2 border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 w-64">
                 <svg class="w-4 h-4 text-gray-400 absolute left-2.5 top-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                 @if(request('sort_by'))
                     <input type="hidden" name="sort_by" value="{{ request('sort_by') }}">

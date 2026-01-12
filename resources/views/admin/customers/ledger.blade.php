@@ -4,11 +4,11 @@
 <div class="flex justify-between items-center mb-6">
     <div>
         <h1 class="text-2xl font-bold text-gray-800">Customer Ledger: {{ $customer->name }}</h1>
-        <p class="text-gray-600">Transaction History and Balance</p>
+        <p class="text-gray-600">Transaction History and Statement of Account</p>
     </div>
     <div class="flex space-x-3">
-        <a href="{{ route('admin.customers.show', $customer) }}" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300">
-            Back to Profile
+        <a href="{{ route('admin.customers.index') }}" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition">
+            Back to List
         </a>
     </div>
 </div>
@@ -17,15 +17,14 @@
     <div class="p-6 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
         <h3 class="font-bold text-gray-700">Transactions</h3>
         <div class="text-right">
-             <!-- Current Balance Calculation (Simple Sum of Debits - Credits or vice versa depending on account type) -->
-             <!-- Asset/Receivable: Debit increases, Credit decreases -->
+             <!-- Asset/Receivable: Debit increases (Sales), Credit decreases (Payments) -->
              @php
                  $totalDebit = $customer->transactions()->sum('debit') ?? 0;
                  $totalCredit = $customer->transactions()->sum('credit') ?? 0;
                  $balance = $totalDebit - $totalCredit;
              @endphp
-             <span class="text-sm text-gray-500">Current Balance:</span>
-             <span class="text-xl font-bold {{ $balance > 0 ? 'text-green-600' : ($balance < 0 ? 'text-red-600' : 'text-gray-800') }}">
+             <span class="text-sm text-gray-500">Total Outstanding:</span>
+             <span class="text-xl font-bold {{ $balance > 0 ? 'text-red-600' : ($balance < 0 ? 'text-green-600' : 'text-gray-800') }}">
                  {{ $tenant->data['currency_symbol'] ?? '$' }}{{ number_format($balance, 2) }}
              </span>
              <span class="text-xs text-gray-400 block">(Receivables)</span>
@@ -45,12 +44,12 @@
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
                 @forelse($transactions as $line)
-                <tr>
+                <tr class="hover:bg-gray-50 transition">
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {{ $line->journalEntry->entry_date->format('M d, Y') }}
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-indigo-600 hover:text-indigo-900">
-                        <a href="{{ route('admin.journal-entries.show', $line->journalEntry) }}">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-indigo-600">
+                        <a href="{{ route('admin.journal-entries.show', $line->journalEntry) }}" class="hover:underline">
                             {{ $line->journalEntry->reference_number }}
                         </a>
                     </td>
@@ -61,7 +60,7 @@
                         {{ $line->account->account_code }} - {{ $line->account->account_name }}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-right font-medium text-gray-900">
-                        @if($line->debit > 0)
+                         @if($line->debit > 0)
                             {{ number_format($line->debit, 2) }}
                         @else
                             -

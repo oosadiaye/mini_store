@@ -105,7 +105,8 @@ SVG;
         
         // If custom logo exists, return its URL
         if (!empty($freshData['logo'])) {
-            return \Illuminate\Support\Facades\Storage::disk('public')->url($freshData['logo']);
+             // Retrieve via tenant media route
+            return route('tenant.media', ['path' => $freshData['logo']]);
         }
         
         // Generate from initials
@@ -134,9 +135,8 @@ SVG;
         
         // If custom favicon exists, return its URL with cache busting
         if (!empty($freshData['favicon'])) {
-            $url = \Illuminate\Support\Facades\Storage::disk('public')->url($freshData['favicon']);
-            // Add cache busting parameter to force browser refresh
-            return $url . '?v=' . time();
+             // Retrieve via tenant media route with cache busting param
+            return route('tenant.media', ['path' => $freshData['favicon'], 'v' => time()]);
         }
         
         // Generate 32x32 favicon from initials

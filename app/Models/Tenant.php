@@ -3,9 +3,9 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-namespace App\Models;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
-use Illuminate\Database\Eloquent\Model;
 
 class Tenant extends Model
 {
@@ -25,6 +25,7 @@ class Tenant extends Model
         'is_suspended',
         'data',
         'settings',
+        'is_storefront_enabled',
     ];
 
     protected $casts = [
@@ -34,7 +35,41 @@ class Tenant extends Model
         'is_suspended' => 'boolean',
         'data' => 'array',
         'settings' => 'array',
+        'is_storefront_enabled' => 'boolean',
     ];
+
+    protected static function booted()
+    {
+        static::deleting(function ($tenant) {
+            $tables = [
+                'categories', 'products', 'product_variants', 'product_images', 
+                'product_combos', 'product_warehouse', 'brands', 'coupons', 
+                'carts', 'cart_items', 'reviews', 'payment_types', 
+                'product_enquiries', 'posts', 'pages', 'page_sections', 
+                'page_layouts', 'storefront_settings', 'storefront_templates', 
+                'banners', 'customers', 'customer_addresses', 'orders', 
+                'order_items', 'order_shipping', 'order_returns', 
+                'order_return_items', 'incomes', 'expenses', 'journal_entries', 
+                'journal_entry_lines', 'chart_of_accounts', 'purchase_orders', 
+                'purchase_order_items', 'purchase_returns', 'purchase_return_items', 
+                'suppliers', 'warehouses', 'warehouse_stocks', 'stock_transfers', 
+                'roles', 'notifications', 'subscription_payments', 'subscription_transactions',
+                'payment_gateways', 'tenant_user_impersonation_tokens', 'store_configs'
+            ];
+
+            foreach ($tables as $table) {
+                if (\Illuminate\Support\Facades\Schema::hasTable($table) && \Illuminate\Support\Facades\Schema::hasColumn($table, 'tenant_id')) {
+                    DB::table($table)->where('tenant_id', $tenant->id)->delete();
+                }
+            }
+            
+            // Special handling for tables that might not have tenant_id but are related
+            // For example, domains (which we already handle in controller, but let's be safe here too)
+            if (\Illuminate\Support\Facades\Schema::hasTable('domains')) {
+                DB::table('domains')->where('tenant_id', $tenant->id)->delete();
+            }
+        });
+    }
 
     public function currentPlan()
     {

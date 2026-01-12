@@ -8,6 +8,9 @@ use App\Models\Product;
 use App\Models\Customer;
 use App\Models\OrderItem;
 use App\Models\StockTransfer;
+use App\Models\StockMovement;
+use App\Models\Category;
+use App\Models\Warehouse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -30,15 +33,33 @@ class ReportsController extends Controller
         $startDate = $request->get('start_date', now()->subDays(30)->format('Y-m-d'));
         $endDate = $request->get('end_date', now()->format('Y-m-d'));
         $channel = $request->get('channel'); // storefront, pos, admin
+        $warehouseId = $request->get('warehouse_id');
+        $categoryId = $request->get('category_id');
+        $customerId = $request->get('customer_id');
 
         // Base Query
-        $platformQuery = Order::whereBetween('created_at', [$startDate, $endDate]);
+        $orderQuery = Order::whereBetween('created_at', [$startDate, $endDate]);
+        
         if ($channel) {
-            $platformQuery->where('order_source', $channel);
+            $orderQuery->where('order_source', $channel);
+        }
+        
+        if ($warehouseId) {
+            $orderQuery->where('warehouse_id', $warehouseId);
+        }
+        
+        if ($customerId) {
+            $orderQuery->where('customer_id', $customerId);
+        }
+        
+        if ($categoryId) {
+            $orderQuery->whereHas('items.product', function($q) use ($categoryId) {
+                $q->where('category_id', $categoryId);
+            });
         }
 
         // Sales Overview
-        $salesData = (clone $platformQuery)
+        $salesData = (clone $orderQuery)
             ->selectRaw('DATE(created_at) as date, COUNT(*) as orders, SUM(total) as revenue')
             ->groupBy('date')
             ->orderBy('date')
@@ -51,9 +72,18 @@ class ReportsController extends Controller
             ->when($channel, function($q) use ($channel) {
                 return $q->where('orders.order_source', $channel);
             })
+            ->when($warehouseId, function($q) use ($warehouseId) {
+                return $q->where('orders.warehouse_id', $warehouseId);
+            })
+            ->when($customerId, function($q) use ($customerId) {
+                return $q->where('orders.customer_id', $customerId);
+            })
+            ->when($categoryId, function($q) use ($categoryId) {
+                return $q->where('products.category_id', $categoryId);
+            })
             ->select('products.name', 'products.sku', 
                 DB::raw('SUM(order_items.quantity) as total_quantity'),
-                DB::raw('SUM(order_items.quantity * order_items.price) as total_revenue'))
+                DB::raw('SUM(order_items.total) as total_revenue'))
             ->groupBy('products.id', 'products.name', 'products.sku')
             ->orderByDesc('total_revenue')
             ->limit(10)
@@ -67,14 +97,20 @@ class ReportsController extends Controller
             ->when($channel, function($q) use ($channel) {
                 return $q->where('orders.order_source', $channel);
             })
+            ->when($warehouseId, function($q) use ($warehouseId) {
+                return $q->where('orders.warehouse_id', $warehouseId);
+            })
+            ->when($customerId, function($q) use ($customerId) {
+                return $q->where('orders.customer_id', $customerId);
+            })
             ->select('categories.name', 
-                DB::raw('SUM(order_items.quantity * order_items.price) as revenue'))
+                DB::raw('SUM(order_items.total) as revenue'))
             ->groupBy('categories.id', 'categories.name')
             ->orderByDesc('revenue')
             ->get();
 
         // Sales by Payment Method
-        $paymentMethods = (clone $platformQuery)
+        $paymentMethods = (clone $orderQuery)
             ->select('payment_method as name', 
                 DB::raw('COUNT(*) as count'),
                 DB::raw('SUM(total) as revenue'))
@@ -83,24 +119,116 @@ class ReportsController extends Controller
             ->get();
 
         // Summary Stats
-        $totalOrders = (clone $platformQuery)->count();
-        $totalRevenue = (clone $platformQuery)->sum('total');
+        $totalOrders = (clone $orderQuery)->count();
+        $totalRevenue = (clone $orderQuery)->sum('total');
         $averageOrderValue = $totalOrders > 0 ? $totalRevenue / $totalOrders : 0;
-        $newCustomers = Customer::whereBetween('created_at', [$startDate, $endDate])->count();
         
-        // Sales Channel Breakdown (New)
-        $salesByChannel = Order::whereBetween('created_at', [$startDate, $endDate])
+        // Sales Channel Breakdown
+        $salesByChannel = (clone $orderQuery)
             ->select('order_source', 
                 DB::raw('COUNT(*) as count'), 
                 DB::raw('SUM(total) as revenue'))
             ->groupBy('order_source')
             ->get();
-
-        return view('admin.reports.sales', compact(
+            
+        $warehouses = Warehouse::where('is_active', true)->get();
+        $categories = Category::active()->get();
+        $customers = Customer::orderBy('name')->get();
+        $newCustomers = Customer::whereBetween('created_at', [$startDate, $endDate])->count();
+            
+        $data = compact(
             'salesData', 'topProducts', 'categoryRevenue', 'paymentMethods',
-            'totalOrders', 'totalRevenue', 'averageOrderValue', 'newCustomers',
-            'salesByChannel', 'startDate', 'endDate', 'channel'
-        ));
+            'totalOrders', 'totalRevenue', 'averageOrderValue',
+            'salesByChannel', 'startDate', 'endDate', 'channel',
+            'warehouses', 'categories', 'customers',
+            'warehouseId', 'categoryId', 'customerId', 'newCustomers'
+        );
+
+        if ($request->wantsJson()) {
+            return response()->json($data);
+        }
+
+        return view('admin.reports.sales', $data);
+    }
+
+    /**
+     * Inventory Movement Dashboard
+     */
+    public function movement(Request $request)
+    {
+        $startDate = $request->get('start_date', now()->subDays(30)->format('Y-m-d'));
+        $endDate = $request->get('end_date', now()->format('Y-m-d'));
+        $warehouseId = $request->get('warehouse_id');
+        $categoryId = $request->get('category_id');
+        $productId = $request->get('product_id');
+        $type = $request->get('type');
+        $customerId = $request->get('customer_id');
+
+        $query = StockMovement::with(['product', 'warehouse', 'user'])
+            ->whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
+
+        if ($warehouseId) {
+            $query->where('warehouse_id', $warehouseId);
+        }
+
+        if ($type) {
+            $query->where('type', $type);
+        }
+
+        if ($productId) {
+            $query->where('product_id', $productId);
+        }
+
+        if ($categoryId) {
+            $query->whereHas('product', function($q) use ($categoryId) {
+                $q->where('category_id', $categoryId);
+            });
+        }
+
+        if ($customerId) {
+            $query->where(function($q) use ($customerId) {
+                $q->where(function($sq) use ($customerId) {
+                    $sq->where('reference_type', 'order')
+                        ->whereIn('reference_id', function($sub) use ($customerId) {
+                            $sub->select('id')->from('orders')->where('customer_id', $customerId);
+                        });
+                })->orWhere(function($sq) use ($customerId) {
+                     $sq->where('reference_type', 'order_return')
+                        ->whereIn('reference_id', function($sub) use ($customerId) {
+                            $sub->select('id')->from('order_returns')
+                                ->whereIn('order_id', function($o) use ($customerId) {
+                                    $o->select('id')->from('orders')->where('customer_id', $customerId);
+                                });
+                        });
+                });
+            });
+        }
+
+        $movements = $query->latest()->paginate(50);
+
+        // Stats for Dashboard
+        $stats = [
+            'total_in' => (clone $query)->where('quantity', '>', 0)->sum('quantity'),
+            'total_out' => abs((clone $query)->where('quantity', '<', 0)->sum('quantity')),
+            'by_type' => (clone $query)->select('type', DB::raw('SUM(ABS(quantity)) as total'))
+                ->groupBy('type')->get()
+        ];
+
+        $warehouses = Warehouse::where('is_active', true)->get();
+        $categories = Category::active()->get();
+        $products = Product::active()->orderBy('name')->get();
+        $customers = \App\Models\Customer::orderBy('name')->get();
+
+        $data = compact(
+            'movements', 'stats', 'warehouses', 'categories', 'products', 'customers',
+            'startDate', 'endDate', 'warehouseId', 'categoryId', 'productId', 'type', 'customerId'
+        );
+
+        if ($request->wantsJson()) {
+            return response()->json($data);
+        }
+
+        return view('admin.reports.movement', $data);
     }
 
     /**
@@ -111,13 +239,17 @@ class ReportsController extends Controller
         $startDate = $request->get('start_date', now()->subDays(30)->format('Y-m-d'));
         $endDate = $request->get('end_date', now()->format('Y-m-d'));
         $warehouseId = $request->get('warehouse_id');
+        $categoryId = $request->get('category_id');
 
-        // Stock Levels by Warehouse
+        // Stock Levels by Warehouse (Valuation)
         $stockByWarehouse = DB::table('product_warehouse')
             ->join('products', 'product_warehouse.product_id', '=', 'products.id')
             ->join('warehouses', 'product_warehouse.warehouse_id', '=', 'warehouses.id')
             ->when($warehouseId, function($q) use ($warehouseId) {
                 return $q->where('product_warehouse.warehouse_id', $warehouseId);
+            })
+            ->when($categoryId, function($q) use ($categoryId) {
+                return $q->where('products.category_id', $categoryId);
             })
             ->select('warehouses.name as warehouse', 
                 DB::raw('COUNT(DISTINCT products.id) as product_count'),
@@ -140,41 +272,54 @@ class ReportsController extends Controller
                     $w->where('warehouses.id', $warehouseId);
                 });
             })
+            ->when($categoryId, function($q) use ($categoryId) {
+                $q->where('category_id', $categoryId);
+            })
             ->select('products.id', 'products.name', 'products.sku', 'products.stock_quantity as current_stock')
-            ->withCount(['orderItems as sold_qty' => function ($query) use ($startDate, $endDate) {
-                $query->join('orders', 'order_items.order_id', '=', 'orders.id')
-                      ->whereBetween('orders.created_at', [$startDate, $endDate]);
-            }])
             ->paginate(50);
             
-        // Note: For "Purchased" qty, we need PurchaseOrderItem relation (assumed hasMany through or similar)
-        // Since Eloquent relation might not exist on Product model yet, we can attach it manually or use subquery.
-        // Adding simplified subquery for Purchased:
-        $inventoryReport->getCollection()->transform(function ($product) use ($startDate, $endDate) {
-            $purchased = DB::table('purchase_order_items')
-                ->join('purchase_orders', 'purchase_order_items.purchase_order_id', '=', 'purchase_orders.id')
-                ->where('purchase_order_items.product_id', $product->id)
-                ->where('purchase_orders.status', 'received')
-                ->whereBetween('purchase_orders.received_date', [$startDate, $endDate])
-                ->sum('purchase_order_items.quantity_received');
+        $inventoryReport->getCollection()->transform(function ($product) use ($startDate, $endDate, $warehouseId) {
+            $movementsQuery = StockMovement::where('product_id', $product->id);
+            if ($warehouseId) {
+                $movementsQuery->where('warehouse_id', $warehouseId);
+            }
 
-            $product->purchased_qty = $purchased;
+            $movementsAfterStart = (clone $movementsQuery)
+                ->where('created_at', '>=', $startDate . ' 00:00:00')
+                ->sum('quantity');
+
+            $rangeQuery = (clone $movementsQuery)
+                ->whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
             
-            // Reverse Calc Opening: Opening = (Current + Sold - Purchased) [Assuming Current is End Date]
-            // This is an approximation. Ideally we use stock movements.
-            $product->opening_stock = $product->current_stock + $product->sold_qty - $product->purchased_qty;
+            $product->purchased_qty = (clone $rangeQuery)->where('type', 'purchase')->sum('quantity');
+            $product->sold_qty = abs((clone $rangeQuery)->where('type', 'sale')->sum('quantity'));
+            $product->adjustment_qty = (clone $rangeQuery)->where('type', 'adjustment')->sum('quantity');
+            $product->transfer_qty = (clone $rangeQuery)->where('type', 'transfer')->sum('quantity');
+            $product->return_qty = (clone $rangeQuery)->where('type', 'return')->sum('quantity');
+
+            $product_current_stock = $product->current_stock;
+            if ($warehouseId) {
+                $product_current_stock = DB::table('product_warehouse')
+                    ->where('product_id', $product->id)
+                    ->where('warehouse_id', $warehouseId)
+                    ->value('quantity') ?? 0;
+            }
+
+            $product->opening_stock = $product_current_stock - (int)$movementsAfterStart;
+            $product->closing_stock = $product->opening_stock + (int)(clone $rangeQuery)->sum('quantity');
             
             return $product;
         });
 
-        // Fast Moving Products (Velocity) across all warehouses or specific
+        // Fast Moving Products (Velocity)
         $fastMoving = OrderItem::join('orders', 'order_items.order_id', '=', 'orders.id')
             ->join('products', 'order_items.product_id', '=', 'products.id')
-            ->whereBetween('orders.created_at', [$startDate, $endDate])
-             ->when($warehouseId, function($q) {
-                // If warehouse filter is on, we'd need to link order to warehouse (if possible).
-                // Usually Orders are linked to location, but for 'basic' stores they might not be.
-                // Ignoring warehouse filter for Sales Velocity as sales might not be strictly warehouse-bound unless split.
+            ->whereBetween('orders.created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
+            ->when($warehouseId, function($q) use ($warehouseId) {
+                return $q->where('orders.warehouse_id', $warehouseId);
+            })
+            ->when($categoryId, function($q) use ($categoryId) {
+                return $q->where('products.category_id', $categoryId);
             })
             ->select('products.name', 'products.sku', 
                 DB::raw('SUM(order_items.quantity) as sold_qty'))
@@ -186,50 +331,45 @@ class ReportsController extends Controller
         // Low Stock Products
         $lowStock = Product::where('track_inventory', true)
             ->whereColumn('stock_quantity', '<=', 'low_stock_threshold')
+            ->when($categoryId, function($q) use ($categoryId) {
+                return $q->where('category_id', $categoryId);
+            })
             ->when($warehouseId, function($q) use ($warehouseId) {
                  $q->whereHas('warehouses', function($w) use ($warehouseId) {
                     $w->where('warehouses.id', $warehouseId);
                 });
             })
-            ->with('warehouses')
             ->orderBy('stock_quantity')
             ->limit(20)
             ->get();
 
-        // Stock Movement (Last 30 Days or Range)
-        $stockMovements = StockTransfer::with(['product', 'fromWarehouse', 'toWarehouse'])
-            ->where('status', 'completed')
-            ->whereBetween('created_at', [$startDate, $endDate])
+        // Recent Stock Movements (Universal)
+        $stockMovements = StockMovement::with(['product', 'warehouse'])
+            ->when($warehouseId, function($q) use ($warehouseId) {
+                $q->where('warehouse_id', $warehouseId);
+            })
             ->latest()
-            ->limit(50)
+            ->limit(10)
             ->get();
 
-        // Aggregate Stats (Filtered)
-        $totalInventoryValue = DB::table('products')
-             ->when($warehouseId, function($q) use ($warehouseId) {
-                // Approximate value per warehouse strictly requires ProductWarehouse table sum
-                // But global products table holds total stock.
-                // Let's use product_warehouse table if filter is applied.
-                 $q->join('product_warehouse', 'products.id', '=', 'product_warehouse.product_id')
-                   ->where('product_warehouse.warehouse_id', $warehouseId);
-            })
-            ->where('track_inventory', true)
-            ->selectRaw('SUM(' . ($warehouseId ? 'product_warehouse.quantity' : 'stock_quantity') . ' * cost_price) as total_value')
-            ->value('total_value') ?? 0;
-
-        $totalInventoryUnits = $warehouseId 
-            ? DB::table('product_warehouse')->where('warehouse_id', $warehouseId)->sum('quantity')
-            : Product::where('track_inventory', true)->sum('stock_quantity');
+        // Aggregate Stats (Universal)
+        $totalInventoryValue = $stockByWarehouse->sum('total_value');
+        $totalInventoryUnits = $stockByWarehouse->sum('total_units');
             
-        // Warehouses list for filter
-        $warehouses = \App\Models\Warehouse::all();
+        $warehouses = Warehouse::where('is_active', true)->get();
+        $categories = Category::active()->get();
 
-        return view('admin.reports.inventory', compact(
-            'stockByWarehouse', 'lowStock', 'stockMovements',
-            'totalInventoryValue', 'totalInventoryUnits', 
-            'inventoryReport', 'fastMoving', 'warehouses',
-            'startDate', 'endDate', 'warehouseId'
-        ));
+        $data = compact(
+            'inventoryReport', 'stockByWarehouse', 'fastMoving', 'lowStock', 'stockMovements',
+            'startDate', 'endDate', 'warehouseId', 'categoryId',
+            'totalInventoryValue', 'totalInventoryUnits', 'warehouses', 'categories'
+        );
+
+        if ($request->wantsJson()) {
+            return response()->json($data);
+        }
+
+        return view('admin.reports.inventory', $data);
     }
 
     /**
@@ -292,10 +432,16 @@ class ReportsController extends Controller
             ->groupBy('frequency_range')
             ->get();
 
-        return view('admin.reports.customers', compact(
+        $data = compact(
             'topCustomers', 'customerGrowth', 'segments', 'frequencyDistribution',
             'startDate', 'endDate'
-        ));
+        );
+
+        if ($request->wantsJson()) {
+            return response()->json($data);
+        }
+
+        return view('admin.reports.customers', $data);
     }
 
     /**
@@ -346,10 +492,16 @@ class ReportsController extends Controller
             ->limit(20)
             ->get();
 
-        return view('admin.reports.financial', compact(
+        $data = compact(
             'revenue', 'cogs', 'grossProfit', 'grossMargin',
             'paymentStatus', 'productProfits', 'startDate', 'endDate'
-        ));
+        );
+
+        if ($request->wantsJson()) {
+            return response()->json($data);
+        }
+
+        return view('admin.reports.financial', $data);
     }
 
     /**
@@ -368,14 +520,24 @@ class ReportsController extends Controller
             'Content-Disposition' => "attachment; filename=\"$filename\"",
         ];
 
-        $callback = function() use ($type, $startDate, $endDate) {
+        $callback = function() use ($type, $startDate, $endDate, $request) {
             $file = fopen('php://output', 'w');
 
             switch ($type) {
                 case 'sales':
                     fputcsv($file, ['Date', 'Orders', 'Revenue', 'Avg Order Value']);
-                    $data = Order::whereBetween('created_at', [$startDate, $endDate])
-                        ->selectRaw('DATE(created_at) as date, COUNT(*) as orders, SUM(total) as revenue, AVG(total) as avg')
+                    $query = Order::whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
+                    
+                    if ($request->filled('warehouse_id')) $query->where('warehouse_id', $request->warehouse_id);
+                    if ($request->filled('channel')) $query->where('order_source', $request->channel);
+                    if ($request->filled('customer_id')) $query->where('customer_id', $request->customer_id);
+                    if ($request->filled('category_id')) {
+                        $query->whereHas('items.product', function($q) use ($request) {
+                            $q->where('category_id', $request->category_id);
+                        });
+                    }
+                    
+                    $data = $query->selectRaw('DATE(created_at) as date, COUNT(*) as orders, SUM(total) as revenue, AVG(total) as avg')
                         ->groupBy('date')
                         ->orderBy('date')
                         ->get();
@@ -385,13 +547,88 @@ class ReportsController extends Controller
                     break;
 
                 case 'inventory':
-                    fputcsv($file, ['Product', 'SKU', 'Stock', 'Cost Price', 'Total Value']);
-                    $data = Product::where('track_inventory', true)
-                        ->select('name', 'sku', 'stock_quantity', 'cost_price',
-                            DB::raw('stock_quantity * cost_price as value'))
+                    fputcsv($file, ['Product', 'SKU', 'Opening', 'Purchased', 'Sold', 'Adjustments', 'Closing']);
+                    $warehouseId = $request->get('warehouse_id');
+                    $categoryId = $request->get('category_id');
+
+                    $products = Product::where('track_inventory', true)
+                        ->when($warehouseId, function($q) use ($warehouseId) {
+                            $q->whereHas('warehouses', function($w) use ($warehouseId) {
+                                $w->where('warehouses.id', $warehouseId);
+                            });
+                        })
+                        ->when($categoryId, function($q) use ($categoryId) {
+                            $q->where('category_id', $categoryId);
+                        })
                         ->get();
-                    foreach ($data as $row) {
-                        fputcsv($file, [$row->name, $row->sku, $row->stock_quantity, $row->cost_price, $row->value]);
+
+                    foreach ($products as $product) {
+                        $movementsQuery = StockMovement::where('product_id', $product->id);
+                        if ($warehouseId) { $movementsQuery->where('warehouse_id', $warehouseId); }
+
+                        $movementsAfterStart = (clone $movementsQuery)->where('created_at', '>=', $startDate . ' 00:00:00')->sum('quantity');
+                        $rangeQuery = (clone $movementsQuery)->whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
+                        
+                        $purchased = (clone $rangeQuery)->where('type', 'purchase')->sum('quantity');
+                        $sold = abs((clone $rangeQuery)->where('type', 'sale')->sum('quantity'));
+                        $others = (clone $rangeQuery)->whereIn('type', ['adjustment', 'transfer', 'return'])->sum('quantity');
+
+                        $current = $product->stock_quantity;
+                        if ($warehouseId) {
+                            $current = DB::table('product_warehouse')->where('product_id', $product->id)->where('warehouse_id', $warehouseId)->value('quantity') ?? 0;
+                        }
+
+                        $opening = $current - $movementsAfterStart;
+                        $closing = $opening + (clone $rangeQuery)->sum('quantity');
+
+                        fputcsv($file, [$product->name, $product->sku, $opening, $purchased, $sold, $others, $closing]);
+                    }
+                    break;
+
+                case 'movement':
+                    fputcsv($file, ['Date', 'Product', 'Warehouse', 'Type', 'Quantity', 'Balance After', 'Reference']);
+                    $query = \App\Models\StockMovement::with(['product', 'warehouse'])
+                        ->whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
+                        ->latest();
+
+                    if ($request->filled('warehouse_id')) $query->where('warehouse_id', $request->warehouse_id);
+                    if ($request->filled('type')) $query->where('type', $request->type);
+                    if ($request->filled('category_id')) {
+                        $query->whereHas('product', function($q) use ($request) {
+                            $q->where('category_id', $request->category_id);
+                        });
+                    }
+                    if ($request->filled('product_id')) $query->where('product_id', $request->product_id);
+                if ($request->filled('customer_id')) {
+                    $customerId = $request->customer_id;
+                    $query->where(function($q) use ($customerId) {
+                        $q->where(function($sq) use ($customerId) {
+                            $sq->where('reference_type', 'order')
+                                ->whereIn('reference_id', function($sub) use ($customerId) {
+                                    $sub->select('id')->from('orders')->where('customer_id', $customerId);
+                                });
+                        })->orWhere(function($sq) use ($customerId) {
+                            $sq->where('reference_type', 'order_return')
+                                ->whereIn('reference_id', function($sub) use ($customerId) {
+                                    $sub->select('id')->from('order_returns')
+                                        ->whereIn('order_id', function($o) use ($customerId) {
+                                            $o->select('id')->from('orders')->where('customer_id', $customerId);
+                                        });
+                                });
+                        });
+                    });
+                }
+
+                    foreach ($query->cursor() as $row) {
+                        fputcsv($file, [
+                            $row->created_at->format('Y-m-d H:i'),
+                            $row->product->name ?? 'N/A',
+                            $row->warehouse->name ?? 'N/A',
+                            ucfirst($row->type),
+                            $row->quantity,
+                            $row->balance_after,
+                            $row->reference_type ? ucfirst($row->reference_type) . ' #' . $row->reference_id : 'Adjustment'
+                        ]);
                     }
                     break;
             }

@@ -29,17 +29,27 @@ class FinancialAnalysisController extends Controller
         // Net Profit
         $profit = $revenue - $expenses;
 
-        // Top Selling Product (Simple aggregation)
-        // Assuming order_items table or similar relationship exists. 
-        // For simplicity in this iteration, we'll mock or use a simple query if OrderItem exists.
-        // Let's check relation first. If not ready, we skip or use basic count.
-        
-        $topProduct = null;
-        // Basic implementation if OrderItem model exists
-        // $topProduct = \App\Models\OrderItem::select('name', DB::raw('sum(quantity) as sold'))
-        //     ->groupBy('name')
-        //     ->orderByDesc('sold')
-        //     ->first();
+        // Top Selling Product
+        $topProduct = DB::table('order_items')
+            ->join('orders', 'order_items.order_id', '=', 'orders.id')
+            ->whereBetween('orders.created_at', [$start, $end])
+            // ->where('orders.payment_status', 'paid') // Optional based on business rule
+            ->select('order_items.product_name', DB::raw('SUM(order_items.quantity) as sold_count'), DB::raw('SUM(order_items.total) as revenue'))
+            ->groupBy('order_items.product_name')
+            ->orderByDesc('sold_count')
+            ->first();
+
+        // Convert stdClass to array for view if needed, or pass object. 
+        // View expects array key access for 'name' based on Mailable? 
+        // Mailable implementation uses array access $topProduct['name']. 
+        // Let's normalize it to array.
+        if ($topProduct) {
+            $topProduct = [
+                'name' => $topProduct->product_name,
+                'sold_count' => $topProduct->sold_count,
+                'revenue' => '₦' . number_format($topProduct->revenue, 2)
+            ];
+        }
 
         // Previous Month Comparison (Mock logic for UI display)
         $revenueGrowth = 12; // +12%

@@ -11,9 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('page_layouts', function (Blueprint $table) {
-            $table->foreignId('template_id')->nullable()->after('page_name')->constrained('storefront_templates')->onDelete('cascade');
-        });
+        if (Schema::hasTable('page_layouts')) {
+            Schema::table('page_layouts', function (Blueprint $table) {
+                if (!Schema::hasColumn('page_layouts', 'template_id')) {
+                    $table->foreignId('template_id')->nullable()->after('page_name')->constrained('storefront_templates')->onDelete('cascade');
+                }
+            });
+        }
     }
 
     /**

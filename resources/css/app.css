@@ -21,7 +21,7 @@
     input[type='week'],
     select,
     textarea {
-        @apply border-[3px] border-gray-400 bg-white text-gray-900 rounded-lg shadow-sm transition-all duration-200;
+        @apply border-[2px] border-gray-400 bg-white text-gray-900 rounded-lg shadow-sm transition-all duration-200;
         border-color: #9ca3af !important;
     }
 

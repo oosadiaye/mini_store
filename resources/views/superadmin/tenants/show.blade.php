@@ -18,7 +18,7 @@
                 </div>
             </div>
             <div class="flex space-x-3">
-                 <a href="{{ route('superadmin.tenants.edit', $tenant) }}" class="bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium py-2 px-4 rounded-md shadow-sm transition">
+                 <a href="{{ route('superadmin.tenants.edit', $tenant) }}" class="bg-white border-2 border-gray-300 text-gray-700 hover:bg-gray-50 font-medium py-2 px-4 rounded-md shadow-sm transition">
                     Edit Tenant
                 </a>
                 <a href="{{ route('superadmin.tenants.impersonate', $tenant) }}" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-md shadow-sm transition">

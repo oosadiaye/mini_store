@@ -8,6 +8,9 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use App\Models\GlobalSetting;
+use App\Rules\TurnstileRule;
+use App\Rules\RecaptchaRule;
 
 class LoginRequest extends FormRequest
 {
@@ -26,10 +29,20 @@ class LoginRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
+        $rules = [
             'email' => ['required', 'string', 'email'],
             'password' => ['required', 'string'],
         ];
+
+        $captchaType = GlobalSetting::where('key', 'captcha_type')->first()?->value ?? 'none';
+
+        if ($captchaType === 'turnstile') {
+            $rules['cf-turnstile-response'] = ['required', new TurnstileRule];
+        } elseif ($captchaType === 'recaptcha') {
+            $rules['g-recaptcha-response'] = ['required', new RecaptchaRule];
+        }
+
+        return $rules;
     }
 
     /**
@@ -37,11 +50,11 @@ class LoginRequest extends FormRequest
      *
      * @throws \Illuminate\Validation\ValidationException
      */
-    public function authenticate(): void
+    public function authenticate($guard = 'web'): void
     {
         $this->ensureIsNotRateLimited();
 
-        if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
+        if (! Auth::guard($guard)->attempt($this->only('email', 'password'), $this->boolean('remember'))) {
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([

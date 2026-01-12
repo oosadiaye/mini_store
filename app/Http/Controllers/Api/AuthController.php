@@ -6,6 +6,9 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
+use App\Models\GlobalSetting;
+use App\Rules\TurnstileRule;
+use App\Rules\RecaptchaRule;
 
 class AuthController extends Controller
 {
@@ -14,10 +17,20 @@ class AuthController extends Controller
      */
     public function login(Request $request)
     {
-        $credentials = $request->validate([
+        $rules = [
             'email' => 'required|email',
             'password' => 'required',
-        ]);
+        ];
+
+        $captchaType = GlobalSetting::where('key', 'captcha_type')->first()?->value ?? 'none';
+
+        if ($captchaType === 'turnstile') {
+            $rules['cf-turnstile-response'] = ['required', new TurnstileRule];
+        } elseif ($captchaType === 'recaptcha') {
+            $rules['g-recaptcha-response'] = ['required', new RecaptchaRule];
+        }
+
+        $credentials = $request->validate($rules);
 
         if (Auth::attempt($credentials)) {
             $user = Auth::user();

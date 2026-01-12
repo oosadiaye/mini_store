@@ -11,16 +11,18 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('storefront_settings', function (Blueprint $table) {
-            $table->id();
-            $table->string('tenant_id');
-            $table->string('key');
-            $table->text('value')->nullable();
-            $table->timestamps();
-
-            $table->foreign('tenant_id')->references('id')->on('tenants')->onDelete('cascade');
-            $table->unique(['tenant_id', 'key']);
-        });
+        if (!Schema::hasTable('storefront_settings')) {
+            Schema::create('storefront_settings', function (Blueprint $table) {
+                $table->id();
+                $table->string('tenant_id');
+                $table->string('key');
+                $table->text('value')->nullable();
+                $table->timestamps();
+    
+                $table->foreign('tenant_id')->references('id')->on('tenants')->onDelete('cascade');
+                $table->unique(['tenant_id', 'key']);
+            });
+        }
     }
 
     /**

@@ -25,10 +25,12 @@ return new class extends Migration
             });
         } catch (\Throwable $e) {}
 
-        // Add the new unique index
-        Schema::table('page_layouts', function (Blueprint $table) {
-            $table->unique(['page_name', 'template_id']);
-        });
+        // Add the new unique index if it doesn't exist
+        if (!Schema::hasIndex('page_layouts', 'page_layouts_page_name_template_id_unique')) {
+            Schema::table('page_layouts', function (Blueprint $table) {
+                $table->unique(['page_name', 'template_id']);
+            });
+        }
     }
 
     /**

@@ -7,9 +7,20 @@ use App\Models\Announcement;
 use App\Models\Tenant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use App\Services\SecureFileUploader;
 
 class AnnouncementController extends Controller
 {
+    /**
+     * @var SecureFileUploader
+     */
+    protected $uploader;
+
+    public function __construct(SecureFileUploader $uploader)
+    {
+        $this->uploader = $uploader;
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -58,7 +69,7 @@ class AnnouncementController extends Controller
                 $data['attachment_type'] = 'image';
             }
             
-            $data['attachment_path'] = $file->store('announcements', 'public');
+            $data['attachment_path'] = $this->uploader->upload($file, 'announcements', 'local');
         } else {
             $data['attachment_type'] = 'none';
         }
@@ -112,7 +123,7 @@ class AnnouncementController extends Controller
         if ($request->hasFile('attachment')) {
             // Delete old
             if ($announcement->attachment_path) {
-                Storage::disk('public')->delete($announcement->attachment_path);
+                Storage::disk('local')->delete($announcement->attachment_path);
             }
             
             $file = $request->file('attachment');
@@ -122,7 +133,7 @@ class AnnouncementController extends Controller
             } elseif (str_contains($mime, 'image')) {
                 $data['attachment_type'] = 'image';
             }
-            $data['attachment_path'] = $file->store('announcements', 'public');
+            $data['attachment_path'] = $this->uploader->upload($file, 'announcements', 'local');
         }
 
         $announcement->update($data);
@@ -144,7 +155,7 @@ class AnnouncementController extends Controller
     public function destroy(Announcement $announcement)
     {
         if ($announcement->attachment_path) {
-            Storage::disk('public')->delete($announcement->attachment_path);
+            Storage::disk('local')->delete($announcement->attachment_path);
         }
         
         $announcement->delete();

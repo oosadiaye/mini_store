@@ -26,7 +26,15 @@ class Brand extends Model
 
     public function getLogoUrlAttribute()
     {
-        return $this->logo ? tenant_asset($this->logo) : null;
+        if (!$this->logo) {
+            return null;
+        }
+
+        if (filter_var($this->logo, FILTER_VALIDATE_URL)) {
+            return $this->logo;
+        }
+
+        return route('tenant.media', ['path' => $this->logo]);
     }
 
     public function scopeActive($query)

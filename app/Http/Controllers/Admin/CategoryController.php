@@ -8,9 +8,20 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
 use Illuminate\Validation\Rule;
+use App\Services\SecureFileUploader;
 
 class CategoryController extends Controller
 {
+    /**
+     * @var SecureFileUploader
+     */
+    protected $uploader;
+
+    public function __construct(SecureFileUploader $uploader)
+    {
+        $this->uploader = $uploader;
+    }
+
     public function index()
     {
         $categories = Category::with('parent')
@@ -55,7 +66,7 @@ class CategoryController extends Controller
         $validated['show_on_storefront'] = $request->has('show_on_storefront');
 
         if ($request->hasFile('image')) {
-            $validated['image'] = $request->file('image')->store('categories', 'public');
+            $validated['image'] = $this->uploader->upload($request->file('image'), 'categories', 'tenant');
         }
 
         $category = Category::create($validated);
@@ -72,7 +83,7 @@ class CategoryController extends Controller
             ->with('success', 'Category created successfully!');
     }
 
-    public function edit($tenant, Category $category)
+    public function edit(Category $category)
     {
         $parentCategories = Category::whereNull('parent_id')
             ->where('id', '!=', $category->id)
@@ -83,7 +94,7 @@ class CategoryController extends Controller
         return view('admin.categories.edit', compact('category', 'parentCategories'));
     }
 
-    public function update(Request $request, $tenant, Category $category)
+    public function update(Request $request, Category $category)
     {
         $validated = $request->validate([
             'name' => [
@@ -107,7 +118,7 @@ class CategoryController extends Controller
         $validated['show_on_storefront'] = $request->has('show_on_storefront');
 
         if ($request->hasFile('image')) {
-            $validated['image'] = $request->file('image')->store('categories', 'public');
+            $validated['image'] = $this->uploader->upload($request->file('image'), 'categories', 'tenant');
         }
 
         $category->update($validated);
@@ -116,7 +127,7 @@ class CategoryController extends Controller
              ->with('success', 'Category updated successfully!');
     }
 
-    public function destroy($tenant, Category $category)
+    public function destroy(Category $category)
     {
         $category->delete();
 

@@ -11,9 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('products', function (Blueprint $table) {
-            $table->date('expiry_date')->nullable()->after('stock_quantity');
-        });
+        if (Schema::hasTable('products')) {
+            Schema::table('products', function (Blueprint $table) {
+                if (!Schema::hasColumn('products', 'expiry_date')) {
+                    $table->date('expiry_date')->nullable()->after('stock_quantity');
+                }
+            });
+        }
     }
 
     /**

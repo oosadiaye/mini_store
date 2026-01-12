@@ -47,7 +47,7 @@
                 </td>
                 <td class="p-4 text-right">
                     <div class="relative inline-block text-left" x-data="{ open: false }">
-                        <button @click="open = !open" @click.away="open = false" type="button" class="inline-flex justify-center w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        <button @click="open = !open" @click.away="open = false" type="button" class="inline-flex justify-center w-full rounded-md border-2 border-gray-300 shadow-sm px-4 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                             Actions
                             <svg class="-mr-1 ml-2 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                                 <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
@@ -69,6 +69,9 @@
                                 </a>
                                 <a href="#" @click.prevent="$dispatch('open-upgrade-modal', { id: '{{ $tenant->id }}', plan: '{{ $tenant->plan_id }}', name: '{{ $tenant->name ?? 'Store' }}' }); open = false" class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100">
                                     Upgrade Plan
+                                </a>
+                                <a href="#" @click.prevent="$dispatch('open-password-modal', { id: '{{ $tenant->id }}', name: '{{ $tenant->name ?? 'Store' }}' }); open = false" class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100">
+                                    Reset Password
                                 </a>
                                 
                                 <form action="{{ route('superadmin.tenants.suspend', $tenant) }}" method="POST" x-show="!{{ $tenant->is_suspended ? 'true' : 'false' }}">
@@ -141,7 +144,7 @@
                                     
                                     <div class="mt-4">
                                         <label for="plan_id" class="block text-sm font-medium text-gray-700">Subscription Plan</label>
-                                        <select id="plan_id" name="plan_id" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md" x-model="currentPlan">
+                                        <select id="plan_id" name="plan_id" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-2 border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md" x-model="currentPlan">
                                             @foreach($plans as $plan)
                                                 <option value="{{ $plan->id }}">{{ $plan->name }} - {{ $plan->price }}</option>
                                             @endforeach
@@ -155,9 +158,53 @@
                         <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm">
                             Update Plan
                         </button>
-                        <button type="button" @click="open = false" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                        <button type="button" @click="open = false" class="mt-3 w-full inline-flex justify-center rounded-md border-2 border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
                             Cancel
                         </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <!-- Reset Password Modal -->
+    <div x-data="{ open: false, tenantId: '', tenantName: '' }" 
+         @open-password-modal.window="open = true; tenantId = $event.detail.id; tenantName = $event.detail.name"
+         x-show="open" 
+         class="fixed inset-0 z-50 overflow-y-auto" 
+         style="display: none;">
+        
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div x-show="open" x-transition.opacity class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
+            <div x-show="open" x-transition.scale class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                <form :action="'{{ url('superadmin/tenants') }}/' + tenantId + '/password'" method="POST">
+                    @csrf
+                    @method('PUT')
+                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                        <div class="sm:flex sm:items-start">
+                            <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                                <h3 class="text-lg leading-6 font-medium text-gray-900">Reset Password for <span x-text="tenantName"></span></h3>
+                                <div class="mt-2 text-sm text-gray-500">
+                                    This will update the password for the tenant's admin user.
+                                </div>
+                                <div class="mt-4 space-y-3">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700">New Password</label>
+                                        <input type="password" name="password" required class="mt-1 block w-full border-2 border-gray-300 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500 sm:text-sm">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700">Confirm Password</label>
+                                        <input type="password" name="password_confirmation" required class="mt-1 block w-full border-2 border-gray-300 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500 sm:text-sm">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                        <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 sm:ml-3 sm:w-auto sm:text-sm">Reset Password</button>
+                        <button type="button" @click="open = false" class="mt-3 w-full inline-flex justify-center rounded-md border-2 border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">Cancel</button>
                     </div>
                 </form>
             </div>

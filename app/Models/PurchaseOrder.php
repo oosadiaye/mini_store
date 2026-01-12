@@ -10,7 +10,7 @@ use App\Models\PurchaseOrderItem;
 
 class PurchaseOrder extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Traits\BelongsToTenant;
 
     protected $guarded = ['id'];
 

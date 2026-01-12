@@ -8,10 +8,14 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('journal_entry_lines', function (Blueprint $table) {
-            $table->unsignedBigInteger('renter_id')->nullable()->after('account_id');
-            $table->index('renter_id');
-        });
+        if (Schema::hasTable('journal_entry_lines')) {
+            Schema::table('journal_entry_lines', function (Blueprint $table) {
+                if (!Schema::hasColumn('journal_entry_lines', 'renter_id')) {
+                    $table->unsignedBigInteger('renter_id')->nullable()->after('account_id');
+                    $table->index('renter_id');
+                }
+            });
+        }
     }
 
     public function down(): void

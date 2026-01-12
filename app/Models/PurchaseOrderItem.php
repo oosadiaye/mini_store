@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class PurchaseOrderItem extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Traits\BelongsToTenant;
 
     protected $guarded = ['id'];
 

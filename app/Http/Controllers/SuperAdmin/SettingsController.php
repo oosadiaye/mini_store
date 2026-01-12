@@ -6,9 +6,20 @@ use App\Http\Controllers\Controller;
 use App\Models\GlobalSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use App\Services\SecureFileUploader;
 
 class SettingsController extends Controller
 {
+    /**
+     * @var SecureFileUploader
+     */
+    protected $uploader;
+
+    public function __construct(SecureFileUploader $uploader)
+    {
+        $this->uploader = $uploader;
+    }
+
     public function index()
     {
         $settings = GlobalSetting::all()->mapWithKeys(function ($item) {
@@ -52,8 +63,6 @@ class SettingsController extends Controller
             'cookie_consent_enabled' => 'cookie',
             'cookie_consent_message' => 'cookie',
             
-            // SMTP UI names map to DB keys if needed, but form uses smtp_ prefix
-            // Let's support the form fields directly
             'smtp_host' => 'mail',
             'smtp_port' => 'mail',
             'smtp_username' => 'mail',
@@ -64,6 +73,12 @@ class SettingsController extends Controller
             
             'welcome_email_subject' => 'templates',
             'welcome_email_body' => 'templates',
+
+            'turnstile_site_key' => 'security',
+            'turnstile_secret' => 'security',
+            'recaptcha_site_key' => 'security',
+            'recaptcha_secret' => 'security',
+            'captcha_type' => 'security',
         ];
 
         // Process explicit keys
@@ -78,7 +93,7 @@ class SettingsController extends Controller
 
         // Handle File Uploads (Logo)
         if ($request->hasFile('brand_logo')) {
-            $path = $request->file('brand_logo')->store('global/branding', 'public');
+            $path = $this->uploader->upload($request->file('brand_logo'), 'global/branding', 'public');
             GlobalSetting::updateOrCreate(
                 ['key' => 'brand_logo'],
                 ['value' => $path, 'group' => 'branding']
@@ -87,7 +102,7 @@ class SettingsController extends Controller
 
         // Handle File Uploads (Favicon)
         if ($request->hasFile('brand_favicon')) {
-            $path = $request->file('brand_favicon')->store('global/branding', 'public');
+            $path = $this->uploader->upload($request->file('brand_favicon'), 'global/branding', 'public');
             GlobalSetting::updateOrCreate(
                 ['key' => 'brand_favicon'],
                 ['value' => $path, 'group' => 'branding']
@@ -96,7 +111,7 @@ class SettingsController extends Controller
         
         // Handle Email Banner Upload
         if ($request->hasFile('email_banner')) {
-            $path = $request->file('email_banner')->store('global/branding', 'public');
+            $path = $this->uploader->upload($request->file('email_banner'), 'global/templates', 'public');
             GlobalSetting::updateOrCreate(
                 ['key' => 'email_banner'],
                 ['value' => $path, 'group' => 'templates']
@@ -107,6 +122,7 @@ class SettingsController extends Controller
 
         return redirect()->back()->with('success', 'Global settings updated successfully.');
     }
+
     public function sendTestEmail(Request $request)
     {
         $request->validate([

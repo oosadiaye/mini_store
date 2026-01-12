@@ -6,9 +6,20 @@ use App\Http\Controllers\Controller;
 use App\Models\Brand;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use App\Services\SecureFileUploader;
 
 class BrandController extends Controller
 {
+    /**
+     * @var SecureFileUploader
+     */
+    protected $uploader;
+
+    public function __construct(SecureFileUploader $uploader)
+    {
+        $this->uploader = $uploader;
+    }
+
     public function index()
     {
         $brands = Brand::orderBy('sort_order')->orderBy('name')->paginate(10);
@@ -31,7 +42,7 @@ class BrandController extends Controller
         ]);
 
         if ($request->hasFile('logo')) {
-            $path = $request->file('logo')->store('brands', 'public');
+            $path = $this->uploader->upload($request->file('logo'), 'brands', 'tenant');
             $validated['logo'] = $path;
         }
 
@@ -70,9 +81,9 @@ class BrandController extends Controller
         if ($request->hasFile('logo')) {
             // Delete old logo if exists
             if ($brand->logo) {
-                Storage::disk('public')->delete($brand->logo);
+                Storage::disk('tenant')->delete($brand->logo);
             }
-            $path = $request->file('logo')->store('brands', 'public');
+            $path = $this->uploader->upload($request->file('logo'), 'brands', 'tenant');
             $validated['logo'] = $path;
         }
         
@@ -87,7 +98,7 @@ class BrandController extends Controller
     public function destroy(Brand $brand)
     {
         if ($brand->logo) {
-            Storage::disk('public')->delete($brand->logo);
+            Storage::disk('tenant')->delete($brand->logo);
         }
         $brand->delete();
 

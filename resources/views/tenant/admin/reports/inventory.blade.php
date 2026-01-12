@@ -11,8 +11,8 @@
             </p>
         </div>
         <div class="mt-4 sm:mt-0 sm:flex-none">
-            <a href="{{ route('admin.products.export', ['tenant' => $tenant->slug]) }}" 
-               class="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:w-auto">
+             <a href="{{ route('admin.products.export', ['tenant' => $tenant->slug]) }}" 
+                class="inline-flex items-center justify-center rounded-md border-2 border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:w-auto">
                 <svg class="mr-2 h-4 w-4 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
                 </svg>
@@ -26,7 +26,7 @@
         <form action="{{ route('admin.reports.inventory', $tenant->slug) }}" method="GET" class="grid grid-cols-1 gap-y-6 sm:grid-cols-4 sm:gap-x-4">
             <div>
                 <label for="warehouse_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Warehouse</label>
-                <select id="warehouse_id" name="warehouse_id" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 py-2 pl-3 pr-10 text-base focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm">
+                <select id="warehouse_id" name="warehouse_id" class="mt-1 block w-full rounded-md border-2 border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 py-2 pl-3 pr-10 text-base focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm">
                     <option value="">All Warehouses</option>
                     @foreach($warehouses as $warehouse)
                         <option value="{{ $warehouse->id }}" {{ $warehouseId == $warehouse->id ? 'selected' : '' }}>
@@ -39,13 +39,13 @@
              <div>
                 <label for="start_date" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Start Date</label>
                 <input type="date" name="start_date" id="start_date" value="{{ $startDate }}" 
-                       class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                       class="mt-1 block w-full rounded-md border-2 border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
             </div>
 
             <div>
                 <label for="end_date" class="block text-sm font-medium text-gray-700 dark:text-gray-300">End Date</label>
                 <input type="date" name="end_date" id="end_date" value="{{ $endDate }}" 
-                       class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                       class="mt-1 block w-full rounded-md border-2 border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
             </div>
 
             <div class="flex items-end">

@@ -22,3 +22,15 @@ if (!function_exists('tenant_asset')) {
         return route('tenant.media', ['path' => $path]);
     }
 }
+
+if (!function_exists('tenant')) {
+    /**
+     * Get the current tenant instance.
+     *
+     * @return \App\Models\Tenant|null
+     */
+    function tenant()
+    {
+        return app()->bound('tenant') ? app('tenant') : null;
+    }
+}

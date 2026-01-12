@@ -27,6 +27,10 @@ class Order extends Model
         'admin_notes',
         'order_source', // storefront, admin, pos
         'amount_paid',
+        'warehouse_id',
+        'woocommerce_id',
+        'woocommerce_data',
+        'woocommerce_status',
     ];
 
     public function items()
@@ -62,5 +66,9 @@ class Order extends Model
     public function returns()
     {
         return $this->hasMany(OrderReturn::class);
+    }
+    public function warehouse()
+    {
+        return $this->belongsTo(Warehouse::class);
     }
 }

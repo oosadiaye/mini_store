@@ -25,7 +25,7 @@
             </div>
             <div>
                 <p class="text-gray-500 text-sm font-medium">Monthly Revenue</p>
-                <p class="text-2xl font-bold text-gray-800">₦0.00</p>
+                <p class="text-2xl font-bold text-gray-800">₦{{ number_format($monthlyRevenue, 2) }}</p>
             </div>
         </div>
     </div>
@@ -38,16 +38,40 @@
             </div>
             <div>
                 <p class="text-gray-500 text-sm font-medium">New Signups</p>
-                <p class="text-2xl font-bold text-gray-800">0</p>
+                <p class="text-2xl font-bold text-gray-800">{{ $newSignups }}</p>
             </div>
         </div>
     </div>
 </div>
 
-<div class="bg-white rounded-lg shadow-sm p-6">
-    <h3 class="text-lg font-semibold text-gray-800 mb-4">Recent Activity</h3>
-    <div class="text-gray-500 text-sm text-center py-8">
-        No recent activity logs found.
+<div class="bg-white rounded-lg shadow-sm overflow-hidden mb-8">
+    <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+        <h3 class="text-lg font-semibold text-gray-800">Recent Activity</h3>
+        <a href="{{ route('superadmin.audit-logs.index') }}" class="text-sm text-blue-600 hover:text-blue-800 font-medium">View All</a>
+    </div>
+    <div class="divide-y divide-gray-100">
+        @forelse($recentActivity as $log)
+            <div class="px-6 py-4 hover:bg-gray-50 transition-colors">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <div class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 mr-4">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        </div>
+                        <div>
+                            <p class="text-sm font-semibold text-gray-800">{{ $log->description ?? $log->action }}</p>
+                            <p class="text-xs text-gray-500">
+                                {{ $log->user ? $log->user->name : 'System' }} • {{ $log->ip_address }}
+                            </p>
+                        </div>
+                    </div>
+                    <span class="text-xs text-gray-400 font-medium">{{ $log->created_at->diffForHumans() }}</span>
+                </div>
+            </div>
+        @empty
+            <div class="text-gray-500 text-sm text-center py-12">
+                <p>No recent activity logs found.</p>
+            </div>
+        @endforelse
     </div>
 </div>
 @endsection

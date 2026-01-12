@@ -14,7 +14,7 @@
                 Request Return
             </a>
         @endif
-        <a href="{{ route('orders.invoice', $order) }}" class="bg-gray-100 hover:bg-gray-200 text-gray-800 px-4 py-2 rounded-lg transition border border-gray-300 flex items-center">
+        <a href="{{ route('admin.orders.invoice', $order) }}" class="bg-gray-100 hover:bg-gray-200 text-gray-800 px-4 py-2 rounded-lg transition border-2 border-gray-300 flex items-center">
             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
             Download Invoice
         </a>
@@ -78,6 +78,43 @@
             </table>
         </div>
 
+        <!-- Mobile List View -->
+        <div class="md:hidden divide-y divide-gray-100">
+            @foreach($order->items as $item)
+            <div class="p-4 flex items-start justify-between">
+                <div class="flex-1 pr-4">
+                    <div class="font-medium text-gray-900 text-sm">{{ $item->product_name }}</div>
+                    @if($item->variant_name)
+                        <div class="text-xs text-gray-500">Var: {{ $item->variant_name }}</div>
+                    @endif
+                    <div class="text-xs text-gray-400 mt-1">Qty: {{ $item->quantity }} x {{ $tenant->data['currency_symbol'] ?? '₦' }}{{ number_format($item->price, 2) }}</div>
+                </div>
+                <div class="font-medium text-sm text-gray-900">
+                    {{ $tenant->data['currency_symbol'] ?? '₦' }}{{ number_format($item->total, 2) }}
+                </div>
+            </div>
+            @endforeach
+            
+            <div class="bg-gray-50 p-4 space-y-2 text-sm border-t border-gray-200">
+                <div class="flex justify-between text-gray-600">
+                    <span>Subtotal</span>
+                    <span>{{ $tenant->data['currency_symbol'] ?? '₦' }}{{ number_format($order->subtotal, 2) }}</span>
+                </div>
+                <div class="flex justify-between text-gray-600">
+                    <span>Shipping</span>
+                    <span>{{ $tenant->data['currency_symbol'] ?? '₦' }}{{ number_format($order->shipping, 2) }}</span>
+                </div>
+                <div class="flex justify-between text-gray-600">
+                    <span>Tax</span>
+                    <span>{{ $tenant->data['currency_symbol'] ?? '₦' }}{{ number_format($order->tax, 2) }}</span>
+                </div>
+                <div class="flex justify-between font-bold text-gray-900 text-base pt-2 border-t border-gray-200 mt-2">
+                    <span>Total</span>
+                    <span>{{ $tenant->data['currency_symbol'] ?? '₦' }}{{ number_format($order->total, 2) }}</span>
+                </div>
+            </div>
+        </div>
+
         @if($order->returns->count() > 0)
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden mt-4 md:mt-6">
             <div class="px-4 md:px-6 py-3 md:py-4 border-b border-gray-200 bg-gray-50 font-semibold text-gray-700 text-sm md:text-base">
@@ -123,7 +160,7 @@
                 @method('PATCH')
                 <label class="block text-xs md:text-sm font-medium text-gray-700 mb-1">Fulfillment Status</label>
                 <div class="flex flex-col sm:flex-row gap-2">
-                    <select name="status" class="flex-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs md:text-sm">
+                    <select name="status" class="flex-1 rounded-md border-2 border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs md:text-sm">
                         <option value="pending" {{ $order->status == 'pending' ? 'selected' : '' }}>Pending</option>
                         <option value="processing" {{ $order->status == 'processing' ? 'selected' : '' }}>Processing</option>
                         <option value="completed" {{ $order->status == 'completed' ? 'selected' : '' }}>Completed</option>
@@ -139,7 +176,7 @@
                 @method('PATCH')
                 <label class="block text-xs md:text-sm font-medium text-gray-700 mb-1">Payment Status</label>
                 <div class="flex flex-col sm:flex-row gap-2">
-                    <select name="payment_status" class="flex-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs md:text-sm">
+                    <select name="payment_status" class="flex-1 rounded-md border-2 border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs md:text-sm">
                         <option value="pending" {{ $order->payment_status == 'pending' ? 'selected' : '' }}>Pending</option>
                         <option value="paid" {{ $order->payment_status == 'paid' ? 'selected' : '' }}>Paid</option>
                         <option value="failed" {{ $order->payment_status == 'failed' ? 'selected' : '' }}>Failed</option>
@@ -230,17 +267,17 @@
                 
                 <div class="mb-4">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Carrier</label>
-                    <input type="text" name="carrier" value="{{ $order->shippingAddress->carrier ?? '' }}" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required placeholder="e.g. FedEx, DHL">
+                    <input type="text" name="carrier" value="{{ optional($order->shippingAddress)->carrier ?? '' }}" class="w-full rounded-md border-2 border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required placeholder="e.g. FedEx, DHL">
                 </div>
                 
                 <div class="mb-4">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Tracking Number</label>
-                    <input type="text" name="tracking_number" value="{{ $order->shippingAddress->tracking_number ?? '' }}" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
+                    <input type="text" name="tracking_number" value="{{ optional($order->shippingAddress)->tracking_number ?? '' }}" class="w-full rounded-md border-2 border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
                 </div>
 
                 <div class="mb-4">
                      <label class="block text-sm font-medium text-gray-700 mb-1">Shipped Date</label>
-                     <input type="date" name="shipped_at" value="{{ $order->shippingAddress->shipped_at ? $order->shippingAddress->shipped_at->format('Y-m-d') : date('Y-m-d') }}" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                     <input type="date" name="shipped_at" value="{{ optional($order->shippingAddress)->shipped_at ? optional($order->shippingAddress)->shipped_at->format('Y-m-d') : date('Y-m-d') }}" class="w-full rounded-md border-2 border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                 </div>
                 
                 <div class="flex justify-end gap-2 mt-4">

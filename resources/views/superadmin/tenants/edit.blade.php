@@ -25,7 +25,7 @@
                         <!-- Name -->
                         <div class="col-span-6 sm:col-span-4">
                             <label for="name" class="block text-sm font-medium text-gray-700">Tenant Name</label>
-                            <input type="text" name="name" id="name" value="{{ old('name', $tenant->name) }}" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" required>
+                            <input type="text" name="name" id="name" value="{{ old('name', $tenant->name) }}" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-2 border-gray-300 rounded-md" required>
                             @error('name')
                                 <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                             @enderror
@@ -34,7 +34,7 @@
                         <!-- Email -->
                         <div class="col-span-6 sm:col-span-4">
                             <label for="email" class="block text-sm font-medium text-gray-700">Email Address</label>
-                            <input type="email" name="email" id="email" value="{{ old('email', $tenant->email) }}" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" required>
+                            <input type="email" name="email" id="email" value="{{ old('email', $tenant->email) }}" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-2 border-gray-300 rounded-md" required>
                             @error('email')
                                 <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                             @enderror
@@ -43,14 +43,14 @@
                         <!-- Subdomain (Read Only) -->
                         <div class="col-span-6 sm:col-span-4">
                             <label for="slug" class="block text-sm font-medium text-gray-700">Subdomain/Slug</label>
-                            <input type="text" id="slug" value="{{ $tenant->slug }}" disabled class="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md bg-gray-100 text-gray-500 cursor-not-allowed">
+                            <input type="text" id="slug" value="{{ $tenant->slug }}" disabled class="mt-1 block w-full shadow-sm sm:text-sm border-2 border-gray-300 rounded-md bg-gray-100 text-gray-500 cursor-not-allowed">
                             <p class="mt-1 text-xs text-gray-500">Subdomains cannot be changed once created.</p>
                         </div>
 
                         <!-- Subscription Plan -->
                         <div class="col-span-6 sm:col-span-4">
                             <label for="plan_id" class="block text-sm font-medium text-gray-700">Subscription Plan</label>
-                            <select id="plan_id" name="plan_id" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                            <select id="plan_id" name="plan_id" class="mt-1 block w-full py-2 px-3 border-2 border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                                 @foreach($plans as $plan)
                                     <option value="{{ $plan->id }}" {{ old('plan_id', $tenant->plan_id) == $plan->id ? 'selected' : '' }}>
                                         {{ $plan->name }} ({{ number_format($plan->price, 2) }})
@@ -65,7 +65,7 @@
                         <!-- Status -->
                         <div class="flex items-start">
                             <div class="flex items-center h-5">
-                                <input id="is_active" name="is_active" type="checkbox" value="1" {{ old('is_active', $tenant->is_active) ? 'checked' : '' }} class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                                <input id="is_active" name="is_active" type="checkbox" value="1" {{ old('is_active', $tenant->is_active) ? 'checked' : '' }} class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-2 border-gray-300 rounded">
                             </div>
                             <div class="ml-3 text-sm">
                                 <label for="is_active" class="font-medium text-gray-700">Active Status</label>

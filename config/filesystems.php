@@ -67,6 +67,13 @@ return [
             'report' => false,
         ],
 
+        'tenant' => [
+            'driver' => 'local',
+            'root' => storage_path('app/tenants'), // Stancl/Tenancy will likely override this dynamically, but valid default
+            'url' => env('APP_URL').'/storage',
+            'visibility' => 'public',
+        ],
+
     ],
 
     /*

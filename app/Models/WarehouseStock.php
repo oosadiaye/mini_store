@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class WarehouseStock extends Model
 {
-    protected $table = 'warehouse_stock';
+    protected $table = 'product_warehouse';
 
     protected $fillable = [
         'warehouse_id',

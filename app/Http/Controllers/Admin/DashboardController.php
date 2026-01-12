@@ -55,6 +55,13 @@ class DashboardController extends Controller
                                         ->where('stock_quantity', '>', 0)
                                         ->where('stock_quantity', '<=', \DB::raw('low_stock_threshold'))
                                         ->count(),
+            'total_receivables' => \App\Models\Order::where('payment_status', '!=', 'paid')
+                                        ->where('status', '!=', 'cancelled')
+                                        ->selectRaw('SUM(total - amount_paid) as total_due')
+                                        ->first()->total_due ?? 0,
+            'total_payables' => \App\Models\SupplierInvoice::where('status', '!=', 'paid')
+                                        ->selectRaw('SUM(total - amount_paid) as total_due')
+                                        ->first()->total_due ?? 0,
         ];
 
         // Recent Orders (Unfiltered, just latest)
@@ -123,7 +130,7 @@ class DashboardController extends Controller
         $expiring_products = Product::where('is_active', true)
             ->whereNotNull('expiry_date')
             ->where('expiry_date', '>=', now())
-            ->where('expiry_date', '<=', now()->addDays(90))
+            ->where('expiry_date', '<=', now()->addDays(180))
             ->orderBy('expiry_date')
             ->take(5)
             ->get();
@@ -131,10 +138,41 @@ class DashboardController extends Controller
         $stats['expiring_soon'] = Product::where('is_active', true)
             ->whereNotNull('expiry_date')
             ->where('expiry_date', '>=', now())
-            ->where('expiry_date', '<=', now()->addDays(90))
+            ->where('expiry_date', '<=', now()->addDays(180))
             ->count();
         // End of expiring products logic
 
+        if ($request->wantsJson()) {
+            return response()->json([
+                'stats' => $stats,
+                'recent_orders' => $recent_orders,
+                'low_stock_products' => $low_stock_products,
+                'sales_chart' => $sales_chart,
+                'top_products' => $top_products,
+                'expiring_products' => $expiring_products,
+                'filter' => $filter
+            ]);
+        }
+
         return view('admin.dashboard', compact('stats', 'recent_orders', 'low_stock_products', 'sales_chart', 'top_products', 'expiring_products', 'filter'));
+    }
+
+    public function markAllNotificationsRead()
+    {
+        auth()->user()->unreadNotifications->markAsRead();
+        return back()->with('success', 'All notifications marked as read');
+    }
+
+    public function markNotificationRead($id)
+    {
+        $notification = auth()->user()->notifications()->findOrFail($id);
+        $notification->markAsRead();
+        
+        // If it's an AJAX request (from Vue component), return JSON
+        if (request()->ajax() || request()->wantsJson()) {
+            return response()->json(['success' => true]);
+        }
+        
+        return back()->with('success', 'Notification marked as read');
     }
 }

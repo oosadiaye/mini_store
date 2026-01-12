@@ -46,6 +46,19 @@ class Post extends Model
         });
     }
 
+    public function getImageUrlAttribute($value)
+    {
+        if (!$value) {
+            return null;
+        }
+
+        if (filter_var($value, FILTER_VALIDATE_URL)) {
+            return $value;
+        }
+
+        return route('tenant.media', ['path' => $value]);
+    }
+
     /**
      * Scope a query to only include published posts.
      */

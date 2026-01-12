@@ -6,9 +6,20 @@ use App\Http\Controllers\Controller;
 use App\Models\Post;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use App\Services\SecureFileUploader;
 
 class PostController extends Controller
 {
+    /**
+     * @var SecureFileUploader
+     */
+    protected $uploader;
+
+    public function __construct(SecureFileUploader $uploader)
+    {
+        $this->uploader = $uploader;
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -44,8 +55,8 @@ class PostController extends Controller
         $post = new Post($validated);
 
         if ($request->hasFile('image')) {
-            $path = $request->file('image')->store('posts', 'public');
-            $post->image_url = '/storage/' . $path;
+            $path = $this->uploader->upload($request->file('image'), 'posts', 'tenant');
+            $post->image_url = $path;
         }
 
         $post->is_published = $request->has('is_published');
@@ -87,8 +98,12 @@ class PostController extends Controller
         $post->fill($validated);
 
         if ($request->hasFile('image')) {
-            $path = $request->file('image')->store('posts', 'public');
-            $post->image_url = '/storage/' . $path;
+            // Delete old image if exists
+            if ($post->getRawOriginal('image_url') && !filter_var($post->getRawOriginal('image_url'), FILTER_VALIDATE_URL)) {
+                \Illuminate\Support\Facades\Storage::disk('tenant')->delete($post->getRawOriginal('image_url'));
+            }
+            $path = $this->uploader->upload($request->file('image'), 'posts', 'tenant');
+            $post->image_url = $path;
         }
 
         $post->is_published = $request->has('is_published');

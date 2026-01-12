@@ -15,7 +15,7 @@
         
         <div class="mb-6">
             <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-            <input type="text" name="name" id="name" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" value="{{ old('name', $user->name) }}" required>
+            <input type="text" name="name" id="name" class="w-full border-2 border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" value="{{ old('name', $user->name) }}" required>
             @error('name')
                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
             @enderror
@@ -23,7 +23,7 @@
 
         <div class="mb-6">
             <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
-            <input type="email" name="email" id="email" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" value="{{ old('email', $user->email) }}" required>
+            <input type="email" name="email" id="email" class="w-full border-2 border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" value="{{ old('email', $user->email) }}" required>
              @error('email')
                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
             @enderror
@@ -31,7 +31,7 @@
 
         <div class="mb-6">
             <label for="role" class="block text-sm font-medium text-gray-700 mb-1">Role</label>
-            <select name="role" id="role" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" required>
+            <select name="role" id="role" class="w-full border-2 border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" required>
                 <option value="">Select a Role</option>
                 @foreach($roles as $roleName)
                     <option value="{{ $roleName }}" {{ old('role', $userRole) == $roleName ? 'selected' : '' }}>{{ $roleName }}</option>
@@ -49,14 +49,14 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                     <label for="password" class="block text-sm font-medium text-gray-700 mb-1">New Password</label>
-                    <input type="password" name="password" id="password" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                    <input type="password" name="password" id="password" class="w-full border-2 border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
                      @error('password')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
                 </div>
                 <div>
                     <label for="password_confirmation" class="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
-                    <input type="password" name="password_confirmation" id="password_confirmation" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                    <input type="password" name="password_confirmation" id="password_confirmation" class="w-full border-2 border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
                 </div>
             </div>
         </div>

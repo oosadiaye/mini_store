@@ -155,15 +155,46 @@ if (workbox) {
     // ---------------------------------------------------------
     // OFFLINE FALLBACK
     // ---------------------------------------------------------
-    workbox.routing.setCatchHandler(({ event }) => {
+    // Explicitly cache offline page during install
+    self.addEventListener('install', (event) => {
+        event.waitUntil(
+            caches.open(CACHE_NAMES.static).then((cache) => {
+                return cache.add('/offline.html').catch(err => {
+                    console.log('⚠️ Could not cache offline.html:', err);
+                });
+            })
+        );
+    });
+
+    // ---------------------------------------------------------
+    // OFFLINE FALLBACK
+    // ---------------------------------------------------------
+    // ---------------------------------------------------------
+    // OFFLINE FALLBACK
+    // ---------------------------------------------------------
+    workbox.routing.setCatchHandler(async ({ event }) => {
+        // Only provide fallback for navigation/documents
         if (event.request.destination === 'document') {
-            // For Admin, try to show cached version or offline page
-            if (event.request.url.includes('/admin')) {
-                return caches.match('/offline.html');
+            const cache = await caches.open(CACHE_NAMES.static);
+            const cachedResponse = await cache.match('/offline.html');
+            if (cachedResponse) {
+                return cachedResponse;
             }
-            // For Storefront, show offline page
-            return caches.match('/offline.html');
         }
+
+        // Return a generic error response for non-GET requests if offline
+        // (Though our interceptors should usually handle this before it gets here)
+        if (event.request.method !== 'GET') {
+            return new Response(JSON.stringify({
+                success: false,
+                offline: true,
+                message: 'You are offline. Your request has been queued.'
+            }), {
+                headers: { 'Content-Type': 'application/json' },
+                status: 503
+            });
+        }
+
         return Response.error();
     });
 

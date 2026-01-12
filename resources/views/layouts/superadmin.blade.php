@@ -31,6 +31,22 @@
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     
 
+    <!-- Custom Style for Inputs -->
+    <style type="text/tailwindcss">
+        @layer base {
+            input[type='text'], input[type='email'], input[type='password'], 
+            input[type='number'], input[type='date'], input[type='datetime-local'], 
+            input[type='month'], input[type='search'], input[type='tel'], 
+            input[type='time'], input[type='url'], input[type='week'], 
+            select, textarea {
+                @apply border-[2px] border-slate-300 rounded-lg shadow-sm transition-all duration-200;
+            }
+            
+            input:focus, select:focus, textarea:focus {
+                @apply ring-2 ring-blue-500 border-blue-500;
+            }
+        }
+    </style>
 </head>
 <body class="font-sans antialiased text-slate-900 bg-slate-50">
     <div class="min-h-screen flex" x-data="{ sidebarOpen: true }">
@@ -133,38 +149,24 @@
                     <span x-show="sidebarOpen">Support Tickets</span>
                 </a>
                 
-            </nav>    {{--
-                <a href="{{ route('superadmin.users.index') }}" 
-                   class="sidebar-nav-item {{ request()->routeIs('superadmin.users.*') ? 'sidebar-nav-item-active' : 'sidebar-nav-item-inactive' }}">
+                <a href="{{ route('superadmin.staff.index') }}" 
+                   class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('superadmin.staff.*') ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
                     <svg class="w-6 h-6 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
                     <span x-show="sidebarOpen">Administrators</span>
                 </a>
 
-                <a href="{{ route('superadmin.audit_logs.index') }}" 
-                   class="sidebar-nav-item {{ request()->routeIs('superadmin.audit_logs.*') ? 'sidebar-nav-item-active' : 'sidebar-nav-item-inactive' }}">
+                <a href="{{ route('superadmin.audit-logs.index') }}" 
+                   class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('superadmin.audit-logs.index') ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
                     <svg class="w-6 h-6 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                     <span x-show="sidebarOpen">Audit Logs</span>
                 </a>
-                --}}
-            </nav>
+
+                <a href="{{ route('superadmin.roles.index') }}" 
+                   class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('superadmin.roles.*') ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
+                    <svg class="w-6 h-6 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                    <span x-show="sidebarOpen">Roles</span>
+                </a>
             
-            <div class="px-4 mt-8 mb-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                Management
-            </div>
-
-            <a href="{{ route('superadmin.staff.index') }}" 
-               class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('superadmin.staff.*') ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
-                <svg class="w-6 h-6 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
-                <span x-show="sidebarOpen">Staff</span>
-            </a>
-
-            <a href="{{ route('superadmin.roles.index') }}" 
-               class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('superadmin.roles.*') ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
-                <svg class="w-6 h-6 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
-                <span x-show="sidebarOpen">Roles</span>
-            </a>
-
-            </nav>
             
             <!-- User Footer -->
             <div class="p-4 border-t border-slate-800 bg-slate-950">
@@ -231,5 +233,6 @@
             </main>
         </div>
     </div>
+    <x-idle-logout :logoutRoute="route('logout')" :timeout="900" />
 </body>
 </html>

@@ -45,7 +45,7 @@
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-blue-600">
                                         @if($transaction->proof_path)
-                                            <a href="{{ asset('storage/' . $transaction->proof_path) }}" target="_blank" class="hover:underline">View Receipt</a>
+                                            <a href="{{ route('global.media', ['path' => $transaction->proof_path]) }}" target="_blank" class="hover:underline">View Receipt</a>
                                         @else
                                             <span class="text-gray-400">None</span>
                                         @endif

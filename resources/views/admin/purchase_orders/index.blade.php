@@ -7,8 +7,8 @@
         <h3 class="text-lg font-bold text-gray-800">Purchase Orders</h3>
         <div class="flex items-center gap-2">
             <!-- Bulk Actions -->
-            <div x-data="{ open: false }" class="relative" @click.away="open = false">
-                <button @click="open = !open" type="button" class="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 flex items-center shadow-sm">
+            <div x-data="{ open: false }" class="relative" @click.away="open = false" v-pre>
+                <button @click="open = !open" type="button" class="bg-white border-2 border-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 flex items-center shadow-sm">
                     Bulk Actions <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                 </button>
                 <div x-show="open" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border border-gray-100" style="display: none;">
@@ -21,7 +21,7 @@
             </div>
 
             <form method="GET">
-                <select name="warehouse_id" onchange="this.form.submit()" class="text-sm border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 shadow-sm">
+                <select name="warehouse_id" onchange="this.form.submit()" class="text-sm border-2 border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 shadow-sm">
                     <option value="">All Warehouses</option>
                     @foreach($warehouses as $wh)
                         <option value="{{ $wh->id }}" {{ request('warehouse_id') == $wh->id ? 'selected' : '' }}>
@@ -65,17 +65,21 @@
                         </a>
                     </td>
                     <td class="px-6 py-3 text-gray-500">{{ $po->order_date->format('M d, Y') }}</td>
-                    <td class="px-6 py-3 text-gray-700">{{ $po->supplier->name }}</td>
-                    <td class="px-6 py-3 text-gray-500">{{ $po->warehouse->name }}</td>
+                    <td class="px-6 py-3 text-gray-700">{{ $po->supplier?->name ?? 'N/A' }}</td>
+                    <td class="px-6 py-3 text-gray-500">{{ $po->warehouse?->name ?? 'N/A' }}</td>
                     <td class="px-6 py-3 text-right font-mono text-gray-600">{{ $po->total_quantity ?? 0 }}</td>
-                    <td class="px-6 py-3 text-right font-bold text-gray-900">${{ number_format($po->total, 2) }}</td>
+                    <td class="px-6 py-3 text-right font-bold text-gray-900">{{ app('tenant')->data['currency_symbol'] ?? '₦' }}{{ number_format($po->total, 2) }}</td>
                     <td class="px-6 py-3 text-center">
                         @if($po->status === 'draft')
                             <span class="bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-xs font-semibold">Draft</span>
-                        @elseif($po->status === 'ordered')
-                            <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-semibold">Ordered</span>
-                        @elseif($po->status === 'received')
-                            <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-semibold">Received</span>
+                        @elseif($po->status === 'created_order')
+                            <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-semibold">Created Order</span>
+                        @elseif($po->status === 'received_order')
+                            @if($po->billed_status === 'billed')
+                                <span class="bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-xs font-semibold">Billed</span>
+                            @else
+                                <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-semibold">Received Order</span>
+                            @endif
                         @else
                             <span class="bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-xs font-semibold">{{ ucfirst($po->status) }}</span>
                         @endif

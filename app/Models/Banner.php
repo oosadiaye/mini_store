@@ -31,7 +31,15 @@ class Banner extends Model
 
     public function getImageUrlAttribute()
     {
-        return $this->image ? tenant_asset($this->image) : null;
+        if (!$this->image) {
+            return null;
+        }
+
+        if (filter_var($this->image, FILTER_VALIDATE_URL)) {
+            return $this->image;
+        }
+
+        return route('tenant.media', ['path' => $this->image]);
     }
 
     public function scopeActive($query)

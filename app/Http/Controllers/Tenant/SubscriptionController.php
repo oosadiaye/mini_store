@@ -6,9 +6,20 @@ use App\Http\Controllers\Controller;
 use App\Models\Plan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Services\SecureFileUploader;
 
 class SubscriptionController extends Controller
 {
+    /**
+     * @var SecureFileUploader
+     */
+    protected $uploader;
+
+    public function __construct(SecureFileUploader $uploader)
+    {
+        $this->uploader = $uploader;
+    }
+
     /**
      * Display a listing of available plans.
      */
@@ -109,7 +120,7 @@ class SubscriptionController extends Controller
         $proration = $subscriptionService->calculateProration($tenant, $plan);
 
         if ($request->hasFile('proof')) {
-            $path = $request->file('proof')->store('subscription-proofs', 'public');
+            $path = $this->uploader->upload($request->file('proof'), 'subscription-proofs', 'local', ['application/pdf', 'image/jpeg', 'image/png']);
             
             // Generate Reference
             $reference = 'MAN-' . $tenant->id . '-' . time();

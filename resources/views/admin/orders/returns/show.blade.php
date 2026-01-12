@@ -98,7 +98,7 @@
                     @method('PUT')
                     <div>
                         <label class="block text-xs uppercase text-gray-500 font-bold mb-1">Admin Notes</label>
-                        <textarea name="admin_notes" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm" placeholder="Internal notes for this return...">{{ $return->admin_notes }}</textarea>
+                        <textarea name="admin_notes" rows="3" class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm" placeholder="Internal notes for this return...">{{ $return->admin_notes }}</textarea>
                     </div>
                     
                     @if(!in_array($return->status, ['completed', 'rejected']))

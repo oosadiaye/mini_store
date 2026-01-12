@@ -8,9 +8,20 @@ use App\Models\Plan;
 use App\Models\SubscriptionPayment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use App\Services\SecureFileUploader;
 
 class BillingController extends Controller
 {
+    /**
+     * @var SecureFileUploader
+     */
+    protected $uploader;
+
+    public function __construct(SecureFileUploader $uploader)
+    {
+        $this->uploader = $uploader;
+    }
+
     public function index()
     {
         $tenant = app('tenant');
@@ -60,7 +71,7 @@ class BillingController extends Controller
         if ($paymentMethod === 'manual') {
              $path = null;
             if ($request->hasFile('proof')) {
-                $path = $request->file('proof')->store('payment-proofs', 'public');
+                $path = $this->uploader->upload($request->file('proof'), 'payment-proofs', 'local', ['application/pdf', 'image/jpeg', 'image/png']);
             }
             $payment->update(['payment_proof' => $path]);
 
@@ -147,3 +158,4 @@ class BillingController extends Controller
              return redirect()->route('admin.billing.index')->with('error', 'Payment verification error: ' . $e->getMessage());
         }
     }
+}

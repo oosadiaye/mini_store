@@ -35,20 +35,20 @@ return new class extends Migration
         });
 
         // Coupons/Discounts
-        Schema::create('coupons', function (Blueprint $table) {
-            $table->id();
-            $table->string('code')->unique();
-            $table->string('description')->nullable();
-            $table->enum('type', ['percentage', 'fixed']);
-            $table->decimal('value', 10, 2);
-            $table->decimal('minimum_purchase', 10, 2)->nullable();
-            $table->integer('usage_limit')->nullable();
-            $table->integer('usage_count')->default(0);
-            $table->date('start_date')->nullable();
-            $table->date('end_date')->nullable();
-            $table->boolean('is_active')->default(true);
-            $table->timestamps();
-        });
+        // Schema::create('coupons', function (Blueprint $table) {
+        //     $table->id();
+        //     $table->string('code')->unique();
+        //     $table->string('description')->nullable();
+        //     $table->enum('type', ['percentage', 'fixed']);
+        //     $table->decimal('value', 10, 2);
+        //     $table->decimal('minimum_purchase', 10, 2)->nullable();
+        //     $table->integer('usage_limit')->nullable();
+        //     $table->integer('usage_count')->default(0);
+        //     $table->date('start_date')->nullable();
+        //     $table->date('end_date')->nullable();
+        //     $table->boolean('is_active')->default(true);
+        //     $table->timestamps();
+        // });
 
         // Settings
         Schema::create('settings', function (Blueprint $table) {

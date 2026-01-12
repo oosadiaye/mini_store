@@ -86,8 +86,11 @@ class SupplierController extends Controller
             ->orderBy('journal_entries.entry_date', 'desc')
             ->orderBy('journal_entries.created_at', 'desc')
             ->select('journal_entry_lines.*')
+            ->select('journal_entry_lines.*')
             ->paginate(50);
+            
+        $invoices = $supplier->invoices()->latest()->get();
 
-        return view('admin.suppliers.ledger', compact('supplier', 'transactions'));
+        return view('admin.suppliers.ledger', compact('supplier', 'transactions', 'invoices'));
     }
 }

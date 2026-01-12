@@ -16,7 +16,7 @@ $storeName = $tenant->name ?? 'Store';
 @endphp
 
 @if($hasCustomLogo)
-    <img src="{{ route('tenant.media', ['path' => $settings['logo']]) }}" 
+    <img src="{{ '/storage/' . $settings['logo'] }}" 
          alt="{{ $storeName }}" 
          {{ $attributes->merge(['class' => 'object-contain']) }}
          style="height: {{ $dimension }}px; width: auto; max-width: {{ $dimension * 3 }}px;">

@@ -9,8 +9,7 @@
     <!-- Report Categories Grid -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         
-        {{-- Sales Report removed - route not implemented --}}
-        {{--
+        <!-- Sales Analytics -->
         <a href="{{ route('admin.reports.sales') }}" class="group">
             <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg p-6 text-white transform transition-all duration-200 hover:scale-105 hover:shadow-xl">
                 <div class="flex items-center justify-between mb-4">
@@ -24,10 +23,27 @@
                     </svg>
                 </div>
                 <h3 class="text-xl font-bold mb-2">Sales Analytics</h3>
-                <p class="text-blue-100 text-sm">Revenue trends, top products, and sales performance</p>
+                <p class="text-blue-100 text-sm">Revenue trends, top products, and filtered sales performance</p>
             </div>
         </a>
-        --}}
+
+        <!-- Inventory Movement -->
+        <a href="{{ route('admin.reports.movement') }}" class="group">
+            <div class="bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl shadow-lg p-6 text-white transform transition-all duration-200 hover:scale-105 hover:shadow-xl">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="p-3 bg-white bg-opacity-20 rounded-lg">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
+                        </svg>
+                    </div>
+                    <svg class="w-6 h-6 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </div>
+                <h3 class="text-xl font-bold mb-2">Stock Movements</h3>
+                <p class="text-indigo-100 text-sm">Real-time tracking of every inventory change</p>
+            </div>
+        </a>
 
         <!-- Inventory Report -->
         <a href="{{ route('admin.reports.inventory') }}" class="group">
@@ -42,8 +58,8 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                     </svg>
                 </div>
-                <h3 class="text-xl font-bold mb-2">Inventory Reports</h3>
-                <p class="text-green-100 text-sm">Stock levels, valuations, and movement tracking</p>
+                <h3 class="text-xl font-bold mb-2">Inventory Levels</h3>
+                <p class="text-green-100 text-sm">Current stock levels and valuation by warehouse</p>
             </div>
         </a>
 

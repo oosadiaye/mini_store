@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Income extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Traits\BelongsToTenant;
 
     protected $guarded = ['id'];
     protected $casts = ['transaction_date' => 'date'];

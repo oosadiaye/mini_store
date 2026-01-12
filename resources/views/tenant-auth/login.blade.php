@@ -11,6 +11,17 @@
     <div class="max-w-md w-full mx-auto px-4">
         <div class="bg-white rounded-lg shadow-lg p-8">
             <div class="text-center mb-8">
+                @php
+                    $logo = tenant()->data['logo'] ?? null;
+                @endphp
+                @if($logo)
+                    <img src="{{ route('tenant.media', ['path' => $logo, 'tenant' => tenant()->slug]) }}" alt="{{ tenant('name') }}" class="h-16 mx-auto mb-4 object-contain">
+                @else
+                    <!-- Fallback Icon/Padlock if generic is desired, or just name -->
+                    <div class="h-12 w-12 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4 text-indigo-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                    </div>
+                @endif
                 <h1 class="text-2xl font-bold text-gray-900">{{ tenant('name') }}</h1>
                 <p class="text-gray-600 mt-2">Admin Panel Login</p>
             </div>
@@ -31,14 +42,14 @@
                 <div class="mb-4">
                     <label for="email" class="block text-sm font-medium text-gray-700 mb-2">Email</label>
                     <input type="email" id="email" name="email" value="{{ old('email') }}" required autofocus
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                        class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
                 </div>
 
                 <div class="mb-6" x-data="{ show: false }">
                     <label for="password" class="block text-sm font-medium text-gray-700 mb-2">Password</label>
                     <div class="relative">
                         <input :type="show ? 'text' : 'password'" id="password" name="password" required
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent pr-10">
+                            class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent pr-10">
                         <button type="button" @click="show = !show" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-gray-700 focus:outline-none">
                             <svg x-show="!show" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -53,7 +64,7 @@
 
                 <div class="mb-6">
                     <label class="flex items-center">
-                        <input type="checkbox" name="remember" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                        <input type="checkbox" name="remember" class="rounded border-2 border-gray-300 text-indigo-600 focus:ring-indigo-500">
                         <span class="ml-2 text-sm text-gray-600">Remember me</span>
                     </label>
                 </div>
@@ -63,8 +74,9 @@
                 </button>
             </form>
 
-            <div class="mt-6 text-center">
-                <a href="/" class="text-sm text-indigo-600 hover:text-indigo-800">← Back to Storefront</a>
+            <div class="mt-6 flex justify-between items-center text-sm">
+                <a href="/" class="text-indigo-600 hover:text-indigo-800">← Back to Storefront</a>
+                <a href="mailto:support@{{ request()->getHost() }}?subject=Login%20Support%20Request%20for%20{{ tenant('name') }}" class="text-gray-500 hover:text-gray-700">Can't Login? Submit Ticket</a>
             </div>
         </div>
     </div>

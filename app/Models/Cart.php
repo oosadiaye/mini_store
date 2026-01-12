@@ -55,11 +55,29 @@ class Cart extends Model
     }
 
     /**
+     * Get shipping cost based on tenant settings
+     */
+    public function getShippingCostAttribute(): float
+    {
+        $tenant = app('tenant');
+        $settings = $tenant->data ?? [];
+        $cost = (float) ($settings['shipping_cost'] ?? 0);
+        $threshold = (float) ($settings['free_shipping_threshold'] ?? 0);
+
+        // If threshold is set and subtotal meets it, free shipping
+        if ($threshold > 0 && $this->subtotal >= $threshold) {
+            return 0;
+        }
+
+        return $cost;
+    }
+
+    /**
      * Get final total
      */
     public function getTotalAttribute(): float
     {
-        return max(0, $this->subtotal - $this->discount_amount);
+        return max(0, $this->subtotal - $this->discount_amount + $this->shipping_cost);
     }
 
     /**

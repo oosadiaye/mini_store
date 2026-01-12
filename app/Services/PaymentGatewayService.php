@@ -13,10 +13,14 @@ class PaymentGatewayService
         $settings = app('tenant')->data;
         $amount = $order->total;
         $email = $order->customer->email;
-        $callbackUrl = route('storefront.checkout.callback');
+        $callbackUrl = route('storefront.checkout.callback', ['provider' => $provider]);
         $reference = $order->order_number . '_' . time(); // Unique ref
 
         switch ($provider) {
+            case 'paystack':
+                return $this->initializePaystack($order, $amount, $email, $callbackUrl, $reference, $settings);
+            case 'flutterwave':
+                return $this->initializeFlutterwave($order, $amount, $email, $callbackUrl, $reference, $settings);
             case 'opay':
                 return $this->initializeOpay($order, $amount, $email, $callbackUrl, $reference, $settings);
             case 'moniepoint':
@@ -34,7 +38,7 @@ class PaymentGatewayService
             case 'paystack':
                 return $this->verifyPaystack($reference, $settings);
             case 'flutterwave':
-                return $this->verifyFlutterwave($reference, $settings);
+                return $this->verifyFlutterwave($reference, $settings); // Note: Flutterwave usually verify by ID, but we handle ref inside
             case 'opay':
                 return $this->verifyOpay($reference, $settings);
             case 'moniepoint':

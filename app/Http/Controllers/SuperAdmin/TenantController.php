@@ -6,6 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Models\Tenant;
 use App\Models\Plan;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
+use Illuminate\Validation\Rules;
 
 class TenantController extends Controller
 {
@@ -14,6 +18,101 @@ class TenantController extends Controller
         $tenants = Tenant::with(['domains', 'currentPlan'])->latest()->get();
         $plans = Plan::where('is_active', true)->get();
         return view('superadmin.tenants.index', compact('tenants', 'plans'));
+    }
+
+    public function create()
+    {
+        $plans = Plan::where('is_active', true)->get();
+        return view('superadmin.tenants.create', compact('plans'));
+    }
+
+    public function store(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'subdomain' => 'required|string|max:255|alpha_dash|unique:tenants,slug',
+            'plan_id' => 'required|exists:plans,id',
+            'admin_name' => 'required|string|max:255',
+            'admin_email' => 'required|email|unique:users,email',
+            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            $tenantId = $request->subdomain;
+            $plan = Plan::find($request->plan_id);
+
+            // 1. Create Tenant
+            $tenant = Tenant::create([
+                'id' => $tenantId,
+                'slug' => $tenantId,
+                'name' => $request->name,
+                'email' => $request->admin_email,
+                'plan_id' => $plan->id,
+                'is_active' => true,
+                'data' => [
+                    'currency_code' => 'NGN',
+                    'currency_symbol' => '₦',
+                    'pwa_name' => $request->name,
+                    'pwa_short_name' => Str::limit($request->name, 12, ''),
+                    'pwa_theme_color' => '#4f46e5',
+                    'pwa_background_color' => '#ffffff',
+                ],
+            ]);
+
+            // 2. Create Default Warehouse
+            \App\Models\Warehouse::create([
+                'tenant_id' => $tenant->id,
+                'name' => $tenant->name . ' - Main',
+                'code' => 'MAIN',
+                'is_active' => true,
+            ]);
+
+            // 3. Create Default Category
+            \App\Models\Category::create([
+                'tenant_id' => $tenant->id,
+                'name' => 'General',
+                'slug' => 'general',
+                'is_active' => true,
+                'show_on_storefront' => true,
+            ]);
+
+            // 4. Create Default Supplier
+            \App\Models\Supplier::create([
+                'tenant_id' => $tenant->id,
+                'name' => 'General Supplier',
+                'company_name' => 'General Supplier',
+                'email' => $request->admin_email,
+                'phone' => 'N/A',
+                'is_active' => true,
+            ]);
+
+            // 5. Seed Chart of Accounts
+            app()->instance('tenant', $tenant);
+            (new \Database\Seeders\Tenant\ChartOfAccountsSeeder())->run();
+
+            // 6. Create Admin User
+            $user = \App\Models\User::create([
+                'name' => $request->admin_name,
+                'email' => $request->admin_email,
+                'password' => Hash::make($request->password),
+                'role' => 'admin',
+                'tenant_id' => $tenant->id,
+                'email_verified_at' => now(),
+            ]);
+
+            DB::commit();
+
+            \App\Helpers\AuditHelper::log('create_tenant', "Created tenant: {$tenant->id}", ['tenant_id' => $tenant->id]);
+
+            return redirect()->route('superadmin.tenants.index')
+                ->with('success', "Tenant '{$tenant->name}' created successfully with Admin User '{$user->name}'.");
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Failed to create tenant: ' . $e->getMessage())->withInput();
+        }
     }
 
     public function show(Tenant $tenant)
@@ -80,6 +179,38 @@ class TenantController extends Controller
         \App\Helpers\AuditHelper::log('impersonate_user', "Impersonated user: {$user->id}", ['tenant_id' => $tenant->id]);
 
         return redirect($tenantUrl)->with('success', "Impersonating {$user->name}");
+    }
+
+    public function resetPassword(Request $request, Tenant $tenant)
+    {
+        $request->validate([
+            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+        ]);
+        
+        // Find the admin user for this tenant
+        $user = \App\Models\User::withoutGlobalScope(\App\Scopes\TenantScope::class)
+            ->where('tenant_id', $tenant->id)
+            ->where('role', 'admin') 
+            ->first();
+            
+        if (!$user) {
+             // Fallback to first user
+            $user = \App\Models\User::withoutGlobalScope(\App\Scopes\TenantScope::class)
+                ->where('tenant_id', $tenant->id)
+                ->first();
+        }
+
+        if (!$user) {
+             return back()->with('error', 'No users found for this tenant.');
+        }
+
+        $user->update([
+            'password' => Hash::make($request->password)
+        ]);
+        
+        \App\Helpers\AuditHelper::log('reset_tenant_password', "Reset password for user: {$user->email} (Tenant: {$tenant->id})", ['tenant_id' => $tenant->id]);
+
+        return back()->with('success', "Password reset successfully for user {$user->email}.");
     }
 
     public function stopImpersonation()

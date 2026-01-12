@@ -22,7 +22,7 @@
             <div>
                 <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Plan Name</label>
                 <input type="text" name="name" id="name" value="{{ old('name', $plan->name) }}" required 
-                       class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                       class="w-full rounded-md border-2 border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                 @error('name') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
             </div>
 
@@ -31,7 +31,7 @@
                 <div>
                     <label for="price" class="block text-sm font-medium text-gray-700 mb-1">Price (₦)</label>
                     <input type="number" step="0.01" name="price" id="price" value="{{ old('price', $plan->price) }}" required 
-                           class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                           class="w-full rounded-md border-2 border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                     @error('price') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
                 </div>
 
@@ -39,7 +39,7 @@
                 <div>
                     <label for="duration_days" class="block text-sm font-medium text-gray-700 mb-1">Duration (Days)</label>
                     <input type="number" name="duration_days" id="duration_days" value="{{ old('duration_days', $plan->duration_days) }}" required 
-                           class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                           class="w-full rounded-md border-2 border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                     @error('duration_days') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
                 </div>
 
@@ -47,7 +47,7 @@
                 <div>
                     <label for="trial_days" class="block text-sm font-medium text-gray-700 mb-1">Trial Period (Days)</label>
                     <input type="number" name="trial_days" id="trial_days" value="{{ old('trial_days', $plan->trial_days ?? 0) }}" 
-                           class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                           class="w-full rounded-md border-2 border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                            placeholder="0">
                     <p class="text-xs text-gray-500 mt-1">0 for no trial.</p>
                     @error('trial_days') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
@@ -157,6 +157,10 @@
                                 'label' => 'Custom Domain',
                                 'limit' => null
                             ],
+                            'woocommerce' => [
+                                'label' => 'WooCommerce Integration',
+                                'limit' => null
+                            ],
                         ];
                         $currentFeatures = $plan->features ?? [];
                         $currentCaps = $plan->caps ?? [];
@@ -168,7 +172,7 @@
                             <div class="flex items-start">
                                 <div class="flex items-center h-5">
                                     <input id="feature_{{ $key }}" name="features[]" value="{{ $key }}" type="checkbox" 
-                                           class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded"
+                                           class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-2 border-gray-300 rounded"
                                            x-model="enabled">
                                 </div>
                                 <div class="ml-3 flex-1">
@@ -179,7 +183,7 @@
                                             <label for="{{ $config['limit'] }}" class="block text-xs font-medium text-gray-500 mb-1">{{ $config['limit_label'] }}</label>
                                             <input type="number" name="caps[{{ $config['limit'] }}]" id="{{ $config['limit'] }}" 
                                                    value="{{ old("caps.{$config['limit']}", $currentCaps[$config['limit']] ?? '') }}" 
-                                                   class="w-full max-w-xs rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
+                                                   class="w-full max-w-xs rounded-md border-2 border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
                                                    placeholder="Unlimited">
                                             <p class="text-xs text-gray-400 mt-1">Leave empty for unlimited.</p>
                                         </div>
@@ -196,7 +200,7 @@
             <div class="flex items-start">
                 <div class="flex items-center h-5">
                     <input id="is_active" name="is_active" type="checkbox" value="1" 
-                           class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded"
+                           class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-2 border-gray-300 rounded"
                            {{ old('is_active', $plan->is_active) ? 'checked' : '' }}>
                 </div>
                 <div class="ml-3 text-sm">
