@@ -32,6 +32,9 @@ class IdentifyTenantFromCustomDomain
                 app()->instance('tenant', $tenant);
                 config(['app.tenant_id' => $tenant->id]);
                 view()->share('tenant', $tenant);
+
+                // Override Mail Config
+                \App\Providers\TenantMailServiceProvider::overrideForTenant($tenant);
             }
         }
         

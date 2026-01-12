@@ -48,6 +48,9 @@ class IdentifyTenantFromPath
         // Share tenant with all views
         view()->share('tenant', $tenant);
 
+        // Override Mail Config
+        \App\Providers\TenantMailServiceProvider::overrideForTenant($tenant);
+
         // Set default tenant parameter for all routes
         \Illuminate\Support\Facades\URL::defaults(['tenant' => $tenant->slug]);
         

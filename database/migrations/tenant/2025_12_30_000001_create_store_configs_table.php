@@ -16,9 +16,9 @@ return new class extends Migration
             $table->string('store_name')->nullable();
             $table->string('logo_path')->nullable();
             $table->string('brand_color')->default('#3b82f6'); // Default blue
-            $table->enum('industry', ['fashion', 'electronics', 'grocery'])->nullable();
+            $table->string('industry')->nullable(); // Changed to string for flexibility
             $table->json('selected_categories')->nullable();
-            $table->enum('layout_preference', ['minimal', 'showcase', 'catalog'])->default('minimal');
+            $table->string('layout_preference')->default('minimal'); // Changed from enum to string to support 'grid'
             $table->boolean('is_completed')->default(false);
             $table->timestamps();
         });

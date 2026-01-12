@@ -14,6 +14,8 @@
     <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700&display=swap" rel="stylesheet" />
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Alpine.js -->
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <style>
         body { font-family: 'Inter', sans-serif; }
     </style>
@@ -57,31 +59,49 @@
             <form class="space-y-4 sm:space-y-6" action="{{ route('tenant.store') }}" method="POST">
                 @csrf
                 
-                <div>
-                    <label for="store_name" class="block text-xs sm:text-sm font-medium text-gray-200">Business Name</label>
-                    <div class="mt-1">
-                        <input id="store_name" name="store_name" type="text" required value="{{ old('store_name') }}"
-                            class="appearance-none block w-full px-3 py-2 bg-white border-2 border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm text-gray-900 transition-colors"
-                            placeholder="e.g. Acme Corp">
-                        @error('store_name')
+                <div x-data="{ 
+                    storeName: '{{ old('store_name') }}', 
+                    subdomain: '{{ old('subdomain') }}',
+                    slugify(text) {
+                        return text.toString().toLowerCase()
+                            .replace(/\s+/g, '-')           // Replace spaces with -
+                            .replace(/[^\w\-]+/g, '')       // Remove all non-word chars
+                            .replace(/\-\-+/g, '-')         // Replace multiple - with single -
+                            .replace(/^-+/, '')             // Trim - from start
+                            .replace(/-+$/, '');            // Trim - from end
+                    },
+                    updateSubdomain() {
+                        if (!this.subdomain || this.subdomain === this.slugify(this.storeName.slice(0, -1))) {
+                             this.subdomain = this.slugify(this.storeName);
+                        }
+                    }
+                }">
+                    <div>
+                        <label for="store_name" class="block text-xs sm:text-sm font-medium text-gray-200">Business Name</label>
+                        <div class="mt-1">
+                            <input id="store_name" name="store_name" type="text" required x-model="storeName" @input="subdomain = slugify(storeName)"
+                                class="appearance-none block w-full px-3 py-2 bg-white border-2 border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm text-gray-900 transition-colors"
+                                placeholder="e.g. Acme Corp">
+                            @error('store_name')
+                                <p class="mt-1 text-xs text-red-300">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    </div>
+    
+                    <div class="mt-4 sm:mt-6">
+                        <label for="subdomain" class="block text-xs sm:text-sm font-medium text-gray-200">Business Subdomain</label>
+                        <div class="mt-1 flex rounded-lg shadow-sm">
+                            <input type="text" name="subdomain" id="subdomain" required x-model="subdomain"
+                                class="flex-1 min-w-0 block w-full px-3 py-2 bg-white border-2 border-gray-300 rounded-l-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm text-gray-900 border-r-0 placeholder-gray-400 transition-colors" 
+                                placeholder="my-business">
+                            <span class="inline-flex items-center px-3 rounded-r-lg border-2 border-l-0 border-gray-300 bg-gray-100 text-gray-500 text-xs sm:text-sm">
+                                .{{ config('app.url_base', 'mini.tryquot.com') }}
+                            </span>
+                        </div>
+                        @error('subdomain')
                             <p class="mt-1 text-xs text-red-300">{{ $message }}</p>
                         @enderror
                     </div>
-                </div>
-
-                <div>
-                    <label for="subdomain" class="block text-xs sm:text-sm font-medium text-gray-200">Business Subdomain</label>
-                    <div class="mt-1 flex rounded-lg shadow-sm">
-                        <input type="text" name="subdomain" id="subdomain" required value="{{ old('subdomain') }}"
-                            class="flex-1 min-w-0 block w-full px-3 py-2 bg-white border-2 border-gray-300 rounded-l-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm text-gray-900 border-r-0 placeholder-gray-400 transition-colors" 
-                            placeholder="my-business">
-                        <span class="inline-flex items-center px-3 rounded-r-lg border-2 border-l-0 border-gray-300 bg-gray-100 text-gray-500 text-xs sm:text-sm">
-                            .{{ config('app.url_base', 'mini.tryquot.com') }}
-                        </span>
-                    </div>
-                    @error('subdomain')
-                        <p class="mt-1 text-xs text-red-300">{{ $message }}</p>
-                    @enderror
                 </div>
 
                 <div class="relative py-1 sm:py-2">

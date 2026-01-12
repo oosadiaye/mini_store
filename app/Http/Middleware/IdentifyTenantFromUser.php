@@ -28,6 +28,9 @@ class IdentifyTenantFromUser
             if ($tenant) {
                 app()->instance('tenant', $tenant);
                 config(['app.tenant_id' => $tenant->id]);
+                
+                // Override Mail Config
+                \App\Providers\TenantMailServiceProvider::overrideForTenant($tenant);
             }
         }
 
