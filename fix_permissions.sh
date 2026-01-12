@@ -13,11 +13,11 @@ mkdir -p storage/framework/cache
 mkdir -p bootstrap/cache
 
 # Fix permissions
-# Attempting to set standard writable permissions (775)
-# If this fails, you may need to use 'sudo' or check your user/share setup.
+# We use 777 here because on some setups the web server user is different
+# from the command line user and not in the same group.
 echo "Setting permissions..."
-chmod -R 775 storage
-chmod -R 775 bootstrap/cache
+chmod -R 777 storage
+chmod -R 777 bootstrap/cache
 
 # If the web server user is different, you might need:
 # chown -R $USER:www-data storage bootstrap/cache
