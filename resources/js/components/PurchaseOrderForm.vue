@@ -14,10 +14,15 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8 bg-white p-8 rounded-3xl border border-gray-100 shadow-sm">
             <div class="space-y-2">
                 <label class="block text-sm font-bold text-gray-500 uppercase tracking-widest">Supplier</label>
-                <select v-model="form.supplier_id" required class="w-full rounded-2xl border-2 border-gray-100 bg-gray-50/30 px-4 py-3 text-base font-bold text-gray-800 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 outline-none">
-                    <option value="">Select Supplier</option>
-                    <option v-for="supplier in suppliers" :key="supplier.id" :value="supplier.id" v-text="supplier.name"></option>
-                </select>
+                <div class="flex gap-2">
+                    <select v-model="form.supplier_id" required class="flex-1 rounded-2xl border-2 border-gray-100 bg-gray-50/30 px-4 py-3 text-base font-bold text-gray-800 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 outline-none">
+                        <option value="">Select Supplier</option>
+                        <option v-for="supplier in localSuppliers" :key="supplier.id" :value="supplier.id" v-text="supplier.name"></option>
+                    </select>
+                    <button type="button" @click.stop="openSupplierModal" class="relative z-10 bg-gray-100 px-4 rounded-2xl border-2 border-gray-100 hover:bg-indigo-50 hover:border-indigo-100 transition-colors text-gray-600 cursor-pointer flex-shrink-0">
+                        <svg class="w-6 h-6 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    </button>
+                </div>
             </div>
 
             <div class="space-y-2">
@@ -127,11 +132,38 @@
             </button>
         </div>
     </form>
+
+    <!-- Supplier Modal -->
+    <CommonModal :is-open="showSupplierModal" title="Quick Add Supplier" @close="showSupplierModal = false">
+        <div class="bg-white px-8 pt-8 pb-8 sm:p-10 sm:pb-8">
+            <h3 class="text-2xl font-black text-gray-900 mb-6">Quick Add Supplier</h3>
+            <div class="space-y-6">
+                <div>
+                    <label class="block text-sm font-bold text-gray-500 uppercase tracking-widest mb-1">Supplier Name</label>
+                    <input type="text" v-model="newSupplier.name" class="w-full rounded-xl border-2 border-gray-100 px-4 py-2 outline-none focus:border-indigo-500">
+                    <p v-if="supplierError" class="text-red-500 text-xs mt-1">{{ supplierError }}</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-500 uppercase tracking-widest mb-1">Email (Optional)</label>
+                    <input type="email" v-model="newSupplier.email" class="w-full rounded-xl border-2 border-gray-100 px-4 py-2 outline-none focus:border-indigo-500">
+                </div>
+                 <div>
+                    <label class="block text-sm font-bold text-gray-500 uppercase tracking-widest mb-1">Phone (Optional)</label>
+                    <input type="tel" v-model="newSupplier.phone" class="w-full rounded-xl border-2 border-gray-100 px-4 py-2 outline-none focus:border-indigo-500">
+                </div>
+            </div>
+        </div>
+        <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+             <button @click="createSupplier" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm">Create Supplier</button>
+             <button @click="showSupplierModal = false" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">Cancel</button>
+        </div>
+    </CommonModal>
 </div>
 </template>
 
 <script>
 import axios from 'axios';
+import CommonModal from './common/CommonModal.vue';
 
 export default {
     name: 'PurchaseOrderForm',
@@ -144,11 +176,19 @@ export default {
         submitUrl: { type: String, required: true },
         redirectUrl: { type: String, required: true },
         method: { type: String, default: 'POST' },
-        currency: { type: String, default: '₦' }
+        currency: { type: String, default: '₦' },
+        supplierStoreUrl: { type: String, default: '' },
+    },
+    components: {
+        CommonModal
     },
     data() {
         return {
             isSubmitting: false,
+            localSuppliers: [...this.suppliers],
+            showSupplierModal: false,
+            newSupplier: { name: '', email: '', phone: '' },
+            supplierError: '',
             error: null,
             form: {
                 supplier_id: '',
@@ -163,6 +203,11 @@ export default {
                 ]
             }
         };
+    },
+    watch: {
+        suppliers(newVal) {
+            this.localSuppliers = [...newVal];
+        }
     },
     mounted() {
         if (this.initialData) {
@@ -179,6 +224,37 @@ export default {
         }
     },
     methods: {
+        openSupplierModal() {
+            this.showSupplierModal = true;
+        },
+        async createSupplier() {
+            if (!this.newSupplier.name) {
+                this.supplierError = 'Name is required';
+                return;
+            }
+            this.supplierError = '';
+            
+            try {
+                // Assuming CSRF token is in meta tag
+                const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                const res = await axios.post(this.supplierStoreUrl, this.newSupplier, {
+                    headers: { 'X-CSRF-TOKEN': token }
+                });
+                
+                if (res.data.success || res.status < 300) {
+                     // Check response structure, assume it returns the supplier or we fetch list?
+                     // Assuming standard Laravel resource store returns the object on 201
+                     // Or returns JSON
+                     const createdSupplier = res.data.supplier || res.data;
+                     this.localSuppliers.push(createdSupplier);
+                     this.form.supplier_id = createdSupplier.id;
+                     this.showSupplierModal = false;
+                     this.newSupplier = { name: '', email: '', phone: '' };
+                }
+            } catch (err) {
+                 this.supplierError = err.response?.data?.message || 'Failed to create supplier';
+            }
+        },
         handleProductChange(index) {
             const item = this.form.items[index];
             const product = this.products.find(p => p.id === item.product_id);

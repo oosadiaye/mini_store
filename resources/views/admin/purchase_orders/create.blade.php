@@ -19,6 +19,7 @@
                 :tax-codes="{{ $taxCodes->map->only(['id', 'name', 'rate']) }}"
                 currency="{{ app('tenant')->data['currency_symbol'] ?? 'USD' }}"
                 submit-url="{{ route('admin.purchase-orders.store') }}"
+                supplier-store-url="{{ route('admin.suppliers.store') }}"
                 redirect-url="{{ route('admin.purchase-orders.index') }}"
             ></purchase-order-form>
         </div>

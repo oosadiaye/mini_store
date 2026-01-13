@@ -339,11 +339,33 @@ class Product extends Model
         }
 
         // 2. Update Warehouse Stock
-        $warehouseStock = \App\Models\WarehouseStock::firstOrCreate(
-            ['warehouse_id' => $warehouseId, 'product_id' => $this->id],
-            ['quantity' => 0]
-        );
-        $warehouseStock->increment('quantity', $quantity);
+        // 2. Update Warehouse Stock
+        $warehouseStock = \App\Models\WarehouseStock::where('warehouse_id', $warehouseId)
+            ->where('product_id', $this->id)
+            ->first();
+
+        if (!$warehouseStock) {
+            try {
+                $warehouseStock = \App\Models\WarehouseStock::create([
+                    'warehouse_id' => $warehouseId,
+                    'product_id' => $this->id,
+                    'quantity' => 0
+                ]);
+            } catch (\Illuminate\Database\QueryException $e) {
+                // Handle concurrent creation (Race Condition) - Integrity constraint violation
+                if ($e->getCode() == 23000) { 
+                    $warehouseStock = \App\Models\WarehouseStock::where('warehouse_id', $warehouseId)
+                        ->where('product_id', $this->id)
+                        ->first();
+                } else {
+                    throw $e;
+                }
+            }
+        }
+
+        if ($warehouseStock) {
+            $warehouseStock->increment('quantity', $quantity);
+        }
         
         // 3. Log History
         return \App\Models\StockMovement::create([

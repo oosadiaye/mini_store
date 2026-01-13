@@ -93,15 +93,27 @@
             <!-- Cost Price -->
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Cost Price</label>
-                <input type="number" name="cost_price" v-model="form.cost_price" step="0.01" min="0"
+                <input type="number" name="cost_price" v-model="form.cost_price" step="0.01" min="0" @input="calculatePrice"
+                    class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+            </div>
+
+            <!-- Profit Margin -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Profit Margin (%)</label>
+                <input type="number" v-model="profit_margin" step="0.01" @input="calculatePrice" placeholder="Enter % to calc price"
                     class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
             </div>
 
             <!-- Barcode -->
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Barcode</label>
-                <input type="text" name="barcode" v-model="form.barcode"
-                    class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                <div class="flex gap-2">
+                    <input type="text" name="barcode" v-model="form.barcode"
+                        class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                    <button type="button" @click="startBarcodeScanner" class="px-3 py-2 bg-gray-100 hover:bg-gray-200 border-2 border-gray-300 rounded-lg text-gray-600 whitespace-nowrap">
+                        <i class="fas fa-barcode mr-1"></i> Scan
+                    </button>
+                </div>
             </div>
 
              <!-- Description Fields -->
@@ -271,6 +283,29 @@
         </div>
     </CommonModal>
 
+    <!-- Barcode Scanner Modal -->
+    <CommonModal :is-open="showScannerModal" title="Scan Barcode" @close="stopBarcodeScanner" max-width="max-w-2xl">
+        <div class="relative bg-black rounded-lg overflow-hidden aspect-video mb-4">
+             <video ref="scannerVideoElement" class="w-full h-full object-contain"></video>
+             <div class="absolute inset-0 border-2 border-red-500 opacity-50 pointer-events-none" style="top: 20%; bottom: 20%; left: 10%; right: 10%;"></div>
+        </div>
+        
+        <div class="mb-4" v-if="videoDevices.length > 1">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Select Camera</label>
+            <select v-model="selectedDeviceId" @change="startBarcodeScanner" class="w-full px-3 py-2 border-2 border-gray-300 rounded-lg">
+                <option v-for="device in videoDevices" :key="device.deviceId" :value="device.deviceId">
+                    {{ device.label || 'Camera ' + (videoDevices.indexOf(device) + 1) }}
+                </option>
+            </select>
+        </div>
+
+        <div class="flex justify-center">
+            <button @click="stopBarcodeScanner" class="px-6 py-2 bg-gray-600 text-white rounded-full">
+                Cancel
+            </button>
+        </div>
+    </CommonModal>
+
     <!-- Camera Modal -->
     <CommonModal :show="showCameraModal" title="Capture Image" @close="closeCamera" max-width="max-w-2xl">
         <div class="relative bg-black rounded-lg overflow-hidden aspect-video mb-4">
@@ -296,8 +331,9 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, computed } from 'vue';
+import { ref, reactive, onMounted, computed, nextTick } from 'vue';
 import CommonModal from '../common/CommonModal.vue'; 
+import { BrowserMultiFormatReader, NotFoundException } from '@zxing/library'; 
 
 const props = defineProps({
     isEdit: { type: Boolean, default: false },
@@ -356,6 +392,11 @@ const form = reactive({
     is_featured: props.oldInput.is_featured !== undefined ? !!props.oldInput.is_featured : !!props.initialProduct.is_featured,
 });
 
+// Initialize profit margin if cost and price exist
+if (form.cost_price && form.price && parseFloat(form.cost_price) > 0) {
+    profit_margin.value = (((parseFloat(form.price) - parseFloat(form.cost_price)) / parseFloat(form.cost_price)) * 100).toFixed(2);
+}
+
 const calculatedTotalStock = computed(() => {
     return Object.values(form.warehouse_stock).reduce((sum, qty) => sum + (parseInt(qty) || 0), 0);
 });
@@ -367,6 +408,72 @@ const categoryError = ref('');
 const showBrandModal = ref(false);
 const newBrandName = ref('');
 const brandError = ref('');
+
+const profit_margin = ref('');
+
+const calculatePrice = () => {
+    if (form.cost_price && profit_margin.value) {
+        const cost = parseFloat(form.cost_price);
+        const margin = parseFloat(profit_margin.value);
+        if (!isNaN(cost) && !isNaN(margin)) {
+            form.price = (cost + (cost * (margin / 100))).toFixed(2);
+        }
+    }
+};
+
+// Barcode Scanner Logic
+const showScannerModal = ref(false);
+const scannerVideoElement = ref(null);
+const videoDevices = ref([]);
+const selectedDeviceId = ref(null);
+let codeReader = null;
+
+const startBarcodeScanner = async () => {
+    showScannerModal.value = true;
+    await nextTick();
+    
+    // Initialize Reader
+    if (!codeReader) {
+        codeReader = new BrowserMultiFormatReader();
+    }
+    
+    try {
+        // Start decoding immediately with currently selected (or default) device
+        // This ensures camera permission is requested immediately by the browser
+        await codeReader.decodeFromVideoDevice(selectedDeviceId.value, scannerVideoElement.value, (result, err) => {
+            if (result) {
+                form.barcode = result.text;
+                stopBarcodeScanner();
+            }
+            if (err && !(err instanceof NotFoundException)) {
+                console.error(err);
+            }
+        });
+
+        // Then populate device list for swtiching
+        const devices = await codeReader.listVideoInputDevices();
+        videoDevices.value = devices;
+        
+        // If we don't have a selected device yet, try to infer the active one or default to the first
+        if (!selectedDeviceId.value && devices.length > 0) {
+            // Prefer back camera if we can find it
+            const backCamera = devices.find(d => d.label.toLowerCase().includes('back') || d.label.toLowerCase().includes('environment'));
+            selectedDeviceId.value = backCamera ? backCamera.deviceId : devices[0].deviceId;
+        }
+
+    } catch (err) {
+        console.error(err);
+        alert("Error starting scanner: " + err.message);
+        showScannerModal.value = false;
+    }
+};
+
+const stopBarcodeScanner = () => {
+    if (codeReader) {
+        codeReader.reset();
+    }
+    showScannerModal.value = false;
+};
 
 const showCameraModal = ref(false);
 const videoElement = ref(null);

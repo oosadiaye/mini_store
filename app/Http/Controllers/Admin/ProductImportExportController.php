@@ -15,6 +15,9 @@ class ProductImportExportController extends Controller
     /**
      * Export Products to CSV
      */
+    /**
+     * Export Products to CSV
+     */
     public function export()
     {
         $fileName = 'products_export_' . date('Y-m-d_H-i') . '.csv';
@@ -28,24 +31,37 @@ class ProductImportExportController extends Controller
             "Expires"             => "0"
         );
 
-        $columns = array('ID', 'Name', 'SKU', 'Category', 'Brand', 'Price', 'Stock', 'Description', 'Active');
+        $columns = array(
+            'Name', 'SKU', 'Category', 'Brand', 'Price', 
+            'Cost Price', 'Compare At Price', 'Stock Quantity', 'Low Stock Threshold', 
+            'Description', 'Short Description', 'Barcode', 
+            'Track Inventory (Yes/No)', 'Active (Yes/No)', 'Featured (Yes/No)', 'Expiry Date (YYYY-MM-DD)'
+        );
 
         $callback = function() use($products, $columns) {
             $file = fopen('php://output', 'w');
             fputcsv($file, $columns);
 
             foreach ($products as $product) {
-                $row['ID']  = $product->id;
-                $row['Name']    = $product->name;
-                $row['SKU']    = $product->sku;
-                $row['Category']  = $product->category ? $product->category->name : '';
-                $row['Brand']  = $product->brand ? $product->brand->name : '';
-                $row['Price']  = $product->price;
-                $row['Stock']  = $product->stock_quantity;
-                $row['Description']  = $product->description;
-                $row['Active']  = $product->is_active ? 'Yes' : 'No';
+                $row = array();
+                $row[] = $product->name;
+                $row[] = $product->sku;
+                $row[] = $product->category ? $product->category->name : '';
+                $row[] = $product->brand ? $product->brand->name : '';
+                $row[] = $product->price;
+                $row[] = $product->cost_price;
+                $row[] = $product->compare_at_price;
+                $row[] = $product->stock_quantity;
+                $row[] = $product->low_stock_threshold;
+                $row[] = $product->description;
+                $row[] = $product->short_description;
+                $row[] = $product->barcode;
+                $row[] = $product->track_inventory ? 'Yes' : 'No';
+                $row[] = $product->is_active ? 'Yes' : 'No';
+                $row[] = $product->is_featured ? 'Yes' : 'No';
+                $row[] = $product->expiry_date ? $product->expiry_date->format('Y-m-d') : '';
 
-                fputcsv($file, array($row['ID'], $row['Name'], $row['SKU'], $row['Category'], $row['Brand'], $row['Price'], $row['Stock'], $row['Description'], $row['Active']));
+                fputcsv($file, $row);
             }
 
             fclose($file);
@@ -54,6 +70,9 @@ class ProductImportExportController extends Controller
         return response()->stream($callback, 200, $headers);
     }
 
+    /**
+     * Download CSV Template
+     */
     /**
      * Download CSV Template
      */
@@ -68,13 +87,23 @@ class ProductImportExportController extends Controller
             "Expires"             => "0"
         );
 
-        $columns = array('Name', 'SKU', 'Category', 'Brand', 'Price', 'Stock', 'Description', 'Active (Yes/No)');
+        $columns = array(
+            'Name', 'SKU', 'Category', 'Brand', 'Price', 
+            'Cost Price', 'Compare At Price', 'Stock Quantity', 'Low Stock Threshold', 
+            'Description', 'Short Description', 'Barcode', 
+            'Track Inventory (Yes/No)', 'Active (Yes/No)', 'Featured (Yes/No)', 'Expiry Date (YYYY-MM-DD)'
+        );
 
         $callback = function() use($columns) {
             $file = fopen('php://output', 'w');
             fputcsv($file, $columns);
             // Example row
-            fputcsv($file, array('Example Product', 'SKU-12345', 'T-Shirts', 'Nike', '29.99', '100', 'Example Description', 'Yes'));
+            fputcsv($file, array(
+                'Example Product', 'SKU-12345', 'T-Shirts', 'Nike', '29.99', 
+                '15.00', '39.99', '100', '10', 
+                'Full Description Here', 'Short Description', '1234567890123', 
+                'Yes', 'Yes', 'No', '2025-12-31'
+            ));
             fclose($file);
         };
 
@@ -158,6 +187,9 @@ class ProductImportExportController extends Controller
     /**
      * Process CSV import with optional images directory
      */
+    /**
+     * Process CSV import with optional images directory
+     */
     protected function processCsvImport($csvPath, $imagesDir = null)
     {
         $csvData = array_map('str_getcsv', file($csvPath));
@@ -172,22 +204,42 @@ class ProductImportExportController extends Controller
         DB::beginTransaction();
         try {
             foreach ($csvData as $row) {
-                // Map row to keys based on index, rudimentary mapping assuming template order
-                // Name (0), SKU (1), Category (2), Brand (3), Price (4), Stock (5), Description (6), Active (7)
+                // Map row to keys based on index
+                // 0: Name, 1: SKU, 2: Category, 3: Brand, 4: Price
+                // 5: Cost Price, 6: Compare At Price, 7: Stock, 8: Low Stock
+                // 9: Description, 10: Short Desc, 11: Barcode
+                // 12: Track Inv, 13: Active, 14: Featured, 15: Expiry
                 
                 if (count($row) < 5) continue; // Skip malformed rows
 
                 $name = $row[0] ?? 'Unknown Product';
-                $sku = $row[1] ?? 'SKU-' . Str::random(8); // If empty, generate or use existing
+                $sku = $row[1] ?? 'SKU-' . Str::random(8);
                 if(empty($sku)) $sku = 'SKU-' . Str::random(8);
 
                 $categoryName = $row[2] ?? null;
                 $brandName = $row[3] ?? null;
                 $price = floatval($row[4] ?? 0);
-                $stock = intval($row[5] ?? 0);
-                $description = $row[6] ?? '';
-                $isActiveStr = strtolower($row[7] ?? 'yes');
+                
+                $costPrice = floatval($row[5] ?? 0);
+                $compareAtPrice = floatval($row[6] ?? 0);
+                $stock = intval($row[7] ?? 0);
+                $lowStock = intval($row[8] ?? 10);
+                
+                $description = $row[9] ?? '';
+                $shortDescription = $row[10] ?? '';
+                $barcode = $row[11] ?? '';
+                
+                $trackInvStr = strtolower($row[12] ?? 'yes');
+                $trackInv = ($trackInvStr === 'yes' || $trackInvStr === '1' || $trackInvStr === 'true');
+
+                $isActiveStr = strtolower($row[13] ?? 'yes');
                 $isActive = ($isActiveStr === 'yes' || $isActiveStr === '1' || $isActiveStr === 'true');
+                
+                $isFeaturedStr = strtolower($row[14] ?? 'no');
+                $isFeatured = ($isFeaturedStr === 'yes' || $isFeaturedStr === '1' || $isFeaturedStr === 'true');
+                
+                $expiryDate = $row[15] ?? null;
+                if ($expiryDate && !strtotime($expiryDate)) $expiryDate = null;
 
                 // Find or Create Category
                 $categoryId = null;
@@ -212,33 +264,32 @@ class ProductImportExportController extends Controller
                 // Update or Create Product
                 $product = Product::withTrashed()->where('sku', $sku)->first();
 
+                $data = [
+                    'name' => $name,
+                    'category_id' => $categoryId,
+                    'brand_id' => $brandId,
+                    'price' => $price,
+                    'cost_price' => $costPrice,
+                    'compare_at_price' => $compareAtPrice,
+                    'stock_quantity' => $stock,
+                    'low_stock_threshold' => $lowStock,
+                    'description' => $description,
+                    'short_description' => $shortDescription,
+                    'barcode' => $barcode,
+                    'track_inventory' => $trackInv,
+                    'is_active' => $isActive,
+                    'is_featured' => $isFeatured,
+                    'expiry_date' => $expiryDate,
+                ];
+
                 if ($product) {
-                    $product->update([
-                        'name' => $name,
-                        'category_id' => $categoryId,
-                        'brand_id' => $brandId,
-                        'price' => $price,
-                        'stock_quantity' => $stock,
-                        'description' => $description,
-                        'is_active' => $isActive,
-                        // Restore if deleted?
-                        // 'deleted_at' => null 
-                    ]);
+                    $product->update($data);
                     $updatedCount++;
                 } else {
-                    Product::create([
-                        'name' => $name,
-                        'sku' => $sku,
-                        'category_id' => $categoryId,
-                        'brand_id' => $brandId,
-                        'price' => $price,
-                        'stock_quantity' => $stock,
-                        'description' => $description,
-                        'is_active' => $isActive,
-                        'track_inventory' => true, // default
-                    ]);
+                    $data['sku'] = $sku;
+                    Product::create($data);
                     $importedCount++;
-                    $product = Product::where('sku', $sku)->first(); // Get the newly created product
+                    $product = Product::where('sku', $sku)->first();
                 }
                 
                 // Match and upload images if images directory exists
