@@ -7,6 +7,7 @@ use App\Http\Requests\Auth\LoginRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\URL;
 use Illuminate\View\View;
 
 class AuthenticatedSessionController extends Controller
@@ -32,7 +33,40 @@ class AuthenticatedSessionController extends Controller
             return redirect()->intended(route('admin.dashboard', ['tenant' => app('tenant')->slug]));
         }
 
-        // Strict Superadmin Check for Central Domain
+        // If logged in from central domain, check if user belongs to a tenant
+        $user = $request->user();
+        if ($user->tenant_id) {
+            $tenant = \App\Models\Tenant::find($user->tenant_id);
+            if ($tenant) {
+                // If the user is on the central domain but belongs to a tenant, 
+                // we redirect them to their specific tenant dashboard.
+                // For subdomains, this is easy. For custom domains, later we'll use signed URLs.
+                $host = $request->getHost();
+                $centralDomain = parse_url(config('app.url'), PHP_URL_HOST);
+
+                if ($host === $centralDomain) {
+                    $primaryDomain = $tenant->getPrimaryDomain();
+                    
+                    // If the primary domain is different from the central domain (custom domain or different subdomain)
+                    if ($primaryDomain !== $centralDomain) {
+                        $autoLoginUrl = URL::signedRoute('auto-login', [
+                            'user_id' => $user->id,
+                            'tenant_slug' => $tenant->slug
+                        ], now()->addMinutes(1));
+
+                        // Adjust the URL to use the primary domain
+                        $autoLoginUrl = str_replace($centralDomain, $primaryDomain, $autoLoginUrl);
+
+                        return redirect()->away($autoLoginUrl);
+                    }
+
+                    // Fallback to standard slug-based redirect for subdomains if wildcard cookie is not used
+                    return redirect()->intended(url('/' . $tenant->slug . '/admin'));
+                }
+            }
+        }
+
+        // Strict Superadmin Check for Central Domain (only if not a tenant user)
         if (!$request->user()->is_superadmin) {
             Auth::guard('web')->logout();
             $request->session()->invalidate();

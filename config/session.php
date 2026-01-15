@@ -156,7 +156,7 @@ return [
     |
     */
 
-    'domain' => null, // Force null to support localhost/127.0.0.1 interchangeably
+    'domain' => env('SESSION_DOMAIN'),
 
     /*
     |--------------------------------------------------------------------------

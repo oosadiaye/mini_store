@@ -151,4 +151,23 @@ class Tenant extends Model
     {
         return $this->settings['currency_code'] ?? $this->data['currency_code'] ?? 'NGN';
     }
+
+    /**
+     * Get the primary domain for the tenant.
+     */
+    public function getPrimaryDomain(): string
+    {
+        // 1. Check for approved custom domain
+        $customDomain = $this->customDomainRequests()
+            ->where('status', 'approved')
+            ->first();
+
+        if ($customDomain) {
+            return $customDomain->domain;
+        }
+
+        // 2. Fallback to subdomain
+        $centralDomain = parse_url(config('app.url'), PHP_URL_HOST);
+        return $this->slug . '.' . $centralDomain;
+    }
 }
