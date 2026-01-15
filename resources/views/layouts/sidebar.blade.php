@@ -97,6 +97,7 @@
             @endif
 
             <!-- Renters -->
+            @if($tenant->hasFeature('crm'))
             <a href="{{ route('admin.renters.index', $tenant->slug) }}"
                class="group flex items-center px-3 py-2.5 text-sm font-medium rounded-md transition-all duration-200 {{ request()->routeIs('admin.renters.*') ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
                 <svg class="mr-3 h-5 w-5 flex-shrink-0 {{ request()->routeIs('admin.renters.*') ? 'text-white' : 'text-slate-400 group-hover:text-white' }}" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
@@ -104,6 +105,7 @@
                 </svg>
                 Renters
             </a>
+            @endif
 
             <!-- Sales Section -->
             @if($tenant->hasFeature('pos_retail') || $tenant->hasFeature('online_store'))
@@ -380,6 +382,7 @@
             </div>
 
             <!-- Support Section -->
+            @if($tenant->hasFeature('support'))
             <div class="pt-6 pb-2">
                 <h3 class="px-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Help & Support</h3>
             </div>
@@ -391,6 +394,7 @@
                 </svg>
                 Support Tickets
             </a>
+            @endif
         </nav>
     </div>
 

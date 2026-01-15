@@ -59,5 +59,8 @@ class AppServiceProvider extends ServiceProvider
         
         // Register Observers
         \App\Models\Order::observe(\App\Observers\WooCommerceObserver::class);
+
+        // Configure Mail Settings (Global)
+        \App\Services\MailConfigService::configure();
     }
 }

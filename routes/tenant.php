@@ -488,6 +488,13 @@ Route::middleware(['api', \App\Http\Middleware\IdentifyTenantFromPath::class])
         Route::post('/webhook', [\App\Http\Controllers\Api\WooCommerceWebhookController::class, 'handle'])->name('api.woocommerce.webhook');
     });
 
+// User Tour Progress API
+Route::middleware(['api', 'auth', \App\Http\Middleware\IdentifyTenantFromPath::class])
+    ->prefix('{tenant}/api/user')
+    ->group(function () {
+        Route::post('/tour-complete', [\App\Http\Controllers\Api\UserTourController::class, 'complete']);
+    });
+
 // Middleware for Custom Domain (Optional/Future Phase)
 Route::middleware(['web', \App\Http\Middleware\IdentifyTenantFromCustomDomain::class])->group(function () {
    // We can include the same route groups here if we want custom domain support immediately

@@ -128,5 +128,6 @@
                 }).catch(error => console.error('Error marking as read:', error));
             }
         </script>
+        <pwa-install-prompt></pwa-install-prompt>
     </body>
 </html>

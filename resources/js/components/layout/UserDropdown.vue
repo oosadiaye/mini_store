@@ -34,6 +34,10 @@
             <a :href="profileUrl" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                 <i class="fas fa-user-circle mr-2 w-4"></i> My Profile
             </a>
+            
+            <button @click="startTour" class="block w-full text-left px-4 py-2 text-sm text-indigo-600 hover:bg-gray-100 font-medium">
+                <i class="fas fa-play-circle mr-2 w-4"></i> Replay Tour
+            </button>
 
             <div class="border-t border-gray-100">
                 <form method="POST" :action="logoutUrl">
@@ -64,6 +68,8 @@ const props = defineProps({
   csrfToken: String
 });
 
+import { TourService } from '../../services/TourService';
+
 const isOpen = ref(false);
 
 const toggle = () => {
@@ -76,5 +82,10 @@ const openOnHover = () => {
 
 const closeOnHover = () => {
   isOpen.value = false;
+};
+
+const startTour = () => {
+    isOpen.value = false;
+    TourService.startTour('full_tour');
 };
 </script>

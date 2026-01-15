@@ -100,6 +100,8 @@
                 </div>
                 
                 <div class="flex items-center ml-auto md:mr-4">
+                    <global-search tenant-slug="{{ $tenant->slug }}"></global-search>
+                    
                     @php
                         // Get tenant's first domain or fallback to slug-based URL
                         $primaryDomain = $tenant->domains()->first();

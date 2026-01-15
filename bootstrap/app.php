@@ -81,5 +81,25 @@ return Application::configure(basePath: dirname(__DIR__))
         });
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        $exceptions->render(function (\Illuminate\Session\TokenMismatchException $e, \Illuminate\Http\Request $request) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Your session has expired. Please login again.'], 419);
+            }
+
+            // Redirect to tenant login if tenant context exists or can be inferred
+            if (app()->bound('tenant')) {
+                return redirect()->route('tenant.login', ['tenant' => app('tenant')->slug])
+                    ->with('error', 'Your session has expired. Please login again.');
+            }
+            
+            // Try to infer tenant from URL if possible (fallback)
+            $segments = $request->segments();
+            if (count($segments) >= 2 && $segments[1] === 'admin') {
+                return redirect()->to('/' . $segments[0] . '/login')
+                     ->with('error', 'Your session has expired. Please login again.');
+            }
+
+            return redirect()->route('login')
+                ->with('error', 'Your session has expired. Please login again.');
+        });
     })->create();

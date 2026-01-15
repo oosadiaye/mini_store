@@ -1,6 +1,10 @@
 import { OfflineManager } from './offline-manager';
+import { CacheWarmer } from './cache-warmer';
 
 window.OfflineManager = OfflineManager;
+
+// Initialize Cache Warmer
+CacheWarmer.init();
 
 import Alpine from 'alpinejs';
 import { createApp, reactive } from 'vue';
@@ -12,6 +16,7 @@ import SidebarToggle from './components/layout/SidebarToggle.vue';
 import MobileSidebar from './components/layout/MobileSidebar.vue';
 import MobileBottomNav from './components/layout/MobileBottomNav.vue';
 import OfflineIndicator from './components/utils/OfflineIndicator.vue';
+import GlobalSearch from './components/utils/GlobalSearch.vue';
 import OutstandingPayments from './components/payments/OutstandingPayments.vue';
 import ProductList from './components/products/ProductList.vue';
 import ProductForm from './components/products/ProductForm.vue';
@@ -27,6 +32,7 @@ import StoreContent from './components/storefront/StoreContent.vue';
 import TenantLogin from './components/auth/TenantLogin.vue';
 import DomainSettings from './components/settings/DomainSettings.vue';
 import InventoryReport from './components/admin/reports/InventoryReport.vue';
+import PwaInstallPrompt from './components/PwaInstallPrompt.vue';
 
 import { EditorStore } from './cms/store';
 import editable from './cms/editable';
@@ -59,6 +65,7 @@ app.component('sidebar-toggle', SidebarToggle);
 app.component('mobile-sidebar', MobileSidebar);
 app.component('mobile-bottom-nav', MobileBottomNav);
 app.component('offline-indicator', OfflineIndicator);
+app.component('global-search', GlobalSearch);
 app.component('outstanding-payments', OutstandingPayments);
 app.component('product-list', ProductList);
 app.component('product-form', ProductForm);
@@ -74,11 +81,17 @@ app.component('store-content', StoreContent);
 app.component('tenant-login', TenantLogin);
 app.component('domain-settings', DomainSettings);
 app.component('inventory-report', InventoryReport);
+app.component('pwa-install-prompt', PwaInstallPrompt);
 
 
 app.mount('#app');
 
 Alpine.store('editor', EditorStore);
 Alpine.data('editable', editable);
+
+// Tour Service
+import { TourService } from './services/TourService';
+import { tourDefinitions } from './tours';
+TourService.init(tourDefinitions);
 
 Alpine.start();

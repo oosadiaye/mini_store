@@ -251,7 +251,10 @@ const audioContext = new (window.AudioContext || window.webkitAudioContext)();
 // Computed
 const filteredProducts = computed(() => {
     return products.value.filter(p => {
-        const matchesSearch = p.name.toLowerCase().includes(search.value.toLowerCase());
+        const searchLower = search.value.toLowerCase();
+        const matchesSearch = p.name.toLowerCase().includes(searchLower) || 
+                            (p.barcode && p.barcode.toLowerCase().includes(searchLower)) || 
+                            (p.sku && p.sku.toLowerCase().includes(searchLower));
         const matchesCategory = selectedCategory.value === '' || p.category_id == selectedCategory.value;
         return matchesSearch && matchesCategory;
     });

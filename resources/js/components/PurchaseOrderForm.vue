@@ -201,7 +201,9 @@ export default {
                 items: [
                     { product_id: '', quantity: 1, unit_cost: 0, tax_code_id: '' }
                 ]
-            }
+            },
+            barcodeBuffer: '',
+            barcodeTimeout: null
         };
     },
     watch: {
@@ -222,6 +224,10 @@ export default {
                 })) : this.form.items
             });
         }
+        document.addEventListener('keypress', this.handleKeyPress);
+    },
+    beforeUnmount() {
+        document.removeEventListener('keypress', this.handleKeyPress);
     },
     methods: {
         openSupplierModal() {
@@ -297,6 +303,78 @@ export default {
                 this.error = err.response?.data?.message || 'Check form inputs and try again.';
             } finally {
                 this.isSubmitting = false;
+            }
+        },
+        handleKeyPress(e) {
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+            
+            if (this.barcodeTimeout) clearTimeout(this.barcodeTimeout);
+            
+            if (e.key === 'Enter') {
+                if (this.barcodeBuffer.length > 3) {
+                     this.handleBarcodeScanned(this.barcodeBuffer);
+                }
+                this.barcodeBuffer = '';
+            } else {
+                this.barcodeBuffer += e.key;
+                this.barcodeTimeout = setTimeout(() => this.barcodeBuffer = '', 100);
+            }
+        },
+        handleBarcodeScanned(barcode) {
+            const product = this.products.find(p => p.sku === barcode || p.barcode === barcode);
+            
+            if (product) {
+                // Check if product already in items
+                const existingItem = this.form.items.find(i => i.product_id === product.id);
+                
+                if (existingItem) {
+                    existingItem.quantity++;
+                    // Play beep feedback
+                    this.playBeep();
+                } else {
+                    // Check if the last item is empty and reuse it, otherwise add new
+                    const lastItem = this.form.items[this.form.items.length - 1];
+                    if (this.form.items.length === 1 && !lastItem.product_id) {
+                        lastItem.product_id = product.id;
+                        lastItem.unit_cost = parseFloat(product.cost_price) || 0;
+                        this.playBeep();
+                    } else {
+                        this.form.items.push({ 
+                            product_id: product.id, 
+                            quantity: 1, 
+                            unit_cost: parseFloat(product.cost_price) || 0, 
+                            tax_code_id: '' 
+                        });
+                        this.playBeep();
+                    }
+                }
+            } else {
+                // Optional: Alert user product not found
+                console.log('Product not found for barcode: ' + barcode);
+            }
+        },
+        playBeep() {
+            try {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if (!AudioContext) return;
+                
+                const ctx = new AudioContext();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                
+                osc.frequency.value = 800; // Hz
+                osc.type = 'sine';
+                
+                gain.gain.setValueAtTime(0.1, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
+                
+                osc.start(ctx.currentTime);
+                osc.stop(ctx.currentTime + 0.1);
+            } catch (e) {
+                // Ignore audio errors
             }
         }
     },

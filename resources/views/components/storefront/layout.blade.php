@@ -549,5 +549,6 @@
         window.scrollTo(0, 0);
     </script>
     <x-storefront.mobile-bottom-nav />
+    <pwa-install-prompt></pwa-install-prompt>
 </body>
 </html>
