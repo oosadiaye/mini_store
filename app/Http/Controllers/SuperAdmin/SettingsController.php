@@ -33,33 +33,12 @@ class SettingsController extends Controller
     {
         // Define all allowed keys and their groups to ensure categorized storage
         $keys = [
-            'mail_host' => 'mail',
-            'mail_port' => 'mail',
-            'mail_username' => 'mail',
-            'mail_password' => 'mail',
-            'mail_encryption' => 'mail',
-            'mail_from_address' => 'mail',
-            'mail_from_name' => 'mail',
-            
-            'gateway_opay_public' => 'payment',
-            'gateway_opay_secret' => 'payment',
-            'gateway_paystack_public' => 'payment',
-            'gateway_paystack_secret' => 'payment',
-            'gateway_flutterwave_public' => 'payment',
-            'gateway_flutterwave_secret' => 'payment',
-
             'brand_name' => 'branding',
-            'brand_logo' => 'branding',
-            'brand_favicon' => 'branding', 
             'brand_primary_color' => 'branding',
-            'email_banner' => 'templates',
-            
             'currency_code' => 'currency',
             'currency_symbol' => 'currency',
             'app_name' => 'general',
-            'currency' => 'general',
             'timezone' => 'general',
-            
             'cookie_consent_enabled' => 'cookie',
             'cookie_consent_message' => 'cookie',
             
@@ -73,7 +52,6 @@ class SettingsController extends Controller
             
             'welcome_email_subject' => 'templates',
             'welcome_email_body' => 'templates',
-
             'turnstile_site_key' => 'security',
             'turnstile_secret' => 'security',
             'recaptcha_site_key' => 'security',
@@ -120,6 +98,20 @@ class SettingsController extends Controller
 
         \App\Helpers\AuditHelper::log('update_global_settings', 'Updated global settings configuration.');
 
+        // Update .env file for SMTP settings if provided
+        $envData = [];
+        if ($request->has('smtp_host')) $envData['MAIL_HOST'] = $request->smtp_host;
+        if ($request->has('smtp_port')) $envData['MAIL_PORT'] = $request->smtp_port;
+        if ($request->has('smtp_username')) $envData['MAIL_USERNAME'] = $request->smtp_username;
+        if ($request->has('smtp_password')) $envData['MAIL_PASSWORD'] = $request->smtp_password;
+        if ($request->has('smtp_encryption')) $envData['MAIL_ENCRYPTION'] = $request->smtp_encryption;
+        if ($request->has('smtp_from_address')) $envData['MAIL_FROM_ADDRESS'] = $request->smtp_from_address;
+        if ($request->has('smtp_from_name')) $envData['MAIL_FROM_NAME'] = $request->smtp_from_name;
+
+        if (!empty($envData)) {
+            \App\Services\EnvService::update($envData);
+        }
+
         return redirect()->back()->with('success', 'Global settings updated successfully.');
     }
 
@@ -130,9 +122,13 @@ class SettingsController extends Controller
         ]);
 
         try {
+            // Apply current DB settings before sending
+            \App\Services\MailConfigService::configure();
+            
             \Illuminate\Support\Facades\Mail::to($request->test_email)->send(new \App\Mail\TestEmail());
             return back()->with('success', 'Test email sent successfully to ' . $request->test_email);
         } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Global Test Email Failed', ['error' => $e->getMessage()]);
             return back()->with('error', 'Failed to send email: ' . $e->getMessage());
         }
     }
