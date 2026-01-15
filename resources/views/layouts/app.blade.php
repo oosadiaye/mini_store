@@ -21,6 +21,9 @@
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
+        <script>
+            window.user = @json(auth()->user());
+        </script>
     </head>
     <body class="font-sans antialiased">
         @if(session('superadmin_impersonator_id'))

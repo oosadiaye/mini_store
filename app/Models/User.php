@@ -26,6 +26,7 @@ class User extends Authenticatable
         'is_superadmin',
         'role',
         'password',
+        'tours_completed',
     ];
 
     /**
@@ -49,6 +50,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_superadmin' => 'boolean',
+            'tours_completed' => 'array',
         ];
     }
 }
