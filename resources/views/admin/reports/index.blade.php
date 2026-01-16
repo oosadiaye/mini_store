@@ -10,7 +10,7 @@
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         
         <!-- Sales Analytics -->
-        <a href="{{ route('admin.reports.sales') }}" class="group">
+        <a href="{{ route('admin.reports.sales', ['tenant' => $tenant->slug]) }}" class="group">
             <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg p-6 text-white transform transition-all duration-200 hover:scale-105 hover:shadow-xl">
                 <div class="flex items-center justify-between mb-4">
                     <div class="p-3 bg-white bg-opacity-20 rounded-lg">
@@ -28,7 +28,7 @@
         </a>
 
         <!-- Inventory Movement -->
-        <a href="{{ route('admin.reports.movement') }}" class="group">
+        <a href="{{ route('admin.reports.movement', ['tenant' => $tenant->slug]) }}" class="group">
             <div class="bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl shadow-lg p-6 text-white transform transition-all duration-200 hover:scale-105 hover:shadow-xl">
                 <div class="flex items-center justify-between mb-4">
                     <div class="p-3 bg-white bg-opacity-20 rounded-lg">
@@ -46,7 +46,7 @@
         </a>
 
         <!-- Inventory Report -->
-        <a href="{{ route('admin.reports.inventory') }}" class="group">
+        <a href="{{ route('admin.reports.inventory', ['tenant' => $tenant->slug]) }}" class="group">
             <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-lg p-6 text-white transform transition-all duration-200 hover:scale-105 hover:shadow-xl">
                 <div class="flex items-center justify-between mb-4">
                     <div class="p-3 bg-white bg-opacity-20 rounded-lg">
@@ -64,7 +64,7 @@
         </a>
 
         <!-- Customer Analytics -->
-        <a href="{{ route('admin.reports.customers') }}" class="group">
+        <a href="{{ route('admin.reports.customers', ['tenant' => $tenant->slug]) }}" class="group">
             <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-lg p-6 text-white transform transition-all duration-200 hover:scale-105 hover:shadow-xl">
                 <div class="flex items-center justify-between mb-4">
                     <div class="p-3 bg-white bg-opacity-20 rounded-lg">
@@ -82,7 +82,7 @@
         </a>
 
         <!-- Financial Report -->
-        <a href="{{ route('admin.reports.financial') }}" class="group">
+        <a href="{{ route('admin.reports.financial', ['tenant' => $tenant->slug]) }}" class="group">
             <div class="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl shadow-lg p-6 text-white transform transition-all duration-200 hover:scale-105 hover:shadow-xl">
                 <div class="flex items-center justify-between mb-4">
                     <div class="p-3 bg-white bg-opacity-20 rounded-lg">
@@ -131,10 +131,10 @@
         <h3 class="text-lg font-semibold text-gray-700 mb-2">Export Reports</h3>
         <p class="text-gray-600 mb-4">Download detailed reports in CSV format for further analysis</p>
         <div class="flex justify-center space-x-4">
-            <a href="{{ route('admin.reports.export', ['type' => 'sales']) }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition">
+            <a href="{{ route('admin.reports.export', ['tenant' => $tenant->slug, 'type' => 'sales']) }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition">
                 <i class="fas fa-download mr-2"></i>Sales Data
             </a>
-            <a href="{{ route('admin.reports.export', ['type' => 'inventory']) }}" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition">
+            <a href="{{ route('admin.reports.export', ['tenant' => $tenant->slug, 'type' => 'inventory']) }}" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition">
                 <i class="fas fa-download mr-2"></i>Inventory Data
             </a>
         </div>

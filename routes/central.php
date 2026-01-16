@@ -86,6 +86,10 @@ Route::prefix('superadmin')->middleware(['auth', 'superadmin'])->name('superadmi
     Route::post('settings', [SuperAdmin\SettingsController::class, 'update'])->name('settings.update');
     Route::post('settings/test-email', [SuperAdmin\SettingsController::class, 'sendTestEmail'])->name('settings.test-email');
 
+    // Central PWA Branding
+    Route::get('pwa/branding', [SuperAdmin\GlobalPwaController::class, 'edit'])->name('pwa.edit');
+    Route::post('pwa/branding', [SuperAdmin\GlobalPwaController::class, 'update'])->name('pwa.update');
+
     // Reports
     Route::prefix('reports')->name('reports.')->group(function () {
         Route::get('subscriptions', [SuperAdmin\ReportController::class, 'subscriptions'])->name('subscriptions');

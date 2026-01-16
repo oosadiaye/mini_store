@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             \Database\Seeders\PlanSeeder::class,
             \Database\Seeders\PaymentGatewaySeeder::class,
+            \Database\Seeders\GlobalSettingSeeder::class,
         ]);
     }
 }

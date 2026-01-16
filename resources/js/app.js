@@ -33,6 +33,7 @@ import TenantLogin from './components/auth/TenantLogin.vue';
 import DomainSettings from './components/settings/DomainSettings.vue';
 import InventoryReport from './components/admin/reports/InventoryReport.vue';
 import PwaInstallPrompt from './components/PwaInstallPrompt.vue';
+import VisualEditor from './components/storefront/visual-editor/VisualEditor.vue';
 
 import { EditorStore } from './cms/store';
 import editable from './cms/editable';
@@ -82,6 +83,7 @@ app.component('tenant-login', TenantLogin);
 app.component('domain-settings', DomainSettings);
 app.component('inventory-report', InventoryReport);
 app.component('pwa-install-prompt', PwaInstallPrompt);
+app.component('visual-editor', VisualEditor);
 
 
 app.mount('#app');

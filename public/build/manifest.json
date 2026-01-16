@@ -7,16 +7,23 @@
     "file": "assets/axios-B9ygI19o.js",
     "name": "axios"
   },
-  "_vendor-bOEoWcnc.js": {
-    "file": "assets/vendor-bOEoWcnc.js",
-    "name": "vendor"
+  "_vendor-Bllg3nBx.js": {
+    "file": "assets/vendor-Bllg3nBx.js",
+    "name": "vendor",
+    "css": [
+      "assets/vendor-DB0Q8XAf.css"
+    ]
   },
-  "_vue-BODBsizo.js": {
-    "file": "assets/vue-BODBsizo.js",
+  "_vendor-DB0Q8XAf.css": {
+    "file": "assets/vendor-DB0Q8XAf.css",
+    "src": "_vendor-DB0Q8XAf.css"
+  },
+  "_vue-BpT-YuJn.js": {
+    "file": "assets/vue-BpT-YuJn.js",
     "name": "vue"
   },
   "resources/css/app.css": {
-    "file": "assets/app-CMz01ZrE.css",
+    "file": "assets/app-C2YBZ9eZ.css",
     "src": "resources/css/app.css",
     "isEntry": true,
     "name": "app",
@@ -25,18 +32,40 @@
     ]
   },
   "resources/js/app.js": {
-    "file": "assets/app-mnAIaIUq.js",
+    "file": "assets/app-hk9B8uPg.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
     "imports": [
-      "_vendor-bOEoWcnc.js",
+      "_vendor-Bllg3nBx.js",
       "_alpine-S4M4TpEG.js",
-      "_vue-BODBsizo.js",
+      "_vue-BpT-YuJn.js",
       "_axios-B9ygI19o.js"
     ],
+    "dynamicImports": [
+      "resources/js/components/storefront/visual-editor/sections/SectionHero.vue",
+      "resources/js/components/storefront/visual-editor/sections/SectionProductList.vue"
+    ],
     "css": [
-      "assets/app-TsM-QTHb.css"
+      "assets/app-B0dMfJ9e.css"
+    ]
+  },
+  "resources/js/components/storefront/visual-editor/sections/SectionHero.vue": {
+    "file": "assets/SectionHero-B5ysFe18.js",
+    "name": "SectionHero",
+    "src": "resources/js/components/storefront/visual-editor/sections/SectionHero.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_vue-BpT-YuJn.js"
+    ]
+  },
+  "resources/js/components/storefront/visual-editor/sections/SectionProductList.vue": {
+    "file": "assets/SectionProductList-DY7BGvgS.js",
+    "name": "SectionProductList",
+    "src": "resources/js/components/storefront/visual-editor/sections/SectionProductList.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_vue-BpT-YuJn.js"
     ]
   }
 }

@@ -47,16 +47,25 @@ class AuthenticatedSessionController extends Controller
                 if ($host === $centralDomain) {
                     $primaryDomain = $tenant->getPrimaryDomain();
                     
-                    // If the primary domain is different from the central domain (custom domain or different subdomain)
                     if ($primaryDomain !== $centralDomain) {
-                        $autoLoginUrl = URL::signedRoute('auto-login', [
-                            'user_id' => $user->id,
-                            'tenant_slug' => $tenant->slug
-                        ], now()->addMinutes(1));
+                        // Force the root URL to the target domain so the signature is valid for THAT domain
+                        $scheme = $request->secure() ? 'https://' : 'http://';
+                        $port = $request->getPort();
+                        $portSuffix = in_array($port, [80, 443]) ? '' : ':' . $port;
+                        
+                        \Illuminate\Support\Facades\URL::forceRootUrl($scheme . $primaryDomain . $portSuffix);
+                        
+                        try {
+                            $autoLoginUrl = URL::signedRoute('auto-login', [
+                                'user_id' => $user->id,
+                                'tenant_slug' => $tenant->slug
+                            ], now()->addMinutes(5));
+                        } finally {
+                            // FAST reset to avoid pollution
+                            \Illuminate\Support\Facades\URL::forceRootUrl(null);
+                        }
 
-                        // Adjust the URL to use the primary domain
-                        $autoLoginUrl = str_replace($centralDomain, $primaryDomain, $autoLoginUrl);
-
+                        // No need to str_replace anymore as the URL is generated correctly
                         return redirect()->away($autoLoginUrl);
                     }
 
@@ -94,7 +103,14 @@ class AuthenticatedSessionController extends Controller
         $request->session()->regenerateToken();
 
         if ($tenant) {
-            return redirect()->route('tenant.login', ['tenant' => $tenant->slug]);
+            \Log::info('Logout: Redirecting to tenant login', ['tenant' => $tenant->slug]);
+            return redirect()->route('tenant.login', ['tenant' => $tenant->slug])
+                ->with('status', 'You have been logged out.')
+                ->withHeaders([
+                    'Cache-Control' => 'no-cache, no-store, must-revalidate',
+                    'Pragma' => 'no-cache',
+                    'Expires' => '0',
+                ]);
         }
 
         return redirect('/');

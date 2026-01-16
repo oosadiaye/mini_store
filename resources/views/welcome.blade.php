@@ -33,18 +33,13 @@
             @endif
             <span class="text-xl font-bold tracking-tight text-white">{{ $branding['brand_name'] ?? config('app.name') }}</span>
         </div>
-        <nav class="hidden md:flex gap-6 text-sm font-medium text-gray-300">
-                <div class="hidden fixed top-0 right-0 px-6 py-4 sm:block">
-                    @auth
-                        <a href="{{ url('/home') }}" class="text-sm text-gray-700 dark:text-gray-500 underline">Home</a>
-                    @else
-                        <a href="{{ route('login') }}" class="text-sm text-gray-700 dark:text-gray-500 underline">Log in</a>
-
-                        @if (Route::has('register'))
-                            <a href="{{ route('register') }}" class="ml-4 text-sm text-gray-700 dark:text-gray-500 underline">Register</a>
-                        @endif
-                    @endauth
-                </div>
+        <nav class="hidden md:flex items-center gap-6">
+            @auth
+                <a href="{{ url('/superadmin') }}" class="text-sm font-medium text-gray-300 hover:text-white transition">Dashboard</a>
+            @else
+                <a href="{{ route('login') }}" class="text-sm font-medium text-gray-300 hover:text-white transition">Log in</a>
+                <a href="{{ route('tenant.register') }}" class="px-5 py-2.5 text-sm font-medium text-white bg-white/10 border border-white/20 rounded-full hover:bg-white/20 transition">Get Started</a>
+            @endauth
         </nav>
     </header>
 

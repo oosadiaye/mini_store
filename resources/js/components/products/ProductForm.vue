@@ -78,7 +78,7 @@
                  </div>
                  <div>
                      <label class="block text-sm font-medium text-red-600 mb-2">⚡ Flash Sale Ends At</label>
-                     <input type="datetime-local" name="flash_sale_end_date" v-model="form.flash_sale_end_date"
+                     <input type="datetime-local" name="flash_sale_end" v-model="form.flash_sale_end"
                          class="w-full px-4 py-2 border-2 border-red-300 rounded-lg focus:ring-2 focus:ring-red-500 bg-white">
                  </div>
             </div>
@@ -258,7 +258,7 @@
     </form>
 
     <!-- Category Modal -->
-    <CommonModal :show="showCategoryModal" title="Create New Category" @close="showCategoryModal = false">
+    <CommonModal :is-open="showCategoryModal" title="Create New Category" @close="showCategoryModal = false">
         <div class="mt-4">
             <label class="block text-sm font-medium text-gray-700 mb-1">Name</label>
             <input type="text" v-model="newCategoryName" @keydown.enter="createCategory" class="w-full px-3 py-2 border-2 border-gray-300 rounded-md">
@@ -271,7 +271,7 @@
     </CommonModal>
 
     <!-- Brand Modal -->
-    <CommonModal :show="showBrandModal" title="Create New Brand" @close="showBrandModal = false">
+    <CommonModal :is-open="showBrandModal" title="Create New Brand" @close="showBrandModal = false">
         <div class="mt-4">
             <label class="block text-sm font-medium text-gray-700 mb-1">Name</label>
             <input type="text" v-model="newBrandName" @keydown.enter="createBrand" class="w-full px-3 py-2 border-2 border-gray-300 rounded-md">
@@ -307,7 +307,7 @@
     </CommonModal>
 
     <!-- Camera Modal -->
-    <CommonModal :show="showCameraModal" title="Capture Image" @close="closeCamera" max-width="max-w-2xl">
+    <CommonModal :is-open="showCameraModal" title="Capture Image" @close="closeCamera" max-width="max-w-2xl">
         <div class="relative bg-black rounded-lg overflow-hidden aspect-video mb-4">
              <video ref="videoElement" class="w-full h-full object-contain" autoplay playsinline></video>
              <canvas ref="canvasElement" class="hidden"></canvas>
@@ -349,8 +349,8 @@ const props = defineProps({
     routes: { type: Object, required: true }
 });
 
-const localCategories = ref([...props.categories]);
-const localBrands = ref([...props.brands]);
+const localCategories = ref([...(props.categories || [])]);
+const localBrands = ref([...(props.brands || [])]);
 
 const getInitialStock = (warehouseId) => {
     if (props.oldInput.warehouse_stock && props.oldInput.warehouse_stock[warehouseId]) {
@@ -365,7 +365,7 @@ const getInitialStock = (warehouseId) => {
 
 // Initialize Warehouse Stock Map
 const initialStockMap = {};
-props.warehouses.forEach(w => {
+(props.warehouses || []).forEach(w => {
     initialStockMap[w.id] = getInitialStock(w.id);
 });
 
@@ -380,14 +380,14 @@ const form = reactive({
     cost_price: props.oldInput.cost_price || props.initialProduct.cost_price || '',
     barcode: props.oldInput.barcode || props.initialProduct.barcode || '',
     flash_sale_price: props.oldInput.flash_sale_price || props.initialProduct.flash_sale_price || '',
-    flash_sale_end_date: props.oldInput.flash_sale_end_date || (props.initialProduct.flash_sale_end_date ? props.initialProduct.flash_sale_end_date.substring(0, 16) : '') || '',
+    flash_sale_end: props.oldInput.flash_sale_end || (props.initialProduct.flash_sale_end ? String(props.initialProduct.flash_sale_end).substring(0, 16) : '') || '',
     short_description: props.oldInput.short_description || props.initialProduct.short_description || '',
     description: props.oldInput.description || props.initialProduct.description || '',
     track_inventory: props.oldInput.track_inventory ? true : (props.initialProduct.track_inventory !== undefined ? !!props.initialProduct.track_inventory : false),
     stock_quantity: props.oldInput.stock_quantity ?? props.initialProduct.stock_quantity ?? 0,
     warehouse_stock: initialStockMap,
     low_stock_threshold: props.oldInput.low_stock_threshold ?? props.initialProduct.low_stock_threshold ?? 10,
-    expiry_date: props.oldInput.expiry_date || (props.initialProduct.expiry_date ? props.initialProduct.expiry_date.substring(0, 10) : '') || '',
+    expiry_date: props.oldInput.expiry_date || (props.initialProduct.expiry_date ? String(props.initialProduct.expiry_date).substring(0, 10) : '') || '',
     is_active: props.oldInput.is_active !== undefined ? !!props.oldInput.is_active : (props.initialProduct.is_active !== undefined ? !!props.initialProduct.is_active : true),
     is_featured: props.oldInput.is_featured !== undefined ? !!props.oldInput.is_featured : !!props.initialProduct.is_featured,
 });

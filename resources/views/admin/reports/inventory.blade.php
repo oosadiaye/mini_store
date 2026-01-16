@@ -8,7 +8,7 @@
             <h2 class="text-2xl font-bold text-gray-800">Inventory Reports</h2>
             <p class="text-sm text-gray-600 mt-1">Stock levels, valuations, and movement tracking</p>
         </div>
-        <a href="{{ route('admin.reports.index') }}" class="text-gray-600 hover:text-gray-900">
+        <a href="{{ route('admin.reports.index', ['tenant' => $tenant->slug]) }}" class="text-gray-600 hover:text-gray-900">
             ← Back to Reports
         </a>
     </div>
@@ -45,7 +45,7 @@
             <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-md transition">
                 Apply Filters
             </button>
-             <a href="{{ route('admin.reports.export', ['type' => 'inventory', 'start_date' => $startDate, 'end_date' => $endDate, 'warehouse_id' => request('warehouse_id')]) }}" 
+             <a href="{{ route('admin.reports.export', ['tenant' => $tenant->slug, 'type' => 'inventory', 'start_date' => $startDate, 'end_date' => $endDate, 'warehouse_id' => request('warehouse_id')]) }}" 
                class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-md transition ml-auto">
                 <i class="fas fa-download mr-2"></i>Export CSV
             </a>

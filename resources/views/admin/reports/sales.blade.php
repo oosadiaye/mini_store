@@ -8,7 +8,7 @@
             <h2 class="text-2xl font-bold text-gray-800">Sales Analytics</h2>
             <p class="text-sm text-gray-600 mt-1">Comprehensive sales performance and revenue insights <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 animate-pulse" x-show="loading">Updating...</span></p>
         </div>
-        <a href="{{ route('admin.reports.index') }}" class="text-gray-600 hover:text-gray-900">
+        <a href="{{ route('admin.reports.index', ['tenant' => $tenant->slug]) }}" class="text-gray-600 hover:text-gray-900">
             ← Back to Reports
         </a>
     </div>
@@ -55,7 +55,7 @@
                 <button type="submit" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md transition text-sm">
                     Filter
                 </button>
-                <a href="{{ route('admin.reports.export', ['type' => 'sales', 'start_date' => $startDate, 'end_date' => $endDate, 'warehouse_id' => $warehouseId, 'category_id' => $categoryId, 'customer_id' => $customerId]) }}" 
+                <a href="{{ route('admin.reports.export', ['tenant' => $tenant->slug, 'type' => 'sales', 'start_date' => $startDate, 'end_date' => $endDate, 'warehouse_id' => $warehouseId, 'category_id' => $categoryId, 'customer_id' => $customerId]) }}" 
                    class="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-md transition text-sm" title="Export CSV">
                     <i class="fas fa-download text-sm"></i>
                 </a>

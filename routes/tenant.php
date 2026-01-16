@@ -143,13 +143,47 @@ Route::middleware(['web', \App\Http\Middleware\IdentifyTenantFromPath::class])
         // Dynamic PWA Manifest
         Route::get('/manifest.json', function () {
             $tenant = app('tenant');
+            $context = request()->query('context', 'storefront'); // 'storefront' or 'admin'
+            
+            // ADMIN CONTEXT: Load System Global Settings
+            if ($context === 'admin') {
+                 $settings = \Illuminate\Support\Facades\DB::table('global_settings')
+                            ->where('group', 'pwa')
+                            ->pluck('value', 'key');
+
+                 $name = $settings['pwa_admin_name'] ?? 'MiniStore Admin';
+                 $shortName = $settings['pwa_admin_short_name'] ?? 'Admin';
+                 $iconPath = $settings['pwa_admin_icon'] ?? 'pwa/admin-icon.png';
+                 // If default doesn't exist, we might fallback to a generic asset or just use the path
+                 // We will assume the uploaded path is relative to public disk
+                 $iconUrl = $iconPath ? asset('storage/' . $iconPath) : asset('images/admin-icon.png');
+                 
+                 return response()->json([
+                    'name' => $name,
+                    'short_name' => $shortName,
+                    'start_url' => route('admin.dashboard', ['tenant' => $tenant->slug]),
+                    'display' => 'standalone',
+                    'background_color' => $settings['pwa_admin_bg_color'] ?? '#ffffff',
+                    'theme_color' => $settings['pwa_admin_theme_color'] ?? '#4f46e5',
+                    'orientation' => 'portrait',
+                    'icons' => [
+                        [
+                            'src' => $iconUrl,
+                            'sizes' => '512x512',
+                            'type' => 'image/png'
+                        ]
+                    ]
+                ]);
+            }
+
+            // STOREFRONT CONTEXT: Load Tenant Settings
             $settings = $tenant->data ?? [];
-            $logoUrl = \App\Helpers\LogoHelper::getLogo(512); // Get large logo if possible, generic helper returns url
+            $logoUrl = \App\Helpers\LogoHelper::getLogo(512); 
 
             return response()->json([
                 'name' => $settings['pwa_name'] ?? $tenant->name,
                 'short_name' => $settings['pwa_short_name'] ?? \Illuminate\Support\Str::limit($tenant->name, 12, ''),
-                'start_url' => route('admin.dashboard', ['tenant' => $tenant->slug]),
+                'start_url' => route('storefront.home', ['tenant' => $tenant->slug]), // Storefront PWA should open homepage
                 'display' => 'standalone',
                 'background_color' => $settings['pwa_background_color'] ?? '#ffffff',
                 'theme_color' => $settings['pwa_theme_color'] ?? '#4f46e5',
@@ -254,6 +288,8 @@ Route::middleware(['web', \App\Http\Middleware\IdentifyTenantFromPath::class])
     Route::prefix('admin')->middleware(['auth', 'subscription'])->name('admin.')->group(function () {
         
         // Store Content Editor
+        Route::get('theme/editor', [Admin\ThemeController::class, 'editor'])->name('theme.editor');
+        Route::post('theme/update', [Admin\ThemeController::class, 'update'])->name('theme.update');
     Route::get('/store-content', [App\Http\Controllers\Admin\StoreContentController::class, 'edit'])->name('store-content.edit');
     Route::post('/store-content', [App\Http\Controllers\Admin\StoreContentController::class, 'update'])->name('store-content.update');
     Route::post('/store-content/regenerate', [App\Http\Controllers\Admin\StoreContentController::class, 'regenerate'])->name('store-content.regenerate');

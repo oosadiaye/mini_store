@@ -7,8 +7,8 @@
     leave-from-class="opacity-100 translate-y-0 sm:scale-100"
     leave-to-class="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
   >
-    <div v-if="showModal" class="fixed bottom-0 left-0 right-0 z-50 p-4 md:p-6 flex justify-center items-end pointer-events-none">
-      <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-md pointer-events-auto border border-gray-100">
+    <div v-if="showModal" class="fixed inset-0 z-[100] p-4 flex items-center justify-center bg-black/50 backdrop-blur-sm transition-opacity">
+      <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm pointer-events-auto border border-gray-100 transform transition-all scale-100">
         <div class="flex items-start justify-between">
           <div class="flex-1">
             <h3 class="text-xl font-black text-gray-900 mb-2">Install App</h3>

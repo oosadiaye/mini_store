@@ -24,7 +24,7 @@
         $faviconUrl = \App\Helpers\LogoHelper::getFavicon();
     @endphp
     <link rel="icon" href="{{ $faviconUrl }}">
-    <link rel="manifest" href="{{ route('tenant.manifest', ['tenant' => $tenant->slug]) }}">
+    <link rel="manifest" href="{{ route('tenant.manifest', ['tenant' => $tenant->slug, 'context' => 'admin']) }}">
 
     <style>
         body { font-family: 'Inter', sans-serif; }
@@ -174,6 +174,7 @@
         ></mobile-bottom-nav>
 
         <offline-indicator></offline-indicator>
+        <pwa-install-prompt></pwa-install-prompt>
     </div>
 
     <!-- Global Form Interceptor for Offline Mode -->
@@ -211,6 +212,7 @@
         });
     </script>
     @stack('scripts')
+    <x-idle-logout :logoutRoute="route('tenant.logout', ['tenant' => $tenant->slug])" :timeout="900" />
     <x-idle-logout :logoutRoute="route('tenant.logout', ['tenant' => $tenant->slug])" :timeout="900" />
 </body>
 </html>

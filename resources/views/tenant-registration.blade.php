@@ -176,6 +176,13 @@
             </form>
         </div>
         
+        <div class="mt-6 text-center">
+            <p class="text-sm text-gray-400">
+                Already have an account? 
+                <a href="{{ route('login') }}" class="font-medium text-blue-400 hover:text-blue-300 transition">Log in</a>
+            </p>
+        </div>
+
         <p class="mt-6 text-center text-xs text-gray-400">
             &copy; {{ date('Y') }} {{ $branding['brand_name'] ?? config('app.name') }}. All rights reserved.
         </p>

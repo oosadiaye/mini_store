@@ -196,7 +196,7 @@ class ProductController extends Controller
             'meta_keywords' => 'nullable|string',
             'images.*' => 'nullable|image|max:2048',
             'flash_sale_price' => 'nullable|numeric|min:0',
-            'flash_sale_end_date' => 'nullable|date',
+            'flash_sale_end' => 'nullable|date',
             'expiry_date' => 'nullable|date',
         ]);
 
@@ -204,31 +204,32 @@ class ProductController extends Controller
     $validated['is_active'] = $request->has('is_active');
     $validated['is_featured'] = $request->has('is_featured');
 
-    $product->update($validated);
+    try {
+        $product->update($validated);
 
-    // Sync warehouse stock
-    if ($request->has('warehouse_stock')) {
-        $totalStock = 0;
-        foreach ($request->warehouse_stock as $warehouseId => $quantity) {
-            if ($quantity !== null && $quantity >= 0) {
-                $oldStock = \DB::table('product_warehouse')
-                    ->where('product_id', $product->id)
-                    ->where('warehouse_id', $warehouseId)
-                    ->value('quantity') ?? 0;
-                
-                $newQuantity = (int)$quantity;
-                if ($oldStock != $newQuantity) {
-                    $diff = $newQuantity - $oldStock;
-                    $product->recordMovement($warehouseId, $diff, 'adjustment', null, null, 'Manual admin update', false);
+        // Sync warehouse stock
+        if ($request->has('warehouse_stock')) {
+            $totalStock = 0;
+            foreach ($request->warehouse_stock as $warehouseId => $quantity) {
+                if ($quantity !== null && $quantity >= 0) {
+                    $oldStock = \DB::table('product_warehouse')
+                        ->where('product_id', $product->id)
+                        ->where('warehouse_id', $warehouseId)
+                        ->value('quantity') ?? 0;
+                    
+                    $newQuantity = (int)$quantity;
+                    if ($oldStock != $newQuantity) {
+                        $diff = $newQuantity - $oldStock;
+                        $product->recordMovement($warehouseId, $diff, 'adjustment', null, null, 'Manual admin update', false);
+                    }
+                    $totalStock += $newQuantity;
                 }
-                $totalStock += $newQuantity;
             }
+            
+            // Update total stock_quantity as sum of all warehouse stocks
+            $product->stock_quantity = $totalStock;
+            $product->save();
         }
-        
-        // Update total stock_quantity as sum of all warehouse stocks
-        $product->stock_quantity = $totalStock;
-        $product->save();
-    }
 
         // Handle new image uploads
         if ($request->hasFile('images')) {
@@ -246,6 +247,16 @@ class ProductController extends Controller
 
         return redirect()->route('admin.products.index')
             ->with('success', 'Product updated successfully!');
+
+    } catch (\Exception $e) {
+        \Illuminate\Support\Facades\Log::error('Product update failed', [
+            'product_id' => $product->id,
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString()
+        ]);
+        
+        return back()->withInput()->with('error', 'Failed to update product: ' . $e->getMessage());
+    }
     }
 
     public function destroy(Product $product)

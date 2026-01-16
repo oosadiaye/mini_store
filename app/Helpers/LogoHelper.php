@@ -106,7 +106,7 @@ SVG;
         // If custom logo exists, return its URL
         if (!empty($freshData['logo'])) {
              // Retrieve via tenant media route
-            return route('tenant.media', ['path' => $freshData['logo']]);
+            return route('tenant.media', ['tenant' => app('tenant')->slug, 'path' => $freshData['logo']]);
         }
         
         // Generate from initials
@@ -136,7 +136,7 @@ SVG;
         // If custom favicon exists, return its URL with cache busting
         if (!empty($freshData['favicon'])) {
              // Retrieve via tenant media route with cache busting param
-            return route('tenant.media', ['path' => $freshData['favicon'], 'v' => time()]);
+            return route('tenant.media', ['tenant' => app('tenant')->slug, 'path' => $freshData['favicon'], 'v' => time()]);
         }
         
         // Generate 32x32 favicon from initials

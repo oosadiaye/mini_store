@@ -185,7 +185,7 @@ class Product extends Model
             if (filter_var($path, FILTER_VALIDATE_URL)) {
                 return $path;
             }
-            return route('tenant.media', ['path' => $path]);
+            return route('tenant.media', ['tenant' => app('tenant')->slug, 'path' => $path]);
         }
 
         // Return a local SVG placeholder data URI to avoid external network dependencies (ERR_FAILED issues)

@@ -20,12 +20,15 @@ class StoreConfig extends Model
         'layout_preference',
         'is_completed',
         'store_email',
+        'store_email',
         'social_links',
+        'theme_layout',
     ];
 
     protected $casts = [
         'selected_categories' => 'array',
         'social_links' => 'array',
         'is_completed' => 'boolean',
+        'theme_layout' => 'array',
     ];
 }
